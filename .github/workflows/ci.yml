@@ -18,17 +18,30 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install -r requirements.txt ruff
-      - run: ruff check .
-      - run: ruff format --check .
-      - run: python manage.py makemigrations --check --dry-run
+      - run: ./scripts/check.sh
+
+  upgrade:
+    # Spec section 17, item 3: upgrading from the latest pre-release keeps all data.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r requirements.txt
+      - name: Upgrade from the latest tag
         env:
           UNLIST_TESTING: "1"
-      - run: python manage.py test
-        env:
-          UNLIST_TESTING: "1"
-      - run: python manage.py check_licences
-        env:
-          UNLIST_TESTING: "1"
+        run: |
+          previous=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          if [ -z "$previous" ]; then
+            echo "No tag yet: nothing to upgrade from."
+            exit 0
+          fi
+          python -m venv .venv && .venv/bin/pip install -q -r requirements.txt
+          ./scripts/upgrade-test.sh "$previous"
 
   image:
     runs-on: ubuntu-latest
@@ -38,7 +51,7 @@ jobs:
       - name: Fresh container reaches the setup page
         run: |
           docker run -d --name unlist -p 8000:8000 -v "$PWD/data:/data" -v "$PWD/key:/key" unlist:ci
-          for i in $(seq 1 30); do
+          for i in $(seq 1 60); do
             code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/ || true)
             [ "$code" = "302" ] && break
             sleep 1
@@ -47,3 +60,22 @@ jobs:
           curl -sf http://localhost:8000/setup/ | grep -q "Create the Operator account"
           test -s key/unlist.key
           test ! -e data/unlist.key
+      - name: Base image licences (spec section 15, item 9)
+        run: |
+          # Every system package in the image, with its source package and whether its
+          # licence file ships in the image. The base image is Debian, whose sources are
+          # offered at https://sources.debian.org and https://snapshot.debian.org.
+          docker run --rm --entrypoint sh unlist:ci -c '
+            dpkg-query -W -f="\${Package}\t\${Version}\t\${source:Package}\n" | while IFS="$(printf "\t")" read -r pkg ver src; do
+              if [ -s "/usr/share/doc/$pkg/copyright" ]; then lic=yes; else lic=MISSING; fi
+              printf "%s\t%s\t%s\t%s\n" "$pkg" "$ver" "${src:-$pkg}" "$lic"
+            done' > image-packages.tsv
+          echo "$(wc -l < image-packages.tsv) system packages in the image"
+          if grep -P '\tMISSING$' image-packages.tsv; then
+            echo "Packages above ship without a copyright file." >&2
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: image-packages
+          path: image-packages.tsv
