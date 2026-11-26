@@ -1,0 +1,15 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% load static %}
+{% block title %}Letter · {{ case.reference }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'cases/cases.css' %}">{% endblock %}
+{% block body %}
+<main class="cases-letter">
+  <p class="cases-noprint"><a href="{% url 'cases:detail' case.pk %}">Back to Case {{ case.reference }}</a>. Print this page (your browser's print command), sign it and post it.</p>
+  <p class="cases-from">{{ case.subject.name }}<br>{{ draft.sender }}</p>
+  <pre class="cases-address">{% if draft.channel == "letter" %}{{ draft.recipient }}{% else %}{{ case.organization.address }}{% endif %}</pre>
+  <p class="cases-from">{{ today|date:"j F Y" }}</p>
+  <p><strong>{{ draft.subject_line }}</strong></p>
+  <pre class="cases-body">{{ draft.body }}</pre>
+</main>
+{% endblock %}
