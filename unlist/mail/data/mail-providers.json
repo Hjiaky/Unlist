@@ -1,0 +1,85 @@
+{
+  "description": "Host and port presets for the optional live mailbox connection, with where to create an app password. They prefill the connect form; the Operator can change every value. smtp_security is \"ssl\" (implicit TLS, usually port 465) or \"starttls\" (usually port 587). Outlook.com and Microsoft 365 are left out on purpose: they generally require OAuth for IMAP, so their mail is imported from a file. Taken from the providers' help pages as remembered, not checked live: see `verified`.",
+  "licence": "CC0-1.0",
+  "date": "2026-11-26",
+  "verified": false,
+  "providers": [
+    {
+      "key": "gmail",
+      "name": "Gmail",
+      "domains": ["gmail.com", "googlemail.com"],
+      "imap_host": "imap.gmail.com",
+      "imap_port": 993,
+      "smtp_host": "smtp.gmail.com",
+      "smtp_port": 465,
+      "smtp_security": "ssl",
+      "app_password": "Turn on 2-Step Verification for the Google Account, then create an app password at myaccount.google.com/apppasswords. The option is missing for work and school accounts, for accounts protected only by security keys and with Advanced Protection: use file import (Google Takeout) then."
+    },
+    {
+      "key": "gmx",
+      "name": "GMX",
+      "domains": ["gmx.de", "gmx.net", "gmx.at", "gmx.ch"],
+      "imap_host": "imap.gmx.net",
+      "imap_port": 993,
+      "smtp_host": "mail.gmx.net",
+      "smtp_port": 587,
+      "smtp_security": "starttls",
+      "app_password": "In the GMX web mail settings, turn on access by POP3 and IMAP. With two-factor authentication on, create an application-specific password in the security settings."
+    },
+    {
+      "key": "webde",
+      "name": "WEB.DE",
+      "domains": ["web.de"],
+      "imap_host": "imap.web.de",
+      "imap_port": 993,
+      "smtp_host": "smtp.web.de",
+      "smtp_port": 587,
+      "smtp_security": "starttls",
+      "app_password": "In the WEB.DE web mail settings, turn on access by POP3 and IMAP. With two-factor authentication on, create an application-specific password in the security settings."
+    },
+    {
+      "key": "posteo",
+      "name": "Posteo",
+      "domains": ["posteo.de", "posteo.net"],
+      "imap_host": "posteo.de",
+      "imap_port": 993,
+      "smtp_host": "posteo.de",
+      "smtp_port": 465,
+      "smtp_security": "ssl",
+      "app_password": "Posteo uses the account password for IMAP and SMTP; it has no separate app passwords."
+    },
+    {
+      "key": "mailboxorg",
+      "name": "mailbox.org",
+      "domains": ["mailbox.org"],
+      "imap_host": "imap.mailbox.org",
+      "imap_port": 993,
+      "smtp_host": "smtp.mailbox.org",
+      "smtp_port": 465,
+      "smtp_security": "ssl",
+      "app_password": "Use the account password, or, with two-factor authentication on, an application password created in the mailbox.org settings."
+    },
+    {
+      "key": "fastmail",
+      "name": "Fastmail",
+      "domains": ["fastmail.com", "fastmail.fm"],
+      "imap_host": "imap.fastmail.com",
+      "imap_port": 993,
+      "smtp_host": "smtp.fastmail.com",
+      "smtp_port": 465,
+      "smtp_security": "ssl",
+      "app_password": "Create an app password in Fastmail's settings under Privacy & Security, with access to IMAP and SMTP."
+    },
+    {
+      "key": "icloud",
+      "name": "iCloud Mail",
+      "domains": ["icloud.com", "me.com", "mac.com"],
+      "imap_host": "imap.mail.me.com",
+      "imap_port": 993,
+      "smtp_host": "smtp.mail.me.com",
+      "smtp_port": 587,
+      "smtp_security": "starttls",
+      "app_password": "Turn on two-factor authentication for the Apple Account, then create an app-specific password at account.apple.com under Sign-In and Security."
+    }
+  ]
+}

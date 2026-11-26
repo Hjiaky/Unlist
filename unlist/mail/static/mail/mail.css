@@ -23,6 +23,12 @@ main.mail-wide { max-width: 1040px; margin: 0 auto; padding: 24px 16px; }
 .mail-search { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
 .mail-search label { width: 100%; }
 .mail-search input { flex: 1; }
+.mail-preset { display: inline-block; padding: 4px 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--accent); }
+.mail-preset-current { background: var(--accent); color: var(--accent-ink); }
+.mail-facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0 0 8px; }
+.mail-facts dt { color: var(--muted); }
+.mail-facts dd { margin: 0; overflow-wrap: anywhere; }
+.mail-messages li.success { border-color: var(--accent); }
 input[type=file], select { font: inherit; }
 select { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
 @media (max-width: 640px) {

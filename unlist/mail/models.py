@@ -129,3 +129,52 @@ class SeenMessage(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["subject", "digest"], name="seen_message_unique_per_subject")]
+
+
+class MailboxConnection(models.Model):
+    """An optional live connection to one of a Subject's mailboxes (spec sections 5 and 6).
+
+    IMAP is read-only (``EXAMINE``, headers fetched with ``BODY.PEEK``); SMTP sends approved
+    drafts from the Subject's own address. The app password is stored encrypted with
+    ``unlist.crypto``; everything else stays readable. Deleting the connection (or the
+    Mailbox) forgets the password.
+    """
+
+    class Security(models.TextChoices):
+        SSL = "ssl", "SSL/TLS"
+        STARTTLS = "starttls", "STARTTLS"
+
+    mailbox = models.OneToOneField(Mailbox, on_delete=models.CASCADE, related_name="connection")
+    imap_host = models.CharField(max_length=253)
+    imap_port = models.PositiveIntegerField(default=993)
+    smtp_host = models.CharField(max_length=253)
+    smtp_port = models.PositiveIntegerField(default=465, help_text="465 (SSL/TLS) or 587 (STARTTLS).")
+    smtp_security = models.CharField(max_length=10, choices=Security.choices, default=Security.SSL)
+    username = models.CharField(max_length=320)
+    password_encrypted = models.TextField(help_text="The app password, encrypted with the instance key.")
+    scheduled_rescans = models.BooleanField(default=False, help_text="Re-scan on its own, at most every 6 hours.")
+    folder = models.CharField(max_length=500, blank=True, help_text="The folder the UID state below belongs to.")
+    uidvalidity = models.PositiveBigIntegerField(null=True, blank=True)
+    last_uid = models.PositiveBigIntegerField(default=0, help_text="The highest UID scanned in that folder.")
+    last_scan_at = models.DateTimeField(null=True, blank=True, help_text="When the last scan finished.")
+    last_attempt_at = models.DateTimeField(null=True, blank=True, help_text="When a scan last started.")
+    last_error = models.TextField(blank=True, help_text="The last problem with IMAP or SMTP, for the Operator.")
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Live connection for {self.mailbox}"
+
+    def set_password(self, password):
+        from unlist import crypto
+
+        self.password_encrypted = crypto.encrypt(password)
+
+    def password(self):
+        """The app password. Raises ``crypto.MissingKey`` or ``crypto.WrongKey``."""
+        from unlist import crypto
+
+        return crypto.decrypt(self.password_encrypted)
+
+    def record_error(self, message):
+        self.last_error = message[:2000]
+        self.save(update_fields=["last_error"])

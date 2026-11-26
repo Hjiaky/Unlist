@@ -16,4 +16,17 @@ urlpatterns = [
     path("subjects/<int:pk>/unassigned/<int:sender_pk>/assign/", views.assign, name="assign"),
     path("subjects/<int:pk>/unassigned/<int:sender_pk>/ignore/", views.ignore_sender, name="ignore_sender"),
     path("subjects/<int:pk>/unassigned/<int:sender_pk>/unignore/", views.unignore_sender, name="unignore_sender"),
+    path("subjects/<int:pk>/connections/", views.connections, name="connections"),
+    path("subjects/<int:pk>/mailboxes/<int:mailbox_pk>/connect/", views.connect, name="connect"),
+    path("subjects/<int:pk>/mailboxes/<int:mailbox_pk>/connection/", views.connection, name="connection"),
+    path(
+        "subjects/<int:pk>/mailboxes/<int:mailbox_pk>/connection/test/", views.test_connection, name="test_connection"
+    ),
+    path("subjects/<int:pk>/mailboxes/<int:mailbox_pk>/connection/scan/", views.scan_now, name="scan_now"),
+    path(
+        "subjects/<int:pk>/mailboxes/<int:mailbox_pk>/connection/rescans/",
+        views.scheduled_rescans,
+        name="scheduled_rescans",
+    ),
+    path("subjects/<int:pk>/mailboxes/<int:mailbox_pk>/connection/disconnect/", views.disconnect, name="disconnect"),
 ]
