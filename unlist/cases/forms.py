@@ -3,15 +3,32 @@
 from django import forms
 from django.utils import timezone
 
-from unlist.cases import lifecycle
-from unlist.cases.models import validate_recheck_override
+from unlist.cases import lifecycle, replies, services
+from unlist.cases.models import Case, validate_recheck_override
 from unlist.cases.storage import MAX_UPLOAD_BYTES
 from unlist.organizations.models import Organization
 from unlist.subjects.models import Subject
 
+ID_WARNING = (
+    "Never upload an ID document (passport, identity card, driving licence) or a message with one attached: "
+    "Unlist does not store them. If the Subject sends ID, they attach it from their own device."
+)
+
 
 class DateInput(forms.DateInput):
     input_type = "date"
+
+
+def _not_in_future(day):
+    if day > timezone.localdate():
+        raise forms.ValidationError("The date cannot be in the future.")
+    return day
+
+
+def _check_size(upload):
+    if upload and upload.size > MAX_UPLOAD_BYTES:
+        raise forms.ValidationError(f"The file is larger than {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.")
+    return upload
 
 
 class OpenCaseForm(forms.Form):
@@ -43,7 +60,7 @@ class OutcomeForm(forms.Form):
     file = forms.FileField(
         required=False,
         label="The reply (.eml) or another file",
-        help_text="Kept as evidence. Never upload an ID document: Unlist does not store them.",
+        help_text=f"Kept as evidence. {ID_WARNING}",
     )
 
     def __init__(self, *args, outcomes=(), **kwargs):
@@ -52,16 +69,10 @@ class OutcomeForm(forms.Form):
         self.fields["occurred_on"].initial = timezone.localdate()
 
     def clean_occurred_on(self):
-        day = self.cleaned_data["occurred_on"]
-        if day > timezone.localdate():
-            raise forms.ValidationError("The date cannot be in the future.")
-        return day
+        return _not_in_future(self.cleaned_data["occurred_on"])
 
     def clean_file(self):
-        upload = self.cleaned_data.get("file")
-        if upload and upload.size > MAX_UPLOAD_BYTES:
-            raise forms.ValidationError(f"The file is larger than {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.")
-        return upload
+        return _check_size(self.cleaned_data.get("file"))
 
 
 class MarkSentForm(forms.Form):
@@ -84,4 +95,118 @@ class RecheckForm(forms.Form):
         validators=[validate_recheck_override],
         label="Re-check for this Case",
         help_text='Days between re-checks, "close" to close instead, or empty for the default.',
+    )
+
+
+class ReplyUploadForm(forms.Form):
+    """An ``.eml`` of the Organization's reply, uploaded on the Case page (import-only mode)."""
+
+    eml = forms.FileField(
+        label="Upload a reply (.eml)", help_text=f"The Organization's email, saved as .eml. {ID_WARNING}"
+    )
+
+    def clean_eml(self):
+        upload = _check_size(self.cleaned_data.get("eml"))
+        data = b"".join(upload.chunks())
+        message = replies.parse_bytes(data)
+        if not (message.get("From") or message.get("Subject")):
+            raise forms.ValidationError("This does not look like an email (.eml) file.")
+        self.raw = data
+        return message
+
+
+class ReplyConfirmForm(forms.Form):
+    """The Operator's decision on one reply: the suggested outcome is pre-selected, never applied."""
+
+    outcome = forms.ChoiceField(label="What the reply says")
+    occurred_on = forms.DateField(label="Arrived on", widget=DateInput)
+    suppression_confirmed = forms.BooleanField(
+        required=False, label="The Broker confirmed it keeps a Suppression Record", help_text="For a removal."
+    )
+    exception = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 2}),
+        label="Exception cited",
+        help_text="For a refusal: the reason or legal duty the Organization names.",
+    )
+    with_reasons = forms.BooleanField(required=False, label="The extension notice gives reasons")
+    note = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 2}), label="Note")
+
+    def __init__(self, *args, reply, **kwargs):
+        super().__init__(*args, **kwargs)
+        outcomes = services.available_outcomes(reply.case) if reply.case else []
+        choices = [(o.value, lifecycle.OUTCOME_LABELS[o]) for o in outcomes]
+        choices.append((replies.ATTACH_ONLY, "Keep it on the Case, no outcome (for example an acknowledgement)"))
+        self.fields["outcome"].choices = choices
+        values = {value for value, _label in choices}
+        self.fields["outcome"].initial = (
+            reply.suggested_outcome if reply.suggested_outcome in values else replies.ATTACH_ONLY
+        )
+        self.fields["occurred_on"].initial = reply.received_on
+        self.fields["exception"].initial = reply.suggested_exception
+        self.fields["suppression_confirmed"].initial = bool(reply.suggested_suppression)
+        self.fields["with_reasons"].initial = bool(reply.suggested_with_reasons)
+
+    def clean_occurred_on(self):
+        return _not_in_future(self.cleaned_data["occurred_on"])
+
+    def outcome_details(self) -> dict:
+        data = self.cleaned_data
+        details = {"note": data["note"]} if data["note"] else {}
+        outcome = data["outcome"]
+        if outcome == lifecycle.Action.REMOVED:
+            details["suppression_confirmed"] = data["suppression_confirmed"]
+        elif outcome == lifecycle.Action.REFUSED:
+            details["exception"] = data["exception"]
+        elif outcome == lifecycle.Action.EXTENSION_ANNOUNCED:
+            details["with_reasons"] = data["with_reasons"]
+        return details
+
+
+class AssignReplyForm(forms.Form):
+    case = forms.ModelChoiceField(queryset=Case.objects.none(), label="Case")
+
+    def __init__(self, *args, reply, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["case"].queryset = Case.objects.filter(subject_id=reply.subject_id).select_related("organization")
+        self.fields["case"].label_from_instance = lambda case: f"{case.reference}: {case.organization.name}"
+
+
+class DetailsChoiceForm(forms.Form):
+    """Which of the Subject's identifying details go into the details reply. No file field: ID is never uploaded."""
+
+    details = forms.ModelMultipleChoiceField(
+        queryset=None,
+        widget=forms.CheckboxSelectMultiple,
+        label="Details to send",
+        error_messages={"required": "Choose at least one detail to send."},
+    )
+
+    def __init__(self, *args, case, **kwargs):
+        super().__init__(*args, **kwargs)
+        lang = services.details_language(case)
+        field = self.fields["details"]
+        field.queryset = case.subject.details.all()
+        field.label_from_instance = lambda detail: services.detail_line(detail, lang)
+        field.initial = [detail.pk for detail in services.suggested_details(case)]
+
+
+class SendIdForm(forms.Form):
+    """The Subject's decision to send ID themselves. No file field: the document never reaches Unlist."""
+
+    decided = forms.BooleanField(
+        label="The Subject decided to send a copy of their ID and will attach it from their own device",
+        error_messages={"required": "Tick the box to confirm the Subject's decision."},
+    )
+
+
+class PortalForm(forms.Form):
+    url = forms.CharField(
+        max_length=1000, label="Portal or web form link", help_text="Where the Organization wants the request."
+    )
+
+
+class AuthorityLetterForm(forms.Form):
+    operator_name = forms.CharField(
+        max_length=200, label="Operator's name", help_text="The person the letter authorises (you)."
     )

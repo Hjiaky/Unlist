@@ -31,8 +31,9 @@
   {% if actions or can_record_outcome %}
   <div class="cases-actions">
     {% if can_record_outcome %}<a class="cases-button" href="{% url 'cases:outcome' case.pk %}">Record the Organization's answer</a>{% endif %}
-    {% for value, label in actions %}
-    <form method="post" action="{% url 'cases:action' case.pk value %}">{% csrf_token %}<button type="submit">{{ label }}</button></form>
+    {% for value, label, url in actions %}
+    {% if url %}<a class="cases-button" href="{{ url }}">{{ label }}</a>
+    {% else %}<form method="post" action="{% url 'cases:action' case.pk value %}">{% csrf_token %}<button type="submit">{{ label }}</button></form>{% endif %}
     {% endfor %}
   </div>
   {% endif %}
@@ -40,6 +41,21 @@
 
 {% recheck_panel case %}
 {% complaint_panel case %}
+{% if asked %}
+<section class="card cases-demand">
+  {% if asked == "clarification" %}
+  <h2>The Organization asked which data is meant</h2>
+  <p>Answer with a short reply that names the data the Access Request is about. The clock is paused until it is sent{% if deadline.jurisdiction == "UK" %}; the days until then do not count{% endif %}.</p>
+  {% elif persistent_demand %}
+  <h2>The Organization insists on ID</h2>
+  <p>Unlist already pushed back once. The Subject chooses: send a copy of their ID themselves, or draft a Complaint to the Supervisory Authority. If it asks for details rather than an ID document, send those instead.</p>
+  {% else %}
+  <h2>The Organization asked for ID or more details</h2>
+  <p>The clock is paused until the Subject answers{% if deadline.jurisdiction == "UK" %}, then a new month starts{% endif %}. For details (a customer number, a previous address), send exactly the ones asked for. For a copy of an ID document, push back first: the request came from the address the Organization knows.</p>
+  {% endif %}
+  <p class="muted">Unlist never stores ID documents. If the Subject sends one, Unlist drafts the reply and the Subject attaches the document from their own device.</p>
+</section>
+{% endif %}
 
 <section class="card">
   <h2>Drafts</h2>
@@ -64,6 +80,7 @@
     </div>
     {% elif draft.status == "handed_over" %}
     <div class="cases-handover">
+      {% if draft.kind == "id_copy_reply" %}<p class="cases-warning">The Subject attaches the copy of their ID from their own device when sending, with the details that are not needed blacked out. Unlist never stores it.</p>{% endif %}
       {% if draft.channel == "email" %}
       <p>Send this from <strong>{{ draft.sender }}</strong> to <strong>{{ draft.recipient }}</strong>, then mark it sent.</p>
       <p><a href="{% url 'cases:draft_eml' draft.pk %}">Download the .eml</a> · <a href="{{ item.mailto }}">Open in the mail app (mailto)</a></p>
@@ -89,6 +106,40 @@
   {% endfor %}
 </section>
 
+<section class="card" id="replies">
+  <h2>Replies</h2>
+  {% for reply in replies %}
+  <article class="cases-reply cases-reply-{{ reply.status }}">
+    <header><strong>{{ reply.subject_line|default:"(no subject)" }}</strong>
+      <span class="muted">· {{ reply.received_at|date:"j M Y" }} · {{ reply.from_address }} · {{ reply.get_kind_display }} · {{ reply.get_status_display }}{% if reply.suggested_outcome and reply.status == "to_confirm" %} · suggested: {{ reply.suggested_label }}{% endif %}</span>
+    </header>
+    {% if reply.status == "to_confirm" %}<p><a href="{% url 'cases:replies' %}#reply-{{ reply.pk }}">Review and confirm</a></p>{% endif %}
+    {% if reply.raw_attachment %}<p><a href="{% url 'cases:attachment' reply.raw_attachment.pk %}">Download the .eml</a></p>{% endif %}
+  </article>
+  {% empty %}
+  <p class="muted">No replies taken in yet.</p>
+  {% endfor %}
+  <form method="post" action="{% url 'cases:reply_upload' case.pk %}" enctype="multipart/form-data" class="cases-form">{% csrf_token %}
+    <div class="cases-field">
+      {{ upload_form.eml.label_tag }} {{ upload_form.eml }}
+      <p class="helptext cases-warning">{{ upload_form.eml.help_text }}</p>
+    </div>
+    <button type="submit">Upload</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>When the Organization asks for more</h2>
+  <p><a class="cases-button" href="{% url 'cases:authority_letter' case.pk %}">Generate a letter of authority</a> <span class="muted">For an Organization that asks for proof that the Operator may act. A new dated letter for {{ case.organization.name }} only.</span></p>
+  {% if portal_form %}
+  <form method="post" action="{% url 'cases:portal' case.pk %}" class="cases-inline">{% csrf_token %}
+    {{ portal_form.url.label_tag }} {{ portal_form.url }}
+    <button type="submit">Hand over to the Subject</button>
+  </form>
+  <p class="helptext">If the Organization insists on its own portal or web form: the Subject uses it, and Unlist notes the link.</p>
+  {% endif %}
+</section>
+
 <section class="card">
   <h2>Timeline</h2>
   <ol class="cases-timeline">
@@ -100,6 +151,7 @@
       {% if event.exception_text %}<div class="muted">Exception cited: {{ event.exception_text }}</div>{% endif %}
       {% if event.suppression_confirmed is not None %}<div class="muted">Suppression Record confirmed: {{ event.suppression_confirmed|yesno:"yes,no" }}</div>{% endif %}
       {% if event.details.note %}<div class="muted">Note: {{ event.details.note }}</div>{% endif %}
+      {% if event.kind == "authority_letter" %}<div><a href="{% url 'cases:authority_letter_show' event.pk %}">Show the letter</a></div>{% endif %}
       {% for attachment in event.attachments.all %}<div><a href="{% url 'cases:attachment' attachment.pk %}">{{ attachment.original_name }}</a></div>{% endfor %}
     </li>
     {% endfor %}

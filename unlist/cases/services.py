@@ -108,6 +108,34 @@ def pushbacks_sent(case) -> int:
     return count
 
 
+def _current_round(events: list[CaseEvent]) -> list[CaseEvent]:
+    """The events from the latest send of a request (or reconsider reply) on; empty if none was sent."""
+    start = None
+    for index, event in enumerate(events):
+        if _sent_kind(event) in ROUND_STARTS:
+            start = index
+    return [] if start is None else events[start:]
+
+
+# Case events that pause the clock, and what the paused Case then waits for.
+ASK_EVENTS = {
+    CaseEvent.Kind.ID_OR_DETAILS_ASKED: lifecycle.ASKED_ID_OR_DETAILS,
+    CaseEvent.Kind.CLARIFICATION_ASKED: lifecycle.ASKED_CLARIFICATION,
+}
+
+
+def demands(case) -> tuple[str | None, bool]:
+    """(what the open question asks for, whether an ID pushback was sent) in the current round."""
+    asked, pushed_back = None, False
+    for event in _current_round(_events(case)):
+        if event.kind in ASK_EVENTS:
+            asked = ASK_EVENTS[event.kind]
+        elif _sent_kind(event) in lifecycle.ANSWERS:
+            asked = None
+            pushed_back = pushed_back or _sent_kind(event) == DraftKind.ID_PUSHBACK
+    return asked, pushed_back
+
+
 def recheck_intervals(case) -> tuple[int | None, int | None]:
     organization = case.organization
     return lifecycle.recheck_intervals(organization.broker, organization.recheck_default, case.recheck_override or None)
@@ -117,6 +145,7 @@ def case_state(case) -> lifecycle.CaseState:
     """The Case as the rules see it."""
     pending = case.pending_draft
     after_nothing, after_removed = recheck_intervals(case)
+    asked, pushed_back = demands(case)
     return lifecycle.CaseState(
         state=State(case.state),
         request=Request(case.request) if case.request else None,
@@ -130,6 +159,8 @@ def case_state(case) -> lifecycle.CaseState:
         result=case.result,
         pushbacks=pushbacks_sent(case),
         suppression_record=case.events.filter(suppression_confirmed=True).exists(),
+        asked=asked,
+        pushed_back=pushed_back,
     )
 
 
@@ -139,6 +170,7 @@ CASE_ACTIONS = (
     Action.KEEP_LISTING,
     Action.SEND_DETAILS,
     Action.PUSH_BACK,
+    Action.SEND_ID,
     Action.FIX_CONTACT,
     Action.SEND_REMINDER,
     Action.DRAFT_COMPLAINT,
@@ -166,27 +198,33 @@ def _deadline_input(case):
     A round starts with the latest send of a request (or reconsider reply). A bounce after it
     means the Organization never received it, so the clock never started.
     """
-    events = _events(case)
-    start = None
-    for index, event in enumerate(events):
-        if _sent_kind(event) in ROUND_STARTS:
-            start = index
-    if start is None:
+    current = _current_round(_events(case))
+    if not current:
         return None
-    current = events[start:]
     if any(event.kind == CaseEvent.Kind.BOUNCE for event in current[1:]):
         return None
     first_kind = DraftKind(_sent_kind(current[0]))
     kind = lifecycle.DRAFT_REQUEST.get(first_kind, Request.REMOVAL)
     result = [deadlines.Event(deadlines.EventKind.SENT, current[0].occurred_on)]
+    open_ask = None  # the deadline engine's kind of the question an answer replies to
     for event in current[1:]:
         sent_kind = _sent_kind(event)
         if sent_kind == DraftKind.REMINDER:
             result.append(deadlines.Event(deadlines.EventKind.REMINDER_SENT, event.occurred_on))
-        elif sent_kind in (DraftKind.DETAILS_REPLY, DraftKind.ID_PUSHBACK):
-            result.append(deadlines.Event(deadlines.EventKind.ID_OR_DETAILS_ANSWERED, event.occurred_on))
+        elif sent_kind in lifecycle.ANSWERS:
+            answer = (
+                deadlines.EventKind.CLARIFICATION_ANSWERED
+                if open_ask is deadlines.EventKind.CLARIFICATION_ASKED
+                else deadlines.EventKind.ID_OR_DETAILS_ANSWERED
+            )
+            result.append(deadlines.Event(answer, event.occurred_on))
+            open_ask = None
         elif event.kind == CaseEvent.Kind.ID_OR_DETAILS_ASKED:
-            result.append(deadlines.Event(deadlines.EventKind.ID_OR_DETAILS_ASKED, event.occurred_on))
+            open_ask = deadlines.EventKind.ID_OR_DETAILS_ASKED
+            result.append(deadlines.Event(open_ask, event.occurred_on))
+        elif event.kind == CaseEvent.Kind.CLARIFICATION_ASKED:
+            open_ask = deadlines.EventKind.CLARIFICATION_ASKED
+            result.append(deadlines.Event(open_ask, event.occurred_on))
         elif event.kind == CaseEvent.Kind.EXTENSION_ANNOUNCED:
             result.append(
                 deadlines.Event(
@@ -518,6 +556,15 @@ def mark_sent(draft, *, on: date | None = None) -> Draft:
         draft.status, draft.sent_on = Draft.Status.SENT, on
         _step(draft.case, Action.MARK_SENT, on, event_kind=CaseEvent.Kind.SENT, details=_sent_details(draft))
         draft.save()
+        if draft.kind == DraftKind.ID_COPY_REPLY:
+            _record(
+                draft.case,
+                CaseEvent.Kind.ID_SENT,
+                on,
+                f"ID sent on {deadlines.format_date(on)}. The Subject attached it from their own device; Unlist "
+                "keeps no copy.",
+                details={"draft": draft.pk},
+            )
     return draft
 
 
@@ -526,8 +573,9 @@ def record_outcome(case, outcome: Action | str, *, on: date | None = None, **det
 
     ``outcome`` is one of ``lifecycle.OUTCOMES``: ``nothing_held``, ``listing_found``, ``removed``
     (``suppression_confirmed=bool``), ``refused`` (``exception="..."``: the exception it cites),
-    ``id_or_details_asked``, ``extension_announced`` (``with_reasons=bool``) or ``bounce``. Other
-    keyword arguments (JSON values, such as ``note``) are stored in the event's details.
+    ``id_or_details_asked``, ``clarification_asked`` (which data an Access Request is about),
+    ``extension_announced`` (``with_reasons=bool``) or ``bounce``. Other keyword arguments (JSON
+    values, such as ``note`` or ``reply``) are stored in the event's details.
     """
     try:
         action = Action(outcome)
@@ -606,6 +654,114 @@ def send_details(case, details: list[str] | None = None, *, on: date | None = No
 def push_back(case, *, on: date | None = None, offered_details: list[str] | None = None) -> Draft:
     """For a paused Case with an ID demand: draft the pushback."""
     return _draft_step(case, Action.PUSH_BACK, on, offered_details=offered_details)
+
+
+def send_id(case, *, on: date | None = None) -> Draft:
+    """The Subject decided to send ID: draft the reply saying it is attached.
+
+    The draft is always handed over (``sending.hands_over``): the Subject attaches the document
+    from their own device when sending. Marking it sent records "ID sent on <date>"; Unlist
+    never receives or stores the document.
+    """
+    return _draft_step(case, Action.SEND_ID, on)
+
+
+def details_language(case) -> str:
+    """The language a details reply for this Case is written in."""
+    jurisdiction = drafting.jurisdiction_for(case.organization)
+    return templating.template_language(
+        DraftKind.DETAILS_REPLY, drafting.request_language(case.organization), jurisdiction
+    )
+
+
+def detail_line(detail, lang: str) -> str:
+    """One IdentifyingDetail as a line of a details reply, such as ``Customer number: 12345``."""
+    labels = drafting.DETAIL_LABELS.get(detail.kind)
+    label = labels.get(lang, labels[drafting.FALLBACK_LANGUAGE]) if labels else detail.get_kind_display()
+    return f"{label}: {detail.value}"
+
+
+def suggested_details(case) -> list:
+    """The Subject's IdentifyingDetails the Organization is known to ask for (pre-selected in the picker)."""
+    details = list(case.subject.details.all())
+    lang = details_language(case)
+    wanted = set(drafting.identifying_lines(case.organization, details, lang))
+    return [detail for detail in details if detail_line(detail, lang) in wanted]
+
+
+def send_chosen_details(case, chosen, *, on: date | None = None) -> Draft:
+    """Draft a details reply with exactly the chosen IdentifyingDetails of the Case's Subject."""
+    chosen = list(chosen)
+    if not chosen:
+        raise CaseError("Choose at least one detail to send.")
+    if any(detail.subject_id != case.subject_id for detail in chosen):
+        raise CaseError("Only the Subject's own details can be sent.")
+    lang = details_language(case)
+    return send_details(case, [detail_line(detail, lang) for detail in chosen], on=on)
+
+
+PORTAL_STATES = (State.WAITING, State.PAUSED, State.OVERDUE)
+
+
+def hand_over_to_portal(case, url: str, *, on: date | None = None) -> CaseEvent:
+    """The Organization insists on its own portal or web form: hand that step to the Subject.
+
+    Records the portal link on the Case. Nothing else changes: the Subject uses the portal, and
+    the Organization's answer is recorded as usual.
+    """
+    url = (url or "").strip()
+    if not url:
+        raise CaseError("Enter the link to the Organization's portal or web form.")
+    if case.state not in PORTAL_STATES:
+        raise IllegalStep("A portal demand only matters while a request is open.")
+    return _record(
+        case,
+        CaseEvent.Kind.PORTAL_HANDED_OVER,
+        _today(on),
+        f"The Organization insists on its own portal or web form. Handed over to the Subject to use it: {url}",
+        details={"url": url},
+    )
+
+
+def authority_letter(case, operator_name: str, *, on: date | None = None) -> CaseEvent:
+    """Write a dated letter of authority for this Case's Organization only, and record it.
+
+    A fresh letter each time: never reused for another Organization or a later date. The text is
+    kept in the event so it can be printed again for this Case.
+    """
+    operator_name = " ".join((operator_name or "").split())
+    if not operator_name:
+        raise CaseError("Enter the Operator's name for the letter.")
+    on = _today(on)
+    require_consent(case.subject)
+    organization, subject = case.organization, case.subject
+    jurisdiction = drafting.jurisdiction_for(organization)
+    lang = templating.template_language("authority_letter", drafting.request_language(organization), jurisdiction)
+    context = {
+        "jurisdiction": jurisdiction,
+        "reference": case.reference,
+        "subject_name": subject.name,
+        "subject_email": _sender(subject),
+        "organization_name": organization.name,
+        "operator_name": operator_name,
+        "letter_date": drafting.format_date(on, lang),
+    }
+    if subject.is_child and subject.parental_responsibility:
+        context["parent_name"] = subject.parental_responsibility
+    subject_line, body = templating.render("authority_letter", lang, context)
+    return _record(
+        case,
+        CaseEvent.Kind.AUTHORITY_LETTER,
+        on,
+        f"Letter of authority for {organization} written, dated {drafting.format_date(on, 'en')}.",
+        details={
+            "organization": organization.slug,
+            "operator_name": operator_name,
+            "lang": lang,
+            "subject_line": subject_line,
+            "letter": body,
+        },
+    )
 
 
 def fix_contact(case, *, on: date | None = None) -> Draft:
@@ -701,6 +857,11 @@ def set_recheck_override(case, value: str) -> Case:
         case.save(update_fields=["recheck_override", "updated_at"])
         rechecks.reschedule(case)
     return case
+
+
+def add_note(case, text: str, *, on: date | None = None, details: dict | None = None) -> CaseEvent:
+    """Record a dated note on the Case. Changes nothing else (no state, no clock)."""
+    return _record(case, CaseEvent.Kind.NOTE, _today(on), text, details=details)
 
 
 def edit_draft(draft, *, subject_line: str, body: str, on: date | None = None) -> Draft:

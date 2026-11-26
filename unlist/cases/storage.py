@@ -2,6 +2,9 @@
 # Copyright (C) 2026 The Unlist contributors
 """Attachment files: ``<DATA_DIR>/attachments/<subject_id>/<case_id>/<id>-<name>``.
 
+The ``.eml`` of a reply not matched to a Case yet waits in ``<subject_id>/unmatched/`` until the
+Operator assigns it (it then becomes an Attachment) or dismisses it (it is deleted).
+
 Files are plain files in the data directory (Tao rule 3), so a backup of that directory holds
 them. The database row keeps the path relative to the data directory, the size and the SHA-256,
 so a restore can check every file (``integrity_check``).
@@ -37,13 +40,8 @@ def safe_name(name: str) -> str:
     return name[-100:]
 
 
-def store_attachment(case, name: str, chunks, *, content_type: str = "", event=None):
-    """Write ``chunks`` (an iterable of bytes, or bytes) to the Case's folder and record it."""
-    from unlist.cases.models import Attachment
-
-    if isinstance(chunks, bytes | bytearray):
-        chunks = [bytes(chunks)]
-    relative = Path(ATTACHMENTS) / str(case.subject_id) / str(case.id) / f"{secrets.token_hex(4)}-{safe_name(name)}"
+def _write(relative: Path, chunks) -> tuple[str, int]:
+    """Write chunks to a new file; return (SHA-256, size)."""
     target = _data_dir() / relative
     target.parent.mkdir(parents=True, exist_ok=True)
     digest = hashlib.sha256()
@@ -53,12 +51,46 @@ def store_attachment(case, name: str, chunks, *, content_type: str = "", event=N
             digest.update(chunk)
             size += len(chunk)
             handle.write(chunk)
+    return digest.hexdigest(), size
+
+
+def store_unmatched(subject_id: int, name: str, data: bytes) -> tuple[str, str]:
+    """Keep an unmatched reply's ``.eml``; return (path relative to the data directory, SHA-256)."""
+    relative = Path(ATTACHMENTS) / str(int(subject_id)) / "unmatched" / f"{secrets.token_hex(6)}-{safe_name(name)}"
+    sha256, _size = _write(relative, [bytes(data)])
+    return relative.as_posix(), sha256
+
+
+def read_file(stored_path: str) -> bytes:
+    return (_data_dir() / stored_path).read_bytes()
+
+
+def delete_file(stored_path: str) -> None:
+    """Remove one stored file (an Attachment's or an unmatched reply's); a missing file is fine."""
+    if stored_path:
+        (_data_dir() / stored_path).unlink(missing_ok=True)
+
+
+def delete_attachment(attachment) -> None:
+    delete_file(attachment.stored_path)
+    attachment.delete()
+
+
+def store_attachment(case, name: str, chunks, *, content_type: str = "", event=None, reply=None):
+    """Write ``chunks`` (an iterable of bytes, or bytes) to the Case's folder and record it."""
+    from unlist.cases.models import Attachment
+
+    if isinstance(chunks, bytes | bytearray):
+        chunks = [bytes(chunks)]
+    relative = Path(ATTACHMENTS) / str(case.subject_id) / str(case.id) / f"{secrets.token_hex(4)}-{safe_name(name)}"
+    sha256, size = _write(relative, chunks)
     return Attachment.objects.create(
         case=case,
         event=event,
+        reply=reply,
         original_name=(name or "file")[:255],
         stored_path=relative.as_posix(),
-        sha256=digest.hexdigest(),
+        sha256=sha256,
         size=size,
         content_type=(content_type or "")[:200],
     )
@@ -120,7 +152,15 @@ def integrity_check(data_dir: Path) -> list[str]:
             "FROM cases_attachment a JOIN cases_case c ON c.id = a.case_id ORDER BY a.id"
         ).fetchall()
     except sqlite3.OperationalError:
+        connection.close()
         return []  # no Cases tables (yet): nothing to check
+    try:
+        rows += connection.execute(
+            "SELECT 'unmatched reply ' || r.id, r.raw_path, r.raw_sha256, '(none)' "
+            "FROM cases_reply r WHERE r.raw_path != '' ORDER BY r.id"
+        ).fetchall()
+    except sqlite3.OperationalError:
+        pass  # a backup from before replies existed
     finally:
         connection.close()
     return attachment_problems(rows, data_dir)

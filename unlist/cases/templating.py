@@ -53,6 +53,7 @@ REQUIRED_VARIABLES = {
     "reminder": _COMMON | {"original_kind", "original_date", "deadline_date"},
     "details_reply": _COMMON | {"details"},
     "id_pushback": _COMMON,
+    "id_copy_reply": _COMMON,
     "reconsider": _COMMON,
     "authority_letter": _COMMON | {"operator_name", "letter_date"},
     "uk_complaint_to_organization": _COMMON | {"original_kind", "original_date", "infringement", "remedy"},

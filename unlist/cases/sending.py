@@ -37,12 +37,14 @@ def mailbox_for(draft):
 
 
 def hands_over(draft) -> bool:
-    """True when the Subject sends this draft: import-only mailbox, or a web-form or letter Organization."""
+    """True when the Subject sends this draft: import-only mailbox, a web-form or letter Organization, or ID."""
     from unlist.cases.models import Draft
     from unlist.subjects.models import Mailbox
 
     if draft.channel != Draft.Channel.EMAIL:
         return True
+    if draft.kind == "id_copy_reply":
+        return True  # the Subject attaches their ID from their own device; Unlist never holds it
     mailbox = mailbox_for(draft)
     return mailbox is None or mailbox.mode != Mailbox.Mode.LIVE
 

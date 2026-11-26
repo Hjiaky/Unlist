@@ -1,0 +1,11 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% load static %}
+{% block title %}Letter of authority · {{ case.reference }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'cases/cases.css' %}">{% endblock %}
+{% block body %}
+<main class="cases-letter">
+  <p class="cases-noprint"><a href="{% url 'cases:detail' case.pk %}">Back to Case {{ case.reference }}</a>. Print this page (your browser's print command); {{ case.subject.name }} signs it. It is for {{ case.organization.name }} only, written on {{ event.occurred_on|date:"j F Y" }}.</p>
+  <pre class="cases-body">{{ event.details.letter }}</pre>
+</main>
+{% endblock %}

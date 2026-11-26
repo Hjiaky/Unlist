@@ -1,0 +1,14 @@
+Subject: Ausweisdokument zu meiner Anfrage [Ref {{ reference }}]
+
+Sehr geehrte Damen und Herren,
+
+vielen Dank für Ihre Antwort zu meiner Anfrage mit der Referenz {{ reference }}, die ich von {{ subject_email }} geschickt habe. Wie erbeten, füge ich die Kopie eines Ausweisdokuments bei, damit Sie meine Identität bestätigen können.
+
+Angaben, die zur Bestätigung meiner Identität nicht nötig sind, etwa die Ausweisnummer, habe ich geschwärzt (Europäischer Datenschutzausschuss, Leitlinien 01/2022 zu den Rechten der betroffenen Person – Auskunftsrecht, Version 2.1, Rn. 76 und 77).
+
+Bitte verwenden Sie die Kopie nur, um meine Identität für diese Anfrage zu bestätigen, und löschen Sie sie danach (Rn. 79 derselben Leitlinien).
+
+Bitte bearbeiten Sie meine Anfrage nun weiter und beantworten Sie sie unverzüglich, innerhalb der Monatsfrist (Art. 12 Abs. 3 DSGVO).
+
+Mit freundlichen Grüßen
+{{ subject_name }}

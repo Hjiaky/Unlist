@@ -76,6 +76,15 @@ Applies to English and German unless a row says otherwise. German citations foll
 | UK, quoted: "Only request formal identification documents if necessary. You can use verification measures that you already have in place (eg an existing username and password)" | §3 "UK" (ICO resp, "Can we ask for ID?") |
 | No EDPB citation in the UK text | Reading: the EDPB guidelines are EU guidance; the UK text uses the UK regulator's guidance |
 
+## `id_copy_reply`
+
+| Statement | Source |
+|---|---|
+| Details on an ID copy that are not needed may be blacked out by the person — EDPB 01/2022 paras. 76–77 (EU text only) | §3; Verification log row "Redaction" (paras. 76–77) |
+| Use the copy only to confirm identity and delete it afterwards — para. 79 (EU text only) | §3 (para. 79: refrain from copying or delete the copy after authentication) |
+| Unlist drafts the reply but never holds the document; the Subject attaches it | Spec section 7; Implications, "Identity" |
+| No EDPB citation in the UK text | As for `id_pushback` |
+
 ## `reconsider`
 
 | Statement | Source |
