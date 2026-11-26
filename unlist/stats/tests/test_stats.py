@@ -117,7 +117,7 @@ class FigureTests(FixtureMixin, TestCase):
 
     def test_a_listing_found_again_after_removal_counts_as_holding(self):
         case = figures.Case.objects.get(organization=self.broker)
-        services.prepare_recheck(case, on=days(120))
+        services.prepare_recheck(case, on=days(120), reason="new mail from the Broker since it removed the data")
         send(case, days(120))
         services.record_outcome(case, "listing_found", on=days(125))
         found = figures.compute(self.subject.pk)
