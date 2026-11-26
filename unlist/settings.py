@@ -43,6 +43,15 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "unlist.core",
+    "unlist.subjects",
+    "unlist.organizations",
+    "unlist.cases",
+    "unlist.mail",
+    "unlist.breaches",
+    "unlist.stats",
+    "unlist.llm",
+    "unlist.legal",
+    "unlist.backup",
 ]
 
 MIDDLEWARE = [
