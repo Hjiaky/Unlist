@@ -1,6 +1,6 @@
 {% extends "unlist/base.html" %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
-{% load static %}
+{% load static case_panels %}
 {% block title %}{{ case.reference }} · Unlist{% endblock %}
 {% block head %}<link rel="stylesheet" href="{% static 'cases/cases.css' %}">{% endblock %}
 {% block body %}
@@ -37,6 +37,8 @@
   </div>
   {% endif %}
 </section>
+
+{% recheck_panel case %}
 
 <section class="card">
   <h2>Drafts</h2>

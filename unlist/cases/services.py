@@ -116,6 +116,7 @@ def case_state(case) -> lifecycle.CaseState:
         recheck_after_nothing=after_nothing,
         recheck_after_removed=after_removed,
         result=case.result,
+        suppression_record=case.events.filter(suppression_confirmed=True).exists(),
     )
 
 
@@ -599,9 +600,32 @@ def fix_contact(case, *, on: date | None = None) -> Draft:
     return _draft_step(case, Action.FIX_CONTACT, on)
 
 
-def prepare_recheck(case, *, on: date | None = None) -> Draft:
-    """For a resting Case: draft the fresh Access Request of a re-check (the re-check ticket schedules it)."""
-    return _draft_step(case, Action.RECHECK_DUE, on, event_kind=CaseEvent.Kind.RECHECK_DUE)
+def prepare_recheck(case, *, on: date | None = None, reason: str = "") -> Draft:
+    """For a resting Case: draft the fresh Access Request of a re-check (``rechecks.py`` schedules it).
+
+    Never before ``recheck_on``, unless the Operator asks with a ``reason`` (an early re-check),
+    which is recorded in the event.
+    """
+    on = _today(on)
+    reason = " ".join((reason or "").split())
+    details = {}
+    if case.state == State.RESTING and (case.recheck_on is None or on < case.recheck_on):
+        if not reason:
+            due = f"on {deadlines.format_date(case.recheck_on)}" if case.recheck_on else "not planned"
+            raise CaseError(
+                f"Too early: the re-check is {due}. A fresh Access Request before then needs a reason "
+                '(use "Early re-check" on the Case page).'
+            )
+        details = {"early": True, "reason": reason}
+    with transaction.atomic():
+        require_consent(case.subject)
+        _result, event, draft = _step(
+            case, Action.RECHECK_DUE, on, event_kind=CaseEvent.Kind.RECHECK_DUE, details=details
+        )
+        if details:
+            event.details["text"] += f" Early re-check, asked by the Operator: {reason}"
+            event.save(update_fields=["details"])
+    return draft
 
 
 def draft_complaint(case, *, on: date | None = None) -> CaseEvent:
@@ -650,14 +674,18 @@ def mark_overdue_if_due(case, *, today: date | None = None) -> bool:
 def set_recheck_override(case, value: str) -> Case:
     """Days between re-checks for this Case, ``"close"``, or empty for the Organization's default.
 
-    Applies to the next outcome; a date already set for a resting Case stays.
+    For a resting Case the re-check date is worked out again from the day it came to rest
+    (``rechecks.reschedule``); with no re-check left, the Case closes.
     """
+    from unlist.cases import rechecks
     from unlist.cases.models import validate_recheck_override
 
     value = (value or "").strip().lower()
     validate_recheck_override(value)
-    case.recheck_override = value
-    case.save(update_fields=["recheck_override", "updated_at"])
+    with transaction.atomic():
+        case.recheck_override = value
+        case.save(update_fields=["recheck_override", "updated_at"])
+        rechecks.reschedule(case)
     return case
 
 

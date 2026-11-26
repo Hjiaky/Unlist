@@ -8,6 +8,6 @@ class CasesConfig(AppConfig):
     label = "cases"
 
     def ready(self):
-        from unlist.cases import hooks, jobs  # noqa: F401  (jobs registers itself with the scheduler)
+        from unlist.cases import hooks, jobs, rechecks  # noqa: F401  (jobs and rechecks register scheduler jobs)
 
         hooks.register()
