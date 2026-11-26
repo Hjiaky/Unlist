@@ -1,0 +1,14 @@
+Subject: The details you asked for [Ref {{ reference }}]
+
+Dear Sir or Madam,
+
+Thank you for your reply about my request with the reference {{ reference }}, which I sent from {{ subject_email }}. You asked for further details. Here they are:
+
+{% for item in details %}
+- {{ item }}
+{% endfor %}
+
+Please now continue with my request and answer it without undue delay, within the one-month period ({% if uk %}Articles 12(3) and 12A UK GDPR{% else %}Article 12(3) GDPR{% endif %}).
+
+Kind regards,
+{{ subject_name }}

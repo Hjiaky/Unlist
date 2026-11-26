@@ -1,0 +1,26 @@
+Subject: Identity check for my request [Ref {{ reference }}]
+
+Dear Sir or Madam,
+
+Thank you for your reply about my request with the reference {{ reference }}. You asked me for a copy of an identity document.
+
+I sent my request from {{ subject_email }}, the email address you already hold for me. Under Article 12(6) {{ gdpr }} you may ask for additional information only where you have reasonable doubts about the identity of the person making the request, and only the information necessary to confirm it.
+{% if uk %}
+
+The ICO's guidance on the right of access says: "Only request formal identification documents if necessary. You can use verification measures that you already have in place (eg an existing username and password)".
+{% else %}
+
+The European Data Protection Board states that "it is disproportionate to require a copy of an identity document in the event where the data subject making a request is already authenticated by the controller" (Guidelines 01/2022 on data subject rights - Right of access, version 2.1, paragraph 73). It explains that using a copy of an identity document creates a risk for the security of personal data and should be considered inappropriate unless it is necessary, suitable and in line with national law, and that such copies should generally not be considered an appropriate way of authentication (paragraphs 74 and 75).
+{% endif %}
+
+For these reasons I would rather not send a copy of an identity document. If you still have reasonable doubts about my identity, please tell me what they are. I am happy to confirm other details instead{% if offered_details %}, for example:
+{% for item in offered_details %}
+- {{ item }}
+{% endfor %}
+{% else %}, such as details of my account or of our earlier contact.
+{% endif %}
+
+Please continue with my request and answer it without undue delay, within the one-month period ({% if uk %}Articles 12(3) and 12A UK GDPR{% else %}Article 12(3) GDPR{% endif %}).
+
+Kind regards,
+{{ subject_name }}

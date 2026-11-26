@@ -1,0 +1,16 @@
+Subject: Your reply to my request for erasure [Ref {{ reference }}]
+
+Dear Sir or Madam,
+
+Thank you for your reply{% if refusal_date %} of {{ refusal_date }}{% endif %} to my request for erasure with the reference {{ reference }}, which I sent from {{ subject_email }}. You told me that you will not erase all of my personal data{% if cited_exception %}, and referred to: {{ cited_exception }}{% endif %}.
+
+Article 17(3) {{ gdpr }} allows you to keep personal data only to the extent that the processing is necessary for one of the purposes it lists. Please reconsider, and tell me:
+
+- the exact legal duty you rely on, naming the law and its article or section, or the exact exception in Article 17(3) {{ gdpr }}{% if uk %} or in Schedules 2 to 4 of the Data Protection Act 2018{% endif %};
+- which of my personal data it covers;
+- how long you will keep those data.
+
+Please erase all personal data that this does not cover, use the data you keep only for the purpose that requires them, and confirm to me by email what you have erased. I would be grateful for your answer within one month.
+
+Kind regards,
+{{ subject_name }}

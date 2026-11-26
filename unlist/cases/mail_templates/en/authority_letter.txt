@@ -1,0 +1,25 @@
+Subject: Letter of authority for {{ organization_name }} [Ref {{ reference }}]
+
+Letter of authority
+
+Date: {{ letter_date }}
+
+To: {{ organization_name }}
+
+{% if parent_name %}
+I, {{ parent_name }}, hold parental responsibility for {{ subject_name }}. On behalf of {{ subject_name }}, I authorise {{ operator_name }} to make and pursue requests to {{ organization_name }} about {{ subject_name }}'s personal data under the {{ gdpr }}{% if uk %} and the Data Protection Act 2018{% endif %}, in particular a request for access (Article 15 {{ gdpr }}) and a request for erasure (Article 17 {{ gdpr }}), and to deal with your answers to them.
+{% else %}
+I, {{ subject_name }}, authorise {{ operator_name }} to make and pursue requests to {{ organization_name }} about my personal data under the {{ gdpr }}{% if uk %} and the Data Protection Act 2018{% endif %}, in particular a request for access (Article 15 {{ gdpr }}) and a request for erasure (Article 17 {{ gdpr }}), and to deal with your answers to them.
+{% endif %}
+
+These requests are sent from the email address {{ subject_email }} and carry the reference {{ reference }}. Please send your answers to that address.
+
+This authority applies only to {{ organization_name }} and only to the requests with the reference {{ reference }}. It may not be used for any other organisation, and it can be withdrawn at any time.
+
+Signature: ______________________________
+
+{% if parent_name %}
+{{ parent_name }}, holding parental responsibility for {{ subject_name }}
+{% else %}
+{{ subject_name }}
+{% endif %}

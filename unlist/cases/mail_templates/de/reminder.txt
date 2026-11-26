@@ -1,0 +1,16 @@
+Subject: Erinnerung an meine Anfrage vom {{ original_date }} [Ref {{ reference }}]
+
+Sehr geehrte Damen und Herren,
+
+am {{ original_date }} habe ich Ihnen von meiner E-Mail-Adresse {{ subject_email }} {% if original_kind == "removal_request" %}einen Antrag auf Löschung meiner personenbezogenen Daten nach Art. 17 DSGVO{% else %}ein Auskunftsersuchen zu meinen personenbezogenen Daten nach Art. 15 DSGVO{% endif %} geschickt, mit der Referenz {{ reference }} im Betreff. Die Monatsfrist für Ihre Antwort ist am {{ deadline_date }} abgelaufen, und ich habe bisher keine Antwort erhalten.
+
+Vielleicht hat meine Anfrage nicht die richtige Stelle erreicht. Ich wäre Ihnen dankbar, wenn Sie sie innerhalb von 14 Tagen nach dieser Erinnerung beantworten könnten.{% if original_body %} Meine ursprüngliche Anfrage finden Sie unten.{% endif %}
+
+Mit freundlichen Grüßen
+{{ subject_name }}
+{% if original_body %}
+
+----- Meine Anfrage vom {{ original_date }} -----
+
+{{ original_body }}
+{% endif %}

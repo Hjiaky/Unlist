@@ -1,0 +1,16 @@
+Subject: Ihre Antwort auf meinen Löschantrag [Ref {{ reference }}]
+
+Sehr geehrte Damen und Herren,
+
+vielen Dank für Ihre Antwort{% if refusal_date %} vom {{ refusal_date }}{% endif %} auf meinen Löschantrag mit der Referenz {{ reference }}, den ich von {{ subject_email }} geschickt habe. Sie haben mir mitgeteilt, dass Sie nicht alle meine personenbezogenen Daten löschen werden{% if cited_exception %}, und sich dabei auf Folgendes berufen: {{ cited_exception }}{% endif %}.
+
+Nach Art. 17 Abs. 3 DSGVO dürfen Sie personenbezogene Daten nur aufbewahren, soweit die Verarbeitung für einen der dort genannten Zwecke erforderlich ist. Bitte prüfen Sie Ihre Entscheidung noch einmal und teilen Sie mir mit:
+
+- die genaue rechtliche Pflicht, auf die Sie sich stützen, mit Gesetz und Paragraf oder Artikel, oder die genaue Ausnahme nach Art. 17 Abs. 3 DSGVO;
+- welche meiner personenbezogenen Daten davon erfasst sind;
+- wie lange Sie diese Daten aufbewahren.
+
+Bitte löschen Sie alle personenbezogenen Daten, die davon nicht erfasst sind, verwenden Sie die aufbewahrten Daten nur für den Zweck, der ihre Aufbewahrung erfordert, und bestätigen Sie mir per E-Mail, was Sie gelöscht haben. Für eine Antwort innerhalb eines Monats wäre ich Ihnen dankbar.
+
+Mit freundlichen Grüßen
+{{ subject_name }}

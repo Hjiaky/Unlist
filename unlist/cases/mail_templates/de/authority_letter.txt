@@ -1,0 +1,25 @@
+Subject: Vollmacht gegenüber {{ organization_name }} [Ref {{ reference }}]
+
+Vollmacht
+
+Datum: {{ letter_date }}
+
+An: {{ organization_name }}
+
+{% if parent_name %}
+Ich, {{ parent_name }}, bin sorgeberechtigt für {{ subject_name }}. Im Namen von {{ subject_name }} bevollmächtige ich {{ operator_name }}, gegenüber {{ organization_name }} Anfragen zu den personenbezogenen Daten von {{ subject_name }} nach der Datenschutz-Grundverordnung (DSGVO) zu stellen und zu verfolgen, insbesondere ein Auskunftsersuchen (Art. 15 DSGVO) und einen Löschantrag (Art. 17 DSGVO), und Ihre Antworten darauf entgegenzunehmen.
+{% else %}
+Ich, {{ subject_name }}, bevollmächtige {{ operator_name }}, gegenüber {{ organization_name }} Anfragen zu meinen personenbezogenen Daten nach der Datenschutz-Grundverordnung (DSGVO) zu stellen und zu verfolgen, insbesondere ein Auskunftsersuchen (Art. 15 DSGVO) und einen Löschantrag (Art. 17 DSGVO), und Ihre Antworten darauf entgegenzunehmen.
+{% endif %}
+
+Diese Anfragen werden von der E-Mail-Adresse {{ subject_email }} geschickt und tragen die Referenz {{ reference }}. Bitte senden Sie Ihre Antworten an diese Adresse.
+
+Diese Vollmacht gilt nur gegenüber {{ organization_name }} und nur für die Anfragen mit der Referenz {{ reference }}. Sie darf für keine andere Stelle verwendet werden und kann jederzeit widerrufen werden.
+
+Unterschrift: ______________________________
+
+{% if parent_name %}
+{{ parent_name }}, sorgeberechtigt für {{ subject_name }}
+{% else %}
+{{ subject_name }}
+{% endif %}

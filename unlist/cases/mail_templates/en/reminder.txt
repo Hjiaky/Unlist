@@ -1,0 +1,16 @@
+Subject: Reminder: my request of {{ original_date }} [Ref {{ reference }}]
+
+Dear Sir or Madam,
+
+On {{ original_date }} I sent you {% if original_kind == "removal_request" %}a request for erasure of my personal data under Article 17 {{ gdpr }}{% else %}a request for access to my personal data under Article 15 {{ gdpr }}{% endif %}, with the reference {{ reference }} in its subject line, from my email address {{ subject_email }}. The one-month period for your answer ended on {{ deadline_date }}, and I have not yet received an answer.
+
+Perhaps my request did not reach the right person. I would be grateful if you could answer it within 14 days of this reminder.{% if original_body %} My original request is repeated below.{% endif %}
+
+Kind regards,
+{{ subject_name }}
+{% if original_body %}
+
+----- My request of {{ original_date }} -----
+
+{{ original_body }}
+{% endif %}

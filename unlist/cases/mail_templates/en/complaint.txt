@@ -1,0 +1,49 @@
+Subject: Complaint about {{ organization_name }} under {% if uk %}section 165 of the Data Protection Act 2018{% else %}Article 77 GDPR{% endif %} [Ref {{ reference }}]
+
+Dear Sir or Madam,
+
+I am lodging a complaint with {{ supervisory_authority_name }} about {{ organization_name }}, under {% if uk %}section 165 of the Data Protection Act 2018{% else %}Article 77 of the General Data Protection Regulation (GDPR){% endif %}. I am the person concerned and make this complaint myself.
+
+1. My details
+
+Name: {{ subject_name }}
+Email: {{ subject_email }}
+{% for item in subject_contact_details %}
+{{ item }}
+{% endfor %}
+
+2. The organisation
+
+Name: {{ organization_name }}
+{% for item in organization_contacts %}
+{{ item }}
+{% endfor %}
+
+3. What happened
+
+{% for item in timeline %}
+- {{ item }}
+{% endfor %}
+
+4. The infringement
+
+{{ infringement }}
+
+5. What I ask you to do
+
+{{ remedy }}
+
+6. Contact with the organisation before this complaint
+
+{{ prior_contact }}
+
+7. Attachments
+
+{% for item in attachments %}
+- {{ item }}
+{% endfor %}
+
+If you need anything else from me, please write to {{ subject_email }}.
+
+Kind regards,
+{{ subject_name }}

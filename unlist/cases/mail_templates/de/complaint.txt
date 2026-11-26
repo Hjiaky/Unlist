@@ -1,0 +1,49 @@
+Subject: Beschwerde über {{ organization_name }} nach Art. 77 DSGVO [Ref {{ reference }}]
+
+Sehr geehrte Damen und Herren,
+
+hiermit reiche ich bei {{ supervisory_authority_name }} eine Beschwerde über {{ organization_name }} nach Art. 77 der Datenschutz-Grundverordnung (DSGVO) ein. Ich bin die betroffene Person und reiche die Beschwerde selbst ein.
+
+1. Meine Angaben
+
+Name: {{ subject_name }}
+E-Mail: {{ subject_email }}
+{% for item in subject_contact_details %}
+{{ item }}
+{% endfor %}
+
+2. Der Verantwortliche
+
+Name: {{ organization_name }}
+{% for item in organization_contacts %}
+{{ item }}
+{% endfor %}
+
+3. Ablauf
+
+{% for item in timeline %}
+- {{ item }}
+{% endfor %}
+
+4. Der Verstoß
+
+{{ infringement }}
+
+5. Worum ich Sie bitte
+
+{{ remedy }}
+
+6. Kontakt mit dem Verantwortlichen vor dieser Beschwerde
+
+{{ prior_contact }}
+
+7. Anlagen
+
+{% for item in attachments %}
+- {{ item }}
+{% endfor %}
+
+Falls Sie weitere Angaben von mir benötigen, schreiben Sie mir bitte an {{ subject_email }}.
+
+Mit freundlichen Grüßen
+{{ subject_name }}
