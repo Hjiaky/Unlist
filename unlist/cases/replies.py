@@ -758,12 +758,16 @@ def _link_attachments(reply: Reply, event: CaseEvent) -> None:
         reply.raw_attachment.event = event
 
 
-def _decide(reply: Reply) -> None:
-    """What happens to a reply once it has a Case (or right away, for the unmatched queue)."""
+def _decide(reply: Reply, suggestion: Suggestion | None = None) -> None:
+    """What happens to a reply once it has a Case (or right away, for the unmatched queue).
+
+    ``suggestion`` is computed by the caller before the database transaction opens, because a
+    suggester (the optional LLM) can take seconds and must not hold SQLite's write lock meanwhile.
+    """
     case = reply.case
     if case is None:
         if reply.kind == Reply.Kind.REPLY:
-            _apply_suggestion(reply, suggest(reply))
+            _apply_suggestion(reply, suggestion if suggestion is not None else suggest(reply))
         elif reply.kind == Reply.Kind.BOUNCE:
             _apply_suggestion(reply, Suggestion("bounce", "rules", "Delivery status notification"))
         return
@@ -784,7 +788,7 @@ def _decide(reply: Reply) -> None:
         )
         _finish(reply, event, Reply.Status.AUTO_RECORDED)
     else:
-        _apply_suggestion(reply, suggest(reply))
+        _apply_suggestion(reply, suggestion if suggestion is not None else suggest(reply))
 
 
 def _finish(reply: Reply, event: CaseEvent, status: str) -> None:
@@ -831,30 +835,33 @@ def ingest(subject, message, *, source: str, raw: bytes | None = None, case=None
     else:
         kind = Reply.Kind.REPLY
     written: list[str] = []
+    reply = Reply(
+        subject=subject,
+        case=case,
+        kind=kind,
+        source=source,
+        message_id=parsed.message_id,
+        dedup_key=key,
+        from_address=parsed.from_address[:320],
+        from_name=parsed.from_name,
+        sender_domain=parsed.sender_domain or "",
+        authenticated=parsed.authenticated,
+        received_at=parsed.date or timezone.now(),
+        subject_line=parsed.subject_line,
+        body=body_text(message),
+        matched_by=matched_by,
+    )
+    # Suggest outside the transaction: an LLM suggester may take a while (see _decide).
+    suggestion = suggest(reply) if kind == Reply.Kind.REPLY else None
     try:
         with transaction.atomic():
-            reply = Reply.objects.create(
-                subject=subject,
-                case=case,
-                kind=kind,
-                source=source,
-                message_id=parsed.message_id,
-                dedup_key=key,
-                from_address=parsed.from_address[:320],
-                from_name=parsed.from_name,
-                sender_domain=parsed.sender_domain or "",
-                authenticated=parsed.authenticated,
-                received_at=parsed.date or timezone.now(),
-                subject_line=parsed.subject_line,
-                body=body_text(message),
-                matched_by=matched_by,
-            )
+            reply.save()
             if case is not None:
                 _store_case_files(reply, raw, message, written)
             else:
                 reply.raw_path, reply.raw_sha256 = storage.store_unmatched(subject.pk, f"reply-{reply.pk}.eml", raw)
                 written.append(reply.raw_path)
-            _decide(reply)
+            _decide(reply, suggestion)
             reply.save()
     except IntegrityError:
         _cleanup(written)
@@ -939,6 +946,8 @@ def assign(reply: Reply, case: Case) -> Reply:
     message = parse_bytes(raw)
     written: list[str] = []
     old_path = reply.raw_path
+    # Suggest outside the transaction: an LLM suggester may take a while (see _decide).
+    suggestion = suggest(reply) if reply.kind == Reply.Kind.REPLY else None
     try:
         with transaction.atomic():
             reply.case, reply.matched_by = case, Reply.MatchedBy.OPERATOR
@@ -948,7 +957,7 @@ def assign(reply: Reply, case: Case) -> Reply:
             reply.raw_path = reply.raw_sha256 = ""
             reply.save()
             _store_case_files(reply, raw, message, written)
-            _decide(reply)
+            _decide(reply, suggestion)
             reply.save()
     except Exception:
         _cleanup(written)
