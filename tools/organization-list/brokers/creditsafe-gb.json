@@ -1,0 +1,24 @@
+{
+  "slug": "creditsafe-gb",
+  "name": "Creditsafe Business Solutions Limited",
+  "relevant-countries": [
+    "gb"
+  ],
+  "categories": [
+    "credit agency"
+  ],
+  "email": "dpocsgroup@creditsafeuk.com",
+  "domains": [
+    "creditsafeuk.com"
+  ],
+  "suggested-transport-medium": "email",
+  "sources": [
+    "https://ico.org.uk/ESDWebPages/Entry/Z8580278"
+  ],
+  "quality": "verified",
+  "broker": true,
+  "last-checked": "2026-11-26",
+  "notes": [
+    "Business credit data, including sole traders (Cardiff)."
+  ]
+}

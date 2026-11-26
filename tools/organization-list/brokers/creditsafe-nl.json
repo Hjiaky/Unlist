@@ -1,0 +1,22 @@
+{
+  "slug": "creditsafe-nl",
+  "name": "Creditsafe Nederland B.V.",
+  "runs": [
+    "GraydonCreditsafe"
+  ],
+  "relevant-countries": [
+    "nl"
+  ],
+  "categories": [
+    "credit agency"
+  ],
+  "sources": [
+    "https://www.creditsafe.com/be/nl/legal/uw-onderneming-uw-privacy.html",
+    "https://www.creditsafe.com/content/dam/nl/legal/creditsafe-notificatiebrief-nl.pdf"
+  ],
+  "quality": "scraped",
+  "broker": true,
+  "notes": [
+    "Contact to be confirmed: the privacy address seen in a search excerpt is unconfirmed. Check https://www.creditsafe.com/be/nl/legal/uw-onderneming-uw-privacy.html before the first request."
+  ]
+}

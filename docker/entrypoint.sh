@@ -18,6 +18,7 @@ fi
 
 python -m unlist.bootstrap
 python manage.py migrate --noinput
+python manage.py load_bundled_lists   # bundled Organization Lists; local files only
 
 if [ "$#" -gt 0 ]; then
   exec "$@"   # e.g. `docker compose run --rm unlist python manage.py changepassword`

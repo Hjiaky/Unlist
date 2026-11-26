@@ -1,0 +1,23 @@
+{
+  "slug": "locatefamily",
+  "name": "Locatefamily.com",
+  "relevant-countries": [
+    "all"
+  ],
+  "categories": [
+    "addresses"
+  ],
+  "web": "https://www.locatefamily.com/",
+  "domains": [
+    "locatefamily.com"
+  ],
+  "sources": [
+    "https://www.edpb.europa.eu/node/2676_en"
+  ],
+  "quality": "scraped",
+  "broker": true,
+  "notes": [
+    "People search (addresses, phone numbers). Operator outside the EU; the Dutch DPA fined it in 2021 for having no EU representative. Legal entity unconfirmed; may be inactive.",
+    "Contact to be confirmed: none found."
+  ]
+}

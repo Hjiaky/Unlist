@@ -1,0 +1,25 @@
+{
+  "slug": "192-com",
+  "name": "192.Com Ltd",
+  "relevant-countries": [
+    "gb"
+  ],
+  "categories": [
+    "addresses"
+  ],
+  "address": "192.com Customer Services\n36 Southwark Bridge Rd\nLondon SE1 9EU\nUnited Kingdom",
+  "web": "https://www.192.com/",
+  "domains": [
+    "192.com"
+  ],
+  "suggested-transport-medium": "letter",
+  "sources": [
+    "https://ico.org.uk/ESDWebPages/Entry/ZB013711",
+    "https://www.192.com/info/privacy-policy/"
+  ],
+  "quality": "scraped",
+  "broker": true,
+  "notes": [
+    "Contact to be confirmed: the postal address comes from a search excerpt of the privacy policy, and the ICO register shows an address in Lewes. Check https://www.192.com/info/privacy-policy/ before the first request."
+  ]
+}
