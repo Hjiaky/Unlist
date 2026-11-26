@@ -55,7 +55,7 @@ Paragraph numbers for EDPB 01/2022 refer to the adopted v2.1 and were checked ag
 - **The Organization's own form or portal is optional.** The controller "should provide appropriate and user-friendly communication channels", but "the data subject is not required to use these specific channels and may instead send the request to an official contact point of the controller" — EDPB 01/2022, Executive Summary (not paras. 53–56). Para. 53: a request sent through any communication channel provided by the controller, even one other than the preferred one, "shall be, in general, considered effective". A self-service tool may be encouraged but "the controller must also handle access requests that are not sent through the established channel of communication" — EDPB 01/2022 paras. 137–138.
 - **The address matters (EU).** "The controller is not obliged to act on requests that are sent to completely random, or apparently incorrect, addresses" — EDPB 01/2022, Executive Summary. Para. 54 states the condition: no obligation for a request sent to "a random or incorrect e-mail (or postal) address, not directly provided by the controller", or to a channel clearly not meant for rights requests, "if the controller has provided an appropriate communication channel". Para. 55: the same for an employee not involved in handling requests (e.g. drivers, cleaning staff), but not for a regular contact person such as an account manager. Para. 56, Example 8: a request to a published general address must be redirected, and the controller may not extend the period because of it. The clock starts when the request "reaches the controller through one of its official channels" — para. 159.
 - **UK: no form, and any part of the Organization.** "There are no formal requirements for a valid request. A person can make a SAR verbally or in writing, including by social media. They can make it to any part of your organisation, and they do not have to direct it to a specific person or contact point." It need not say "subject access request" or cite Article 15; a standard form may be offered but "you should make it clear that using the form or online system is not compulsory" — ICO access, "How do we recognise a subject access request (SAR)?" https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/individual-rights/right-of-access/how-do-we-recognise-a-subject-access-request-sar/
-- **Erasure has no form requirement either.** UK: "an individual can make a request for erasure verbally or in writing. It can also be made to any part of your organisation" — ICO erasure. EU: Art. 12(2) GDPR obliges the controller to "facilitate the exercise of data subject rights under Articles 15 to 22" and Art. 17 prescribes no form. Whether any general EDPB guideline addresses the form of Art. 17 requests was not checked (unverified against source); the CEF 2025 report cites EDPB 01/2022 paras. 52–56 for erasure channels.
+- **Erasure has no form requirement either.** UK: "an individual can make a request for erasure verbally or in writing. It can also be made to any part of your organisation" — ICO erasure. EU: Art. 12(2) GDPR obliges the controller to "facilitate the exercise of data subject rights under Articles 15 to 22" and Art. 17 prescribes no form. The EDPB has no general guideline on Art. 17: its CEF 2025 report (footnote 14) points instead to Guidelines 5/2019 on search engines, whose guidance on Art. 17(1) and (3) "could still be relevant to a certain extent" to other controllers, and to EDPB 01/2022 for Art. 12; for erasure request channels it cites EDPB 01/2022 paras. 52–56.
 - **Electronic requests get electronic answers.** Recital 59 GDPR: "The controller should also provide means for requests to be made electronically". Art. 12(3) GDPR: "Where the data subject makes the request by electronic form means, the information shall be provided by electronic means where possible, unless otherwise requested by the data subject." The same sentence remains in UK GDPR Art. 12(3).
 - **Free of charge.** Art. 12(5) GDPR; a first copy is free even if no reason is given — CJEU C-307/22 *FT v DW* (26 Oct 2023) https://eur-lex.europa.eu/legal-content/en/ALL/?uri=CELEX%3A62022CJ0307
 
@@ -199,7 +199,6 @@ After the 2026-11-26 verification pass, these remain open (details in the Verifi
 
 - The current member-state list of Art. 8 consent ages, and the late-2025 Commission count (the Commission sources are on `commission.europa.eu`, not an allowed host).
 - National rules on who may represent an adult before a Supervisory Authority, and which EU authorities require prior contact with the Organization.
-- Whether any general EDPB guideline covers the form of Art. 17 requests.
 - Council documents on the Digital Omnibus to 31 July 2026 (Council site not an allowed host); EUR-Lex shows no adoption.
 - The gov.uk statement that the Information Commission is "a body corporate with a board" (gov.uk not an allowed host).
 
@@ -238,17 +237,86 @@ After the 2026-11-26 verification pass, these remain open (details in the Verifi
 
 **Repeat requests**
 
-- Do not hard-code a re-request interval as "legally safe"; none exists. Make the interval configurable per Organization, longer by default for Organizations whose data rarely changes, shorter for Brokers.
-- Never send requests whose evident aim is something other than exercising the right (for example to generate compensation claims); that is the fact pattern in which a first request can lawfully be refused.
+- Do not describe any re-request interval as "legally safe"; no rule fixes one. Make the interval configurable per Organization. Defaults can lean on the EDPB's own examples: a year or more between free answers is, in its words, "in any case" too long to be excessive (credit-agency example), and every three months is "in principle" not excessive for a platform whose data changes constantly (social-media example). So: 12 months as the conservative default for Organizations whose data rarely changes; down to 3 months for Brokers and other fast-changing data sets. Allow an earlier repeat when the previous answer was incomplete (that is a reminder, not a new request) or when the Subject has reason to think the data changed.
+- Never send requests whose evident aim is something other than exercising the right (for example to set up compensation claims); that is the fact pattern in which a first request can lawfully be refused. The CJEU allows a pattern of many access requests followed by compensation claims against various controllers to count as evidence of abusive intention, so Unlist should not pair its requests with compensation demands.
 
 **Complaints**
 
 - Unlist drafts; the Subject lodges. Do not submit Complaints under the Operator's name.
-- EU: target the Subject's own Supervisory Authority (residence), and note the Organization's country so a lead authority can be identified; for Organizations with no EEA establishment there is no lead authority.
-- UK: put a stage before the Complaint, because the regulator expects it — a complaint to the Organization under DPA 2018 s.164A, a 30-day wait, then the regulator within three months of last contact.
-- A Complaint draft needs: Subject's name and contact details, the Organization's identity and contacts, a chronological account, the infringement alleged (which request, which deadline missed), the remedy sought, whether the Organization was contacted first, and the attached correspondence with dates.
+- EU: target the Subject's own Supervisory Authority (residence), and note the Organization's country so a lead authority can be identified; for Organizations with no EEA establishment there is no lead authority. Only offer a Complaint about a request after that request was actually sent: from 2 April 2027 Reg. 2025/2518 Art. 4(3) makes this a condition for cross-border complaints, and the same order is sensible everywhere.
+- UK: by default put a stage before the Complaint, because the regulator recommends it and its form asks for a copy — a complaint to the Organization under DPA 2018 s.164A, then (after the Organization's response, or after a reasonable time without one) the regulator, suggested within three months of the Organization's response. This is a recommendation, not a legal precondition: let the Subject skip it. The 30 days in s.164A is the Organization's deadline to *acknowledge*, not a waiting period set by law; using it as the default wait before escalating is a design choice.
+- A Complaint draft needs: Subject's name and contact details, the Organization's identity and contacts, a chronological account, the infringement alleged (which request, which deadline missed), the remedy sought, whether the Organization was contacted first (with the exchanges, or why not), the attached correspondence including a copy of the sent request showing date and sender/recipient addresses, and, if someone other than the Subject files it, proof of authority.
 - Avoid flooding one Supervisory Authority with many Complaints at once; batch or prioritise.
 
 **Maintenance**
 
-- Treat this file as dated. Re-check before release: Digital Omnibus changes to Art. 12(5); Reg. 2025/2518 applying from 2 April 2027; the UK regulator's forthcoming AI-request guidance; the UK regulator's name in `GLOSSARY.md`.
+- Treat this file as dated. Re-check before release: Digital Omnibus changes to Art. 12(5); Reg. 2025/2518 applying from 2 April 2027; the UK regulator's AI-assisted SAR guidance (brief guidance published 11 November 2026) for updates; the UK regulator's name in `GLOSSARY.md` (now the Information Commission).
+
+## Verification log
+
+Pass of 2026-11-26. All sources below were downloaded in full and read in context; no host refused. Shorthand: GDPR = https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng; EDPB 01/2022, CEF 2024, CEF 2025, Reg. 2025/2518, Reg. 1182/71 = URLs in "Sources used"; ICO recog / ICO resp / ICO MUE = the three ICO right-of-access pages linked in sections 1.1, 2 and 5.
+
+### Claims changed
+
+| Section | What it said | What it says now | Source |
+|---|---|---|---|
+| Answer 1, 1.1 | Channel and "completely random" quotes from EDPB 01/2022 paras. 53–56; request must reach an official contact point (EU and UK alike) | Quotes are from the Executive Summary; paras. 53–56 give the conditions (any channel the controller provides counts; random/incorrect addresses and uninvolved staff only if an appropriate channel was provided). UK: any part of the Organization | EDPB 01/2022 Exec. Summary, paras. 53–56; ICO recog |
+| 1.1 | Self-service tools: paras. 134, 137–138 | Paras. 137–138 only | EDPB 01/2022 |
+| 1.1 | CEF 2024 lists "formal requirements" as a barrier | Exact quotes: no formal requirements; barrier = requiring a specific mechanism (web form) | CEF 2024 |
+| 1.2 | Para. 35: request "should be understood as referring to all personal data" | "shall be understood in general terms, encompassing all personal data"; "shall not aim at a limitation of the reply" is in the following text, not para. 35 itself | EDPB 01/2022 |
+| 1.2 | UK Art. 15(1) list same as EU | UK adds (ea) right to complain to the controller (from 19 June 2026) | DUAA Sch. 10 para. 5, https://www.legislation.gov.uk/ukpga/2025/18/schedule/10 |
+| 1.3 | 17(1)(f): data "collected from a child" | Quoted text: "collected in relation to the offer of information society services referred to in Article 8(1)" | GDPR Art. 17(1) |
+| Answer 3, 1.4 | 17(3)(b) is "the most-used exception"; 17(3)(e) "appears to be next" | The CEF 2025 report has no ranking; it reports refusals "overall justified", automatic use of exceptions, problems with 17(3)(a), (b) and unbalanced "legitimate interest" refusals | CEF 2025; EDPB press release 18 Feb 2026 |
+| Answer 3, 1.5, Implications | Art. 21(1): controller must stop unless compelling grounds | Adds that the objection is made "on grounds relating to his or her particular situation" — the template must carry such grounds | GDPR Art. 21(1) |
+| 1.5 | *Proximus*: controller "must communicate" withdrawal to others relying on the same consent | An SA *may require* the controller to take measures to inform them; Art. 19 and 17(2) quoted separately | C-129/21; GDPR Arts. 17(2), 19 |
+| Answer 5, 2, Implications | EU pause only for identity; clarification pause UK only | EDPB para. 159 also suspends the clock when the controller asks to specify a broad request (Recital 63 conditions) | EDPB 01/2022 para. 159 |
+| 2 | "should react as soon as possible" | Correct quote and para. 158 | EDPB 01/2022 para. 158 |
+| 2 | ICO pages disagree on when a stopped clock resumes; unresolved | Resolved: statute excludes both the asking day and receiving day; current ICO page gives 18 June in the worked example | UK GDPR Art. 12A(5) via DUAA s.76; ICO resp |
+| 2, 7 | Not checked whether DUAA changed UK Art. 12(6) | It did: controller may "delay dealing with the request until the identity is confirmed" | DUAA s.76(2)(c) |
+| 3 | Reasonable doubt: para. 66; method wording: para. 70 | Paras. 63 and 70; method wording para. 71 | EDPB 01/2022 |
+| 3 | Redaction and "ID checked" note: paras. 78–79, only where ID is legitimately required | Redaction paras. 76–77 (generally available); justified ID para. 78; no copy / note para. 79 | EDPB 01/2022 |
+| 3 | UK: "questions only the person could answer" as an alternative | Not on the page; replaced with quoted wording (existing username and password; other account details) | ICO resp |
+| 4 | Para. 90: controller "is not obliged" to use the portal (wording unconfirmed) | Exact quote: "There is, however, no obligation for the controller to provide the data ... directly to the portal" | EDPB 01/2022 para. 90 |
+| Answer 7, 4, Implications | Representative carries the burden of proving authority (both regimes implied) | EU: GDPR does not regulate representation; national law; controller "shall be able to demonstrate" authorisation (para. 81). UK: third party responsible for evidence | EDPB 01/2022 para. 81; ICO recog |
+| 4 | UK: Organization "should send the answer directly to the person where it can" | In most cases respond to the authorised third party; send directly to the person only on concerns or refusal to use a portal, if the person agrees | ICO recog |
+| 4 | Representative/bulk-request statements cited to "How do we recognise a SAR?" | They are on "What should we consider when responding to a request?" | ICO resp |
+| 4 | AI note: "Fuller guidance is planned for winter 2026" | Removed (not on page); dated as brief guidance of 11 Nov 2026 | ICO AI guidance URL in section 4 |
+| 4 | UK: parental responsibility evidenced by birth or adoption certificate | Removed (not on current page) | ICO recog |
+| 4 | UK age 13 in DPA 2018 s.9 | DPA s.9 omitted 31 Dec 2020; 13 is in UK GDPR Art. 8(1) | https://www.legislation.gov.uk/ukpga/2018/12/section/9; https://www.legislation.gov.uk/eur/2016/679/article/8 |
+| Answer 8, 5, Implications | Draft's "three months" and "one year" statements not in adopted v2.1 | Both are in v2.1, inside Examples 40 and 41 of para. 185 | EDPB 01/2022 |
+| 5 | Free copy even if nothing changed: "same section"; fee: no para. | Para. 28 (Example 2) and para. 192 | EDPB 01/2022 |
+| Answer 8, 5 | C-526/24: abusive intent "for example, a request made in order to claim compensation" | Ruling's words: abusive intention "such as that of artificially creating the conditions ... for obtaining an advantage"; a pattern of requests followed by compensation claims may be taken into account | C-526/24 operative part |
+| 5 | ICO: "should not be presumed ... simply because ... before"; AI point cited to MUE page | Exact quote "Do not assume ..."; AI point is in the AI guidance | ICO MUE; ICO AI guidance |
+| 5, Answer 12 | Omnibus: not adopted "as far as could be confirmed" | EUR-Lex procedure page shows only proposal and advisory opinions; Joint Opinion paras. 53–57 summarised | https://eur-lex.europa.eu/procedure/EN/2025_360; Joint Opinion 2/2026 |
+| 6 | Art. 80: other representation "depends on national procedural law" | GDPR silent; EDPB form provides for legal representatives with proof; national rules unchecked | GDPR Art. 80; EDPB complaint form |
+| 6 | Leaflet says complaint authority is the individual's contact | Grounded in Arts. 56(6), 60(7)–(8); leaflet only illustrates it | GDPR; EDPB leaflet |
+| 6 | Complaint form quote "proof of when the entity received a request, such as the date stamps on an email"; old URL | Exact wording quoted; URL updated (old one 404) | EDPB complaint form |
+| Answer 12, 6, Implications | Reg. 2025/2518 admissibility rule in "Art. 3 or 4"; no prior contact needed | Art. 4; full list; national modalities still apply; a rights request must have been made to the controller before a complaint about it | Reg. 2025/2518 Art. 4 |
+| 6 | Arts. 77/79 in parallel (unverified) | Grounded in the "without prejudice" wording; labelled a reading | GDPR Arts. 77, 79 |
+| Answer 10, 6, Implications | UK: statutory "complain-to-the-Organization-first step"; regulator recommends waiting 30 days and complaining within three months of last contact | s.164A is a right, not a precondition; regulator: "complain to us at any time" but recommends the Organization first; form asks for a copy; "within three months of receiving the organisation's response", later still considered. "30 days follow-up" and "last (meaningful) contact" not found; what-to-expect URL now shows a different page | DPA 2018 ss.164A, 165; https://ico.org.uk/for-the-public/how-to-make-a-data-protection-complaint/; https://ico.org.uk/make-a-complaint/data-protection-complaints/ |
+| 6 | s.164A: "within the period of 30 days" | "within the period of 30 days beginning when the complaint is received"; regulator counts from the day after; duties apply to complaints received from 19 June 2026 | DPA 2018 s.164A; SI 2026/82 reg. 7 |
+| 6 | UK complaints free (unverified) | Free under UK GDPR Art. 57(3), subject to DPA 2018 s.135 (fee/refusal for manifestly unfounded or excessive) | https://www.legislation.gov.uk/eur/2016/679/article/57; https://www.legislation.gov.uk/ukpga/2018/12/section/135 |
+| Answer 11, 7 | s.76 commenced "in 2026", most likely 5 Feb 2026, not confirmed | 5 February 2026 (SI 2026/82 reg. 2(h)), saving for earlier requests (reg. 4) | SI 2026/82; SI 2026/1015 table |
+| Answer 11, 7 | Regulator renamed; "body corporate with a board"; publishes at ico.org.uk | Abolition and transfer confirmed on legislation.gov.uk; ico.org.uk pages still say "ICO"; "body corporate with a board" unverified (gov.uk not allowed) | SI 2026/1015; DPA 2018 s.165 |
+| Sources | EDPB 01/2022 "v2.1, adopted 28 March 2023" | v2.0 adopted 28 March 2023; v2.1 minor corrections 30 May 2024 | EDPB 01/2022 version history |
+
+### Confirmed without change (marks removed where present)
+
+- GDPR: Arts. 7(3) (incl. lawfulness of earlier processing), 8(1), 11(2), 12(2) second sentence, 12(3) (one month; extension notice within one month; electronic reply), 12(4), 12(5), 12(6), 15(1)(a)–(h), 15(2), 15(3), 17(1)(a)–(e), 17(2), 17(3), 19, 21(2)–(3), 56, 60, 77, 78(2), 79, 80(1); Recitals 59, 63, 64 (both sentences).
+- Reg. 1182/71 Art. 3(2)(c), 3(3), 3(4).
+- EDPB 01/2022 paras. 13, 28, 35 (number), 52, 61, 67, 68, 73, 74, 75, 80, 84–89, 157–162 (numbers 160–162 confirmed), 183–186, 192.
+- EDPB CEF 2024: indiscriminate ID requests may be excessive; obligation to demonstrate need for ID.
+- EDPB CEF 2025: 32 authorities, 764 controllers, refusals overall justified, seven recurring issues incl. anonymisation, retention, backups; no general EDPB Art. 17 guideline (fn. 14).
+- EDPB 8/2022: no one-stop-shop for controllers without an EEA establishment.
+- CJEU: C-307/22 (26 Oct 2023), C-154/21 (12 Jan 2023), C-487/21 (4 May 2023), C-416/23 (9 Jan 2025, Art. 57(4)), C-526/24 (19 March 2026), C-129/21 (27 Oct 2022).
+- DUAA s.76 (Art. 12A text), s.78 (Art. 15(1A); treated as in force from 1 January 2024; in force at Royal Assent), s.103; SI 2026/82 regs. 2–4, 7; SI 2026/1015 regs. 2–3.
+- DPA 2018 s.15 (Schedules 2–4), s.165, s.208(3); UK GDPR Art. 12(5) wording unchanged; UK GDPR Art. 56 and Chapter VII omitted (no UK one-stop-shop).
+- ICO pages: no formal requirements and form not compulsory; written authority / power of attorney; portals (fee or sign-up = not received; T&Cs unlikely to be authority); adults lacking capacity; children (Scotland 12+; amended 7 April 2026); ID ("Only request formal identification documents if necessary"; no need to keep ID copies); counting (same date, last day of month, next working day); clarification must be justified (DUAA summary); erasure (verbal or written; contact each recipient); object (absolute right; do not delete from suppression list; page dated 2 Nov 2026); MUE (high threshold; reasonable interval; mishandled earlier request); AI guidance (treated like any other; contact person directly on suspected AI authority letter; may ask people to review).
+
+### Still unverified, and why
+
+- Member-state list of Art. 8 consent ages (2020 study) and the late-2025 Commission count: sources are on `commission.europa.eu`, not an allowed host.
+- National rules on representation before a Supervisory Authority, and which EU authorities require prior contact with the Organization: national law, not on the allowed hosts.
+- Council documents on the Digital Omnibus to 31 July 2026: Council register not an allowed host. EUR-Lex shows no adoption as of 2026-11-26.
+- "The Information Commission is a body corporate with a board": gov.uk not an allowed host (the abolition and transfer themselves are confirmed on legislation.gov.uk).
+- The ICO "17 June" worked-example version: not located on the current pages, so cannot be cited; the statute and current page both give 18 June.
