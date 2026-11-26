@@ -4,7 +4,7 @@ Research for issue #2. Checked on **2026-11-26**.
 
 ## Answer
 
-- **One existing dataset can seed Unlist's official default Organization List: `datenanfragen/data`** (the database behind datarequests.org). It holds 3,069 active records as one JSON file each, with a JSON Schema, and it is **CC0 1.0**, so an AGPL-3.0 project may bundle it, transform it and republish a derived list on any terms.
+- **One existing dataset can seed Unlist's official default Organization List: `datenanfragen/data`** (the database behind datarequests.org). It holds 3,069 active records as one JSON file each, with a JSON Schema, and it is **CC0 1.0** (stated in the repository `LICENSE`, on every record page of the live site and on its Open source page), so an AGPL-3.0 project may bundle it, transform it and republish a derived list on any terms. The live site also serves each record as JSON at `https://www.datarequests.org/db/{slug}.json`.
 - **Its fields match what Unlist needs.** Every record has a postal address, 2,958 have a privacy email and 216 a web form. Records also carry quirks (identification fields the Organization demands, whether an ID document is needed, preferred transport, free-text notes), a request language, and pointers to request templates in 12 languages. The repo also holds 57 Supervisory Authority records.
 - **It is alive but Germany-heavy.** 136 commits landed in the last 12 months. 1,904 records are scoped to Germany, 878 to "all" countries and only 113 to the UK.
 - **No list covers EU/UK Brokers well.** No EU or UK Broker registry was found. The Broker lists that exist are US-centric, and the biggest ones (Big Ass Data Broker Opt-Out List, Optery, Privacy Rights Clearinghouse) are **CC BY-NC-SA 4.0**, which cannot go into an AGPL project's official list. datenanfragen marks Broker-like records only through categories (`addresses` 68, `credit agency` 30, `ads` 350).
@@ -13,7 +13,7 @@ Research for issue #2. Checked on **2026-11-26**.
 - **Recommendation:** seed the official list from `datenanfragen/data`, publish Unlist's own list as CC0 so fixes can flow back upstream, and add an Unlist-maintained CC0 overlay for EU/UK Brokers. Treat NC-licensed lists as optional third-party subscriptions at most.
 - **Remaining gaps:** a Broker flag, EU/UK Broker coverage, UK and non-German depth, domain keys for matching, per-record "last verified" dates, and personal data inside records.
 
-**Confidence warning.** The research environment could only reach GitHub. Every other site (datarequests.org, yourdigitalrights.org, cppa.ca.gov, privacyrights.org, ico.org.uk, data.gouv.fr, incogni.com and so on) was blocked by its network policy. Claims about those sites come from web-search excerpts, not from reading the pages. See [Verification](#verification) and [Could not verify](#could-not-verify).
+**Confidence note (updated 2026-11-26 after a verification pass).** The first pass could only reach GitHub. In the second pass these hosts were read: www.datarequests.org, privacyrights.org (including its xlsx download), ico.org.uk (including the dataset zip), www.cnil.fr and www.creativecommons.org, so sections 1, 7 and 13 and the CNIL part of 14 are now primary-source. **yourdigitalrights.org** answered every request with a Cloudflare "Attention Required" challenge (HTTP 403, twice, a few minutes apart), so section 2's live-site claims stay unread. `data.gouv.fr` (the CNIL dataset's actual home), cppa.ca.gov, the other state registries, incogni.com and joindeleteme.com are not reachable, so sections 8, 11 and the licence and column details of 14 stay `[search]` or `[memory]`. `www.gnu.org` could not be read, so MIT and Apache-2.0 compatibility statements stay `[memory]`. See [Verification](#verification), [Could not verify](#could-not-verify) and the [Verification log](#verification-log).
 
 ## Verification
 
@@ -21,8 +21,8 @@ Each claim carries one of these tags.
 
 | Tag | Meaning |
 |---|---|
-| `[read]` | Read directly in a clone of the project's own GitHub repo on 2026-11-26, at the commit named in that section. Counts were computed from the cloned files. |
-| `[search]` | Taken from search-engine excerpts or summaries of the live primary page on 2026-11-26. Wording may be paraphrased; the page was not read in full. |
+| `[read]` | Read directly on 2026-11-26: either in a clone of the project's own GitHub repo, at the commit named in that section (counts computed from the cloned files), or on the publisher's own live page or download, named in that claim. |
+| `[search]` | Taken from search-engine excerpts or summaries of a primary page that could not be fetched. Wording may be paraphrased; the page was not read in full. |
 | `[memory]` | Not confirmed in this session. From memory, unverified. |
 | `[analysis]` | My own licence reasoning. Not legal advice. |
 
@@ -38,13 +38,13 @@ Each claim carries one of these tags.
 | [JustDeleteMe](#4-justdeleteme) | 2,671 web services, global | Deletion URL, difficulty, notes, 481 emails, 6,204 domains | Single `sites.json` | Active; last commit 2026-11-24 | MIT | Bundle and derive, keeping the MIT notice |
 | [Big Ass Data Broker Opt-Out List](#5-big-ass-data-broker-opt-out-list-badbool) | ~52 Brokers, "primarily U.S.-based" | Opt-out links and emails in prose | One Markdown README | Updated 2026-10-31 | CC BY-NC-SA 4.0 | Not bundle. Third-party subscription at most |
 | [Optery directory](#6-optery-data-brokers-directory) | 956 Brokers, overwhelmingly US | Website, email (807), opt-out URL (509), type | JSON, CSV, Markdown | Refreshed 2026-04-21 | CC BY-NC-SA 4.0 | Not bundle. Third-party subscription at most |
-| [Privacy Rights Clearinghouse database](#7-privacy-rights-clearinghouse-data-broker-database) | 750 US-registered Brokers | Privacy-policy links, registry contact data | Download (format unverified) | Collected April 2025 | CC BY-NC-SA 4.0 | Not bundle |
+| [Privacy Rights Clearinghouse database](#7-privacy-rights-clearinghouse-data-broker-database) | 750 US-registered Brokers | Privacy-policy links, registry contact data | XLSX download, 3,336 registry rows for 750 groups | Collected April 2025 | CC BY-NC-SA 4.0 | Not bundle |
 | [US state registries](#8-us-state-broker-registries-california-vermont-texas-oregon) | CA, VT, TX, OR. US law only | Name, email, website, address, opt-out method | CA: CSV. Others: search pages | Annual registration | No licence found | Unverified |
 | [Data Rights Protocol / Permission Slip](#9-consumer-reports-permission-slip-and-the-data-rights-protocol) | 9 businesses in the open directory, mostly test entries | API endpoint, technical and business email | JSON | Last commit 2025-12-12 | Spec Apache-2.0; directory has no licence file | Not useful as a seed |
 | [DuckDuckGo broker files](#10-duckduckgo-personal-information-removal-broker-files) | 97 US people-search sites | Opt-out URL, scripted scan and opt-out steps | One JSON per Broker | Active; 2026-11-25 | Apache-2.0 | Bundle and derive with attribution; no EU/UK value |
 | [Incogni and DeleteMe lists](#11-incogni-and-deleteme-published-lists) | Incogni 420+ Brokers with US/EU/CA tags | Name, website, category only | HTML pages | Maintained | None stated; proprietary | Not reusable |
 | [Data Rights Finder](#12-data-rights-finder-uk) | 46 Organizations, 36 UK | DPO and per-right contact email and address | One JSON per Organization | Dead since 2019-07 | ODbL | Bundle as a separate ODbL list; too small and old |
-| [ICO register of fee payers](#13-ico-register-of-fee-payers-uk) | All UK fee-paying controllers | Name, address, DPO contact where supplied | Daily dataset download | Daily | OGL, excluding personal data | Unverified; enrichment only |
+| [ICO register of fee payers](#13-ico-register-of-fee-payers-uk) | All UK fee-paying controllers | Name, address, DPO contact where supplied | Daily dataset download (zipped CSV, about 1.47 million rows) | Daily | OGL v3.0, excluding personal data | Enrichment only; the CSV holds personal data |
 | [CNIL DPO list](#14-cnil-list-of-organisations-with-a-dpo-france) | French Organizations with a DPO | DPO contact means: email, URL, phone, address | Open data on data.gouv.fr | "Regularly" | Not confirmed | Unverified; enrichment only |
 | [IAB Europe TCF Global Vendor List](#15-iab-europe-tcf-global-vendor-list) | Ad-tech vendors active in the EU/UK | Privacy-policy URL per language; no email | JSON | Weekly | Not confirmed | Unverified |
 
@@ -53,11 +53,11 @@ Each claim carries one of these tags.
 All of this is `[analysis]`.
 
 - An Organization List is a data file fetched from a URL. It is a separate work from Unlist's AGPL-3.0 code, so the list's licence does not have to be AGPL. What matters is whether the project can legally publish the list and whether every Operator can legally use it.
-- **CC0** places no conditions. The CC0 text also waives database rights, naming Directive 96/9/EC `[read]` (<https://github.com/datenanfragen/data/blob/b27fb253dce9b8a7d22ba8b92bf2c2c3e4988d00/LICENSE>).
-- **MIT** and **Apache-2.0** allow bundling and derived lists if the copyright and licence notices travel with the data. Both are compatible with GPLv3-family licences `[memory]` (<https://www.gnu.org/licenses/license-list.html>).
-- **GPL-3.0** data may sit beside AGPL-3.0 code, and the two licences allow combining `[memory]` (AGPL-3.0 section 13). A list derived from GPL-3.0 data stays GPL-3.0, so it could not be released as CC0 or merged into a CC0 list.
-- **CC BY-NC-SA 4.0** forbids commercial use and forces the same licence on adaptations. AGPL-3.0 allows commercial use and forbids added restrictions, so NC data cannot be part of the project or its official list. A household Operator subscribing to a separate, clearly labelled NC list is a non-commercial use, but a commercial host of Unlist could not use it.
-- **ODbL** requires a derived database to stay ODbL. Merging ODbL records into the official list would make the whole list ODbL.
+- **CC0** places no conditions. The CC0 text also waives database rights, naming Directive 96/9/EC `[read]` (<https://github.com/datenanfragen/data/blob/b27fb253dce9b8a7d22ba8b92bf2c2c3e4988d00/LICENSE>). Creative Commons' FAQ agrees: CC0 "may be used on databases", waiving "all copyright and related rights in the database and its contents", and "the CC0 Public Domain Dedication is GPL-compatible and acceptable for software" `[read]` (<https://creativecommons.org/faq/>).
+- **MIT** and **Apache-2.0** allow bundling and derived lists if the copyright and licence notices travel with the data. Both are compatible with GPLv3-family licences `[memory]`: the FSF licence list at <https://www.gnu.org/licenses/license-list.html> could not be read in the verification pass (host unreachable), so this rests on my recollection of that page and on the permissive texts.
+- **GPL-3.0** data may sit beside AGPL-3.0 code, and the two licences allow combining `[read]`: AGPL-3.0 section 13 gives "permission to link or combine any covered work with a work licensed under version 3 of the GNU General Public License into a single combined work", with the GPLv3 part staying under GPLv3 (this repository's `LICENSE`, lines 553-560). A list derived from GPL-3.0 data stays GPL-3.0, so it could not be released as CC0 or merged into a CC0 list `[analysis]`.
+- **CC BY-NC-SA 4.0** forbids commercial use and forces the same licence on adaptations. Creative Commons says contributions to BY-NC-SA 4.0 adaptations may only be licensed under BY-NC-SA 4.0 (or later or ported versions) or a "BY-NC-SA Compatible License", and "Currently, no non-CC licenses have been designated as compatible with BY-NC-SA 4.0" `[read]` (<https://creativecommons.org/share-your-work/licensing-considerations/compatible-licenses/>). Its FAQ adds that a remix "for commercial purposes" cannot incorporate NC material, and that under 4.0 the NC term applies to any use restricted by copyright or database right "even if the database is not publicly shared" `[read]` (<https://creativecommons.org/faq/>). AGPL-3.0 allows commercial use and forbids added restrictions (`LICENSE` line 451, "You may not impose any further restrictions") `[read]`, so NC data cannot be part of the project or its official list `[analysis]`. A household Operator subscribing to a separate, clearly labelled NC list may be non-commercial use, but CC's definition ("primarily intended for or directed toward commercial advantage or monetary compensation") "does not turn on the type of user", CC says it "cannot advise you on what is and is not commercial use", and a commercial host of Unlist could not use it `[read]` (FAQ), `[analysis]` for the application. PRC invites commercial users to ask for other terms (section 7).
+- **ODbL** requires a derived database to stay ODbL. Merging ODbL records into the official list would make the whole list ODbL. `[memory]` (the FSF list and the ODbL text were not read in the verification pass).
 - Where a page states no licence, assume all rights reserved. Names and domains of Organizations are facts, but the EU database right can protect a substantial extraction from a list even when the facts are free. Unsure how a court would treat any specific case.
 
 ## 1. datenanfragen/data (datarequests.org)
@@ -104,20 +104,24 @@ Clone of <https://github.com/datenanfragen/data> at commit `b27fb253dce9b8a7d22b
 
 **Format and access**
 
-- Plain JSON files in git `[read]`. The website's deploy script clones this repo and copies records to `static/db`, schemas to `static/` and templates to `static/templates` `[read]` (<https://github.com/datenanfragen/website/blob/92dc2c6/deploy.sh>). The resulting live URLs on datarequests.org were not checked.
-- Search on the site runs on a Typesense server at `search.datenanfragen.de` `[read]` (<https://github.com/datenanfragen/website/blob/92dc2c6/src/Utility/search.ts>). Its terms for third-party use were not checked.
+- Plain JSON files in git `[read]`. The website's deploy script clones this repo and copies records to `static/db`, schemas to `static/` and templates to `static/templates` `[read]` (<https://github.com/datenanfragen/website/blob/92dc2c6/deploy.sh>).
+- **Live per-record JSON `[read]`**: `GET https://www.datarequests.org/db/{slug}.json` returns HTTP 200 `application/json` with the same fields as the repo record (checked on `1und1`: `slug`, `relevant-countries`, `categories`, `name`, `runs`, `address`, `phone`, `fax`, `email`, `web`, `sources`, `suggested-transport-medium`, `quality`). Every company page links to its JSON and to "suggest a change" (<https://www.datarequests.org/company/1und1/>). There is no directory index: `/db/` returns 404, so bulk access means the git repo or fetching each slug. Slugs come from the live listing <https://www.datarequests.org/company/>.
+- The live listing holds 3,127 distinct company slugs, which is the 3,069 active records plus 58 of the 117 `obsolete-records` (checked against the clone at `b27fb25`), so the website still lists some obsolete entries `[read]`.
+- Search on the site runs on a Typesense server at `search.datenanfragen.de` `[read]` (<https://github.com/datenanfragen/website/blob/92dc2c6/src/Utility/search.ts>). Its terms for third-party use were not found: the live site has no terms page for the data (`/license`, `/about`, `/license-notices` all return 404; "License notices" links to the Open source page).
 
 **Licence**
 
 - `LICENSE` is CC0 1.0 Universal `[read]` (link above).
 - "by contributing, you agree for your work to be released under a Creative Commons CC0 1.0 Universal license" `[read]` (README, "Contributing").
 - "we warmly welcome you to use the data for your own projects!" `[read]` (README, first paragraph).
-- The website string for record pages reads "This database is licensed under a CC0 1.0 Universal license." `[read]` (<https://github.com/datenanfragen/website/blob/92dc2c6/src/i18n/en.json>, key `cdb-cc0-explanation`).
+- The website string for record pages reads "This database is licensed under a CC0 1.0 Universal license." `[read]` (<https://github.com/datenanfragen/website/blob/92dc2c6/src/i18n/en.json>, key `cdb-cc0-explanation`). The live record page carries that exact text linked to <https://creativecommons.org/publicdomain/zero/1.0/deed.en> `[read]` (<https://www.datarequests.org/company/1und1/>).
+- The live Open source page lists the repositories with their licences: "data CC0 — The data behind the project. This includes our company and supervisory authority databases but also the sample letters", while the website, backend and letter generator are MIT `[read]` (<https://www.datarequests.org/open-source/>).
+- The live Contribute page says new companies are submitted through the site, corrections through a "suggest a change" button on each company page, or directly through the GitHub repository, and a country is officially supported once the database holds ten companies from it. It states no licence for contributions; the CC0 contribution rule is the README's `[read]` (<https://www.datarequests.org/contribute/>).
 - Verdict `[analysis]`: bundle, derived list and runtime fetch are all allowed with no conditions. Attribution is not required but is good manners.
 
 ## 2. YourDigitalRights.org
 
-Clone of <https://github.com/your-digital-rights/yourdigitalrights.org> at commit `16e6159`, dated 2026-08-14. The live site and API were not reachable.
+Clone of <https://github.com/your-digital-rights/yourdigitalrights.org> at commit `16e6159`, dated 2026-08-14. The live site and API were not reachable. In the verification pass <https://yourdigitalrights.org/>, `/terms` and `/privacy` each returned HTTP 403 with a Cloudflare "Attention Required!" challenge page, on two attempts a few minutes apart. Nothing was routed around, so its live data licence, API and terms remain unread.
 
 **What it covers**
 
@@ -192,20 +196,22 @@ Clone of <https://github.com/optery/optery-data-brokers-directory> at commit `b3
 
 ## 7. Privacy Rights Clearinghouse Data Broker Database
 
-Not reachable. Everything here is `[search]` from <https://privacyrights.org/data-brokers> and <https://privacyrights.org/resources-tools/reports/why-are-hundreds-data-brokers-not-registering-states>.
+Read on 2026-11-26 from <https://privacyrights.org/data-brokers>, <https://privacyrights.org/resources-tools/reports/why-are-hundreds-data-brokers-not-registering-states> (posted 20 June 2025, with the Electronic Frontier Foundation) and the spreadsheet it links, <https://privacyrights.org/sites/default/files/2025-05/Data_Broker_Full_Registry_2025.xlsx.xlsx> (673,814 bytes; parsed as untrusted data, not executed).
 
-- It merges US state registry data collected in April 2025 into 750 unique Broker groups.
-- It links to privacy policies and helps find contact information for privacy requests. The download's column names were not found.
-- PRC states the data is available under CC BY-NC-SA 4.0 and asks commercial users to get in touch.
-- It has no EU/UK scope: it is built from US state registries.
-- Verdict `[analysis]`: not bundleable because of NC.
+- It merges registry data collected in early April 2025 from five registries: California Privacy Protection Agency, California Attorney General (legacy, 2019-2024), Vermont, Texas and Oregon, into 750 unique Broker groups `[read]`. So "five state registries" means four states plus California's two registries. The report notes California's registry alone had grown by nearly 100 registrations, to 522, by publication.
+- **Download**: one XLSX with a sheet "Data Brokers" (3,336 registry rows, 750 distinct `GroupUUID_Combined` values) and a sheet "About_this_export" `[read]`. Rows per `RegistrySource`: Oregon 1,060, Vermont 981, California AG 549, California CPPA 496, Texas 250 (more rows than unique Brokers per registry; this is why the per-state counts below, from search, could not be matched).
+- **Columns** `[read]`: `GroupUUID_Combined`, `Name`, `RegistrySource`, `WebsiteURL`, `PrivacyPolicyURL`, `OptOutURL`, `AlternateOptOutURLs`, `AdditionalWebsiteURL`, `Email`, `Phone`, `ContactPerson`, `ContactPersonTitle`, `AlternateContactPersons`, `Address`, `AddressLine4`, `City`, `County`, `State`, `ZipCode`, `Country`, `DataCategories`, and tri-state `Collects*` flags (Names, Addresses, DOB, POB, MMN, BiometricData, SSNGovID, OtherInfo, MinorsData, ReproductiveHealthData, EmploymentData, NetworkData, CommercialData; 1 collects, 0 does not, 2 not mentioned). Populated: `Email` 2,449 rows, `OptOutURL` 1,583, `PrivacyPolicyURL` 1,900.
+- **Licence** `[read]`: "We're making this entire database freely available under Creative Commons CC-BY-NC-SA 4.0 licensing for researchers, policymakers, advocates, and the public. Please credit Privacy Rights Clearinghouse when using this data. For commercial uses or if the CC-BY-NC-SA 4.0 license terms don't work for your specific implementation, please reach out to us directly through our contact form." The site footer also says content is CC BY-NC-SA 4.0 unless otherwise noted.
+- **Scope**: no EU/UK scope. `Country` is United States on 2,988 rows, blank on 346, Singapore 1, Canada 1 `[read]`.
+- The per-state counts quoted in section 8 (Vermont 441, Texas 226, Oregon 275) are not on these pages and stay `[search]`.
+- Verdict `[analysis]`: not bundleable because of NC. A commercial-use grant could be requested, but nothing in the data would help with EU/UK contacts.
 
 ## 8. US state Broker registries (California, Vermont, Texas, Oregon)
 
 None reachable. All `[search]` unless tagged.
 
 - **California.** The California Privacy Protection Agency publishes the registry with a "Download CSV" button, and each entry has contact information and request metrics (<https://cppa.ca.gov/data_broker_registry>). A 2020 snapshot of the older Attorney General registry, kept in the Data Broker Watch repo, has the columns `Data Broker Name`, `Email Address`, `Website URL`, `Physical Address` and how to opt out under the CCPA `[read]` (<https://github.com/your-digital-rights/data-brokers/blob/e87edeb/backend/data/data-brokers-california.csv>). BADBOOL says California's DROP portal now reaches "500+ registered data brokers" with one request `[read]` (BADBOOL README).
-- **Vermont.** Brokers register yearly with the Secretary of State and give name, physical, email and web addresses and their opt-out method (<https://sos.vermont.gov/corporations/other-services/data-brokers>, <https://legislature.vermont.gov/statutes/section/09/062/02446>). PRC counted 441 registered in April 2025.
+- **Vermont.** Brokers register yearly with the Secretary of State and give name, physical, email and web addresses and their opt-out method (<https://sos.vermont.gov/corporations/other-services/data-brokers>, <https://legislature.vermont.gov/statutes/section/09/062/02446>). PRC counted 441 registered in April 2025 `[search]`; its spreadsheet has 981 Vermont rows, so the figures are not comparable without more reading.
 - **Texas and Oregon.** Both run searchable registries (<https://www.sos.texas.gov/statdoc/data-brokers.shtml>, <https://dfr.oregon.gov/business/licensing/data-broker-registry>). PRC counted 226 and 275 in April 2025. No bulk download was found.
 - These registries exist because of US state law. A US Broker with no EU/UK activity is outside GDPR, and the opt-out routes listed are CCPA-style, not Art. 15 or Art. 17 contacts.
 - No licence or reuse terms were found for any of them.
@@ -256,21 +262,24 @@ Clone of <https://github.com/datarightsfinder/data> at commit `569c81c`, dated 2
 
 ## 13. ICO register of fee payers (UK)
 
-Not reachable. All `[search]` from <https://ico.org.uk/about-the-ico/what-we-do/register-of-fee-payers/> and its "download the register" page.
+Read on 2026-11-26 from <https://ico.org.uk/about-the-ico/what-we-do/register-of-fee-payers/>, <https://ico.org.uk/about-the-ico/what-we-do/register-of-fee-payers/download-the-register/> and the dataset it links, <https://ico.org.uk/media2/cfnc5zdf/register-of-data-controllers-2026-11-25.zip> (78.6 MB zip, one 282 MB CSV, parsed as untrusted data, not executed).
 
-- The ICO publishes each fee-paying controller's name, address, registration reference, fee tier, dates, trading names, and the Data Protection Officer's contact details where one was supplied.
-- The register can be downloaded as a dataset that is refreshed daily.
-- It is reusable under the Open Government Licence, but "the licence does not apply to personal data in the dataset".
-- The column names, and whether the DPO contact includes an email, were not confirmed.
-- Verdict `[analysis]`, unsure: a possible enrichment source for UK postal addresses and DPO contacts. It is far too large to be a default list, and named DPO details are personal data outside the licence.
+- The ICO publishes the controller's name and address, registration reference, level of fee paid, registration and expiry dates, other trading names, and "the contact details for the Data Protection Officer (DPO) if we have been told of one. The DPO name will also be published if they have consented to this." There are "more than one million fee payers" `[read]`.
+- **Download**: "The dataset is updated daily. If you are re-using the information, use the latest version." `[read]` The file name carries the date (2026-11-25).
+- **Licence** `[read]`: "The data is made available under the terms of the ICO's copyright and re-use statement. While the dataset is available for re-use under the Open Government Licence, the licence does not apply to personal data in the dataset. When processing any personal data, please be aware of your obligations under the General Data Protection Regulation and Data Protection Act." The site footer names Open Government Licence v3.0 for text content.
+- **Columns** `[read]`: `Registration_number`, `Organisation_name`, `Organisation_address_line_1` to `_5`, `Organisation_postcode`, `Public_authority`, `Start_date_of_registration`, `End_date_of_registration`, `Trading_names`, `Payment_tier`, `DPO_or_Person_responsible_for_DP_` with `Title`, `First_name`, `Last_name`, `Organisation`, `Email`, `Phone`, `Address_line_1` to `_5`, `Postcode`, and `Public_register_entry_URL`.
+- **Size and fill** `[read]`: 1,469,678 rows; 131,014 have a DPO email, 49,131 name a DPO or responsible person, 446,411 list trading names, 51,724 are public authorities. Payment tier: Tier 1 1,339,171, Tier 2 123,120, Tier 3 7,387.
+- **Personal data is in the file itself**: many rows are sole traders whose `Organisation_name` is a person's name and whose address is a home address (the first rows are examples), beyond the named DPO fields.
+- Verdict `[analysis]`: a possible enrichment source for UK postal addresses and DPO emails, but only 9% of rows carry a DPO email, it is too large to be a default list, and any named person's details are outside the OGL grant. An Operator-side lookup (fetch, filter on demand, do not republish) is safer than bundling.
 
 ## 14. CNIL list of organisations with a DPO (France)
 
-Not reachable. All `[search]` from <https://www.data.gouv.fr/datasets/5c926a7a634f410578005c68> and <https://cnil.fr/fr/opendata>.
+Partly read. <https://www.cnil.fr/fr/opendata> (its "Open CNIL" page) was read on 2026-11-26; the dataset's own page on data.gouv.fr is not reachable, so licence and columns are still unconfirmed.
 
-- The CNIL publishes, in an open format, the name and professional contact details of organisations that have designated a DPO, with the means of contacting the DPO as declared: email, URL, phone or postal address.
-- The licence was not confirmed. French public open data normally uses the Licence Ouverte `[memory]`.
-- Verdict `[analysis]`, unsure: a strong candidate for enriching French Organizations. Check the licence and columns on the dataset page first. Other regulators may publish similar DPO registers; none was checked.
+- The Open CNIL page lists the dataset as "Délégué(e)s à la protection des données (DPD/DPO): Liste des organismes disposant d'un DPO et coordonnées publiques" and links to <https://www.data.gouv.fr/fr/datasets/organismes-ayant-designe-un-e-delegue-e-a-la-protection-des-donnees-dpd-dpo/> `[read]`. It says the CNIL's open data, "publiées sur le portail data.gouv.fr, sont accessibles et réutilisables gratuitement" `[read]`. No licence name appears on the CNIL page.
+- That the data holds the name and professional contact details of organisations that have designated a DPO, with email, URL, phone or postal address as declared, remains `[search]` (<https://www.data.gouv.fr/datasets/5c926a7a634f410578005c68>).
+- The licence is therefore still not confirmed. French public open data normally uses the Licence Ouverte `[memory]`.
+- Verdict `[analysis]`, unsure: a strong candidate for enriching French Organizations. Check the licence and columns on the data.gouv.fr dataset page first. Other regulators may publish similar DPO registers; none was checked.
 
 ## 15. IAB Europe TCF Global Vendor List
 
@@ -311,13 +320,48 @@ Not reachable. All `[search]` from <https://www.data.gouv.fr/datasets/5c926a7a63
 
 ## Could not verify
 
-- **Anything on a non-GitHub site.** Sections 7, 8, 11, 13 and 14 rest on search excerpts. Before relying on them, read: the PRC licence statement and download columns; the CPPA registry CSV header, entry count and terms of use; the ICO download columns and exact licence wording; the CNIL dataset licence and columns; Incogni's and DeleteMe's terms.
-- **Live datarequests.org endpoints.** That per-record JSON is served under `/db/` is inferred from the deploy script, not observed. Terms for the Typesense search server are unknown.
-- **YourDigitalRights data terms.** Whether the "GPL v3" label on the old `/api/companies` payload is the intended licence for the whole dataset, whether that route still responds, what terms govern the keyed domains API, and what the Crunchbase snapshot's terms allow. Ask Conscious Digital.
+State after the 2026-11-26 verification pass. Resolved: PRC licence, download format and columns (section 7); ICO columns, licence wording and download (section 13); live datarequests.org JSON and licence (section 1); the "fifth" PRC registry (California has two); the GPL-3.0 and AGPL-3.0 combining statement (now read from the AGPL text).
+
+- **yourdigitalrights.org.** Every request got a Cloudflare challenge (HTTP 403). The live data licence, API terms and Crunchbase terms are unread. Whether the "GPL v3" label on the old `/api/companies` payload is the intended licence for the whole dataset, whether that route still responds, and what terms govern the keyed domains API: ask Conscious Digital.
+- **CNIL DPO dataset.** The licence name and column list are on data.gouv.fr, which is not reachable. Only the CNIL's "freely reusable" statement was read.
+- **Other non-GitHub sites not on the pass's allowed list**: the CPPA registry CSV header, entry count and terms of use; the Vermont, Texas and Oregon registries; Incogni's and DeleteMe's terms; PRC's per-state counts (441, 226, 275), which are `[search]` and do not match the spreadsheet's row counts.
+- **datarequests.org.** No terms of use for the per-record JSON or for the Typesense search server were found on the live site; the CC0 licence on the data is stated, but there is no published rate-limit or usage policy. Prefer the git repository for bulk use.
 - **Whether databrokerswatch.org is fresher than its repo.**
 - **"No EU/UK Broker registry exists."** This is an absence of search results plus one secondary blog saying so, not a check of each member state's law.
-- **Licence compatibility statements tagged `[memory]`.** gnu.org and creativecommons.org were not reachable, so MIT, Apache-2.0 and GPL-3.0 compatibility with AGPL-3.0 and the NC conflict are from memory and my own reading. Get a licence review before shipping third-party data other than CC0.
-- **The five state registries PRC used.** Four were identified (California, Vermont, Texas, Oregon); the fifth was not.
+- **Licence compatibility statements tagged `[memory]`.** www.gnu.org could not be read (connection reset three times, then no DNS resolution from the fetch tool), so the claims that MIT and Apache-2.0 are compatible with GPLv3-family licences and the ODbL share-alike reading are still from memory and my own reading. Creative Commons' pages were read and confirm the NC and SA statements, and the AGPL text confirms GPLv3 combination. Get a licence review before shipping third-party data other than CC0.
 - **My Data Done Right and PersonalData.IO.** Neither could be opened. Whether either publishes reusable contact data is unknown.
 - **IAB Global Vendor List terms and size.**
 - **Other national DPO registers** (beyond the ICO and CNIL) were not searched for.
+
+## Verification log
+
+Pass of 2026-11-26. Read: <https://www.datarequests.org/> (home, `/company/`, a record page and its JSON, `/contribute/`, `/open-source/`), <https://privacyrights.org/data-brokers>, the PRC report page and its XLSX, <https://ico.org.uk/about-the-ico/what-we-do/register-of-fee-payers/> and `/download-the-register/` and the dataset zip, <https://www.cnil.fr/fr/opendata>, and (for licence compatibility) <https://creativecommons.org/share-your-work/licensing-considerations/compatible-licenses/> and <https://creativecommons.org/faq/>. **<https://yourdigitalrights.org/> was unreachable**: HTTP 403 with a Cloudflare "Attention Required!" challenge page on `/`, `/terms` and `/privacy`, repeated after a wait. **<https://www.gnu.org/> was unreachable** (connection closed mid-exchange three times; the fetch tool could not resolve the host). Neither was routed around. The datarequests.org live company listing was compared with a shallow clone of `datenanfragen/data` at `b27fb25`. Downloads were parsed as data, never executed.
+
+Counts (approximate, grouped claims): about 9 confirmed, 15 corrected or extended (table below), about 12 still unverified (list below and "Could not verify").
+
+| Section | Said | Now says | Source |
+|---|---|---|---|
+| Answer, bullet 1; section 1 licence | CC0 from the repo only | Also confirmed on the live site: record pages say "This database is licensed under a CC0 1.0 Universal license" and the Open source page lists "data CC0". Recommendation unchanged | <https://www.datarequests.org/company/1und1/>, <https://www.datarequests.org/open-source/> |
+| 1, format and access | Per-record JSON under `/db/` "inferred from the deploy script, not observed" | Observed: `https://www.datarequests.org/db/{slug}.json` returns 200 JSON; `/db/` has no index (404) | <https://www.datarequests.org/db/1und1.json> |
+| 1, counts | 3,069 records | Repo count confirmed; the live listing shows 3,127 slugs = 3,069 active + 58 obsolete records still listed | <https://www.datarequests.org/company/> vs clone |
+| 1, contribution and terms | Terms for third-party use not checked | Contribute page read (submit form, "suggest a change", GitHub; ten companies to support a country); no terms or licence page for the data or search server exists on the site (404s) | <https://www.datarequests.org/contribute/> |
+| 2, YourDigitalRights live site | Not reachable | Still unreadable: Cloudflare challenge, 403 | <https://yourdigitalrights.org/> |
+| 7, PRC licence and download | `[search]`; "format unverified"; columns not found | Read. CC BY-NC-SA 4.0 with a commercial-contact route; XLSX with 3,336 rows, 750 groups, 34 columns (listed in section 7) incl. `Email`, `OptOutURL`, `PrivacyPolicyURL`; US-only addresses. Verdict (not bundleable) unchanged | <https://privacyrights.org/resources-tools/reports/why-are-hundreds-data-brokers-not-registering-states> and its XLSX |
+| 7/8, "the fifth registry was not identified" | Four found | Five registry sources are named: CA CPPA, CA Attorney General (legacy), VT, TX, OR | same |
+| 8, Vermont "441 counted by PRC" | `[search]` | Still `[search]`; the spreadsheet's Vermont row count is 981, so the numbers are not comparable | PRC XLSX |
+| 13, ICO | `[search]`; columns and DPO email unconfirmed | Read. 26 columns including `DPO_or_Person_responsible_for_DP_Email`; 1,469,678 rows, 131,014 with a DPO email; OGL with the explicit carve-out "the licence does not apply to personal data in the dataset"; the file itself contains sole traders' names and home addresses. Recommendation: enrichment by on-demand lookup only | <https://ico.org.uk/about-the-ico/what-we-do/register-of-fee-payers/download-the-register/>, dataset zip |
+| 14, CNIL | `[search]`; licence not confirmed | CNIL's page read: dataset exists on data.gouv.fr and CNIL open data is "accessibles et réutilisables gratuitement". Licence name and columns are on data.gouv.fr, unreachable. Dataset URL corrected to the slug the CNIL page links | <https://www.cnil.fr/fr/opendata> |
+| Licence reasoning, GPL-3.0 with AGPL-3.0 | `[memory]` | `[read]` from AGPL-3.0 section 13 | repository `LICENSE` |
+| Licence reasoning, CC0 | CC0 text from repo | Also CC's FAQ: CC0 on databases waives all rights; GPL-compatible | <https://creativecommons.org/faq/> |
+| Licence reasoning, CC BY-NC-SA 4.0 | Reading from memory | Confirmed and sharpened: no non-CC licence is compatible with BY-NC-SA 4.0; commercial remix cannot include NC material; NC applies even to private use of a database under 4.0; NC turns on purpose, not user type, and CC will not advise, so "household use is non-commercial" is weaker than the file said | CC compatible-licences page and FAQ |
+| Licence reasoning, MIT and Apache-2.0 vs GPLv3 family | `[memory]` | Still `[memory]`; gnu.org unreadable | n/a |
+| Licence reasoning, ODbL | analysis | Still analysis; flagged `[memory]` | n/a |
+| Confidence warning, Verification table, Could not verify | Said only GitHub was reachable | Rewritten for the post-pass state | n/a |
+
+### Remaining unverified, and why
+
+- yourdigitalrights.org: live data licence, API, terms (Cloudflare challenge). Crunchbase terms.
+- data.gouv.fr (CNIL DPO dataset licence and columns): host not on the allowed list.
+- cppa.ca.gov, Vermont, Texas and Oregon registries, incogni.com, joindeleteme.com, databrokerswatch.org freshness, mydatadoneright.eu, wiki.personaldata.io, the EDPB market study, IAB terms: hosts not on the allowed list.
+- gnu.org license list: MIT, Apache-2.0 and ODbL compatibility with AGPL-3.0 stay from memory and my reading.
+- Typesense search terms and any rate limit for datarequests.org `/db/` (none published on the pages read).
