@@ -41,6 +41,18 @@ Changes to the prototype (decided by agent, ticket #47)
   Organization that deleted the data before it answered).
 - Asking to reconsider is only offered after a refused Removal Request: the reconsider text is
   about erasure. A refused Access Request is accepted or taken to a Complaint.
+
+Changes for re-checks (decided by agent, ticket #51)
+----------------------------------------------------
+- A returned Listing: when a re-check finds a Listing at a Broker that had confirmed a
+  Suppression Record (``suppression_record``), the Subject may go straight to a Complaint draft
+  besides removing or keeping (spec section 8).
+
+Changes for Complaints (decided by agent, ticket #52)
+-----------------------------------------------------
+- Persistent ID demands (spec section 9): a Complaint may be drafted while the Case is paused if
+  the Subject already pushed back on an ID demand in the current request (``pushbacks``) and the
+  Organization asked again. Gentle first: the pushback comes before the Complaint.
 """
 
 from dataclasses import dataclass, replace
@@ -234,6 +246,10 @@ class CaseState:
     recheck_after_removed: int | None = BROKER_RECHECK_DAYS
     """Days until the re-check after "removed" or an accepted partial removal; ``None`` closes."""
     result: str = ""
+    pushbacks: int = 0
+    """ID pushbacks sent since the current request was sent."""
+    suppression_record: bool = False
+    """A Suppression Record was confirmed earlier in this Case, so a Listing found now has returned."""
 
 
 @dataclass(frozen=True)
@@ -523,8 +539,24 @@ def transition(
                 if s.reminders < 1:
                     return no("Gentle first: send a reminder before drafting a Complaint.")
                 say("Unlist drafts a Complaint about the missed deadline. The Subject lodges it; Unlist does not.")
+            elif s.state is State.PAUSED:
+                if s.pushbacks < 1:
+                    return no("Gentle first: push back on the ID demand before drafting a Complaint.")
+                say(
+                    "The Organization repeats its ID demand after the Subject pushed back. Unlist drafts a Complaint "
+                    "about it. The Subject lodges it; Unlist does not."
+                )
+            elif s.state is State.LISTING_FOUND and s.suppression_record:
+                say(
+                    "The Broker lists the Subject again although it confirmed a Suppression Record. Unlist drafts a "
+                    "Complaint about it. The Subject lodges it; Unlist does not."
+                )
             else:
-                return no("A Complaint is only drafted after a missed deadline plus a reminder, or after a refusal.")
+                return no(
+                    "A Complaint is only drafted after a missed deadline plus a reminder, after a refusal, after an "
+                    "ID demand repeated despite a pushback, or when a Broker lists the Subject again despite a "
+                    "Suppression Record."
+                )
             changes["state"] = State.COMPLAINT_DRAFT
 
         case Action.COMPLAINT_LODGED:

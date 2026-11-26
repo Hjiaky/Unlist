@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from unlist.cases import lifecycle, sending, services, storage
+from unlist.cases import complaints, lifecycle, sending, services, storage
 from unlist.cases.forms import DraftEditForm, MarkSentForm, OpenCaseForm, OutcomeForm, RecheckForm
 from unlist.cases.lifecycle import Action, State
 from unlist.cases.models import Attachment, Case, Draft
@@ -29,7 +29,7 @@ ACTION_SERVICES = {
     Action.FIX_CONTACT: services.fix_contact,
     Action.SEND_REMINDER: services.send_reminder,
     Action.DRAFT_COMPLAINT: services.draft_complaint,
-    Action.COMPLAINT_LODGED: services.complaint_lodged,
+    Action.COMPLAINT_LODGED: complaints.mark_lodged,  # keeps the lodged text; checks the UK first step
     Action.ACCEPT_REFUSAL: services.accept_refusal,
     Action.ASK_RECONSIDER: services.ask_reconsider,
     Action.REOPEN: services.reopen,

@@ -30,7 +30,10 @@ def stop_cases_on_withdrawal(subject, withdrawn_consent) -> None:
 
 
 def register() -> None:
+    from unlist.cases import complaints, services
+
     for registry, hook in (
+        (services.complaint_drafters, complaints.on_complaint_drafted),
         (organization_hooks.has_case, organization_has_case),
         (consent.on_withdrawn, stop_cases_on_withdrawal),
         (deletion.before_delete, storage.delete_subject_attachments),

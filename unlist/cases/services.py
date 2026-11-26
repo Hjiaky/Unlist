@@ -36,8 +36,8 @@ REFERENCE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
 # answer within one month).
 ROUND_STARTS = (DraftKind.ACCESS_REQUEST, DraftKind.REMOVAL_REQUEST, DraftKind.RECONSIDER)
 
-# Callables `case -> None`, run after a Case moves to "Complaint draft". The Complaints ticket
-# registers the one that writes the Complaint; until then the state alone is recorded.
+# Callables `case -> None`, run after a Case moves to "Complaint draft", inside the same
+# transaction. `complaints.on_complaint_drafted` is registered from `hooks.register()`.
 complaint_drafters: list[Callable[[Case], None]] = []
 
 
@@ -96,6 +96,18 @@ def reminders_sent(case) -> int:
     return count
 
 
+def pushbacks_sent(case) -> int:
+    """ID pushbacks sent since the current request (an Access or Removal Request) was sent."""
+    count = 0
+    for event in _events(case):
+        kind = _sent_kind(event)
+        if kind in (DraftKind.ACCESS_REQUEST, DraftKind.REMOVAL_REQUEST):
+            count = 0
+        elif kind == DraftKind.ID_PUSHBACK:
+            count += 1
+    return count
+
+
 def recheck_intervals(case) -> tuple[int | None, int | None]:
     organization = case.organization
     return lifecycle.recheck_intervals(organization.broker, organization.recheck_default, case.recheck_override or None)
@@ -116,6 +128,8 @@ def case_state(case) -> lifecycle.CaseState:
         recheck_after_nothing=after_nothing,
         recheck_after_removed=after_removed,
         result=case.result,
+        pushbacks=pushbacks_sent(case),
+        suppression_record=case.events.filter(suppression_confirmed=True).exists(),
     )
 
 
@@ -599,15 +613,39 @@ def fix_contact(case, *, on: date | None = None) -> Draft:
     return _draft_step(case, Action.FIX_CONTACT, on)
 
 
-def prepare_recheck(case, *, on: date | None = None) -> Draft:
-    """For a resting Case: draft the fresh Access Request of a re-check (the re-check ticket schedules it)."""
-    return _draft_step(case, Action.RECHECK_DUE, on, event_kind=CaseEvent.Kind.RECHECK_DUE)
+def prepare_recheck(case, *, on: date | None = None, reason: str = "") -> Draft:
+    """For a resting Case: draft the fresh Access Request of a re-check (``rechecks.py`` schedules it).
+
+    Never before ``recheck_on``, unless the Operator asks with a ``reason`` (an early re-check),
+    which is recorded in the event.
+    """
+    on = _today(on)
+    reason = " ".join((reason or "").split())
+    details = {}
+    if case.state == State.RESTING and (case.recheck_on is None or on < case.recheck_on):
+        if not reason:
+            due = f"on {deadlines.format_date(case.recheck_on)}" if case.recheck_on else "not planned"
+            raise CaseError(
+                f"Too early: the re-check is {due}. A fresh Access Request before then needs a reason "
+                '(use "Early re-check" on the Case page).'
+            )
+        details = {"early": True, "reason": reason}
+    with transaction.atomic():
+        require_consent(case.subject)
+        _result, event, draft = _step(
+            case, Action.RECHECK_DUE, on, event_kind=CaseEvent.Kind.RECHECK_DUE, details=details
+        )
+        if details:
+            event.details["text"] += f" Early re-check, asked by the Operator: {reason}"
+            event.save(update_fields=["details"])
+    return draft
 
 
 def draft_complaint(case, *, on: date | None = None) -> CaseEvent:
-    """Move to "Complaint draft": after overdue plus a reminder, or after a refusal.
+    """Move to "Complaint draft": after overdue plus a reminder, after a refusal, after an ID demand
+    repeated despite a pushback, or after a returned Listing (a Suppression Record was confirmed).
 
-    Placeholder: the Complaints ticket writes the Complaint itself through ``complaint_drafters``.
+    The registered ``complaint_drafters`` (``complaints.on_complaint_drafted``) then prepare it.
     """
     with transaction.atomic():
         require_consent(case.subject)
@@ -650,14 +688,18 @@ def mark_overdue_if_due(case, *, today: date | None = None) -> bool:
 def set_recheck_override(case, value: str) -> Case:
     """Days between re-checks for this Case, ``"close"``, or empty for the Organization's default.
 
-    Applies to the next outcome; a date already set for a resting Case stays.
+    For a resting Case the re-check date is worked out again from the day it came to rest
+    (``rechecks.reschedule``); with no re-check left, the Case closes.
     """
+    from unlist.cases import rechecks
     from unlist.cases.models import validate_recheck_override
 
     value = (value or "").strip().lower()
     validate_recheck_override(value)
-    case.recheck_override = value
-    case.save(update_fields=["recheck_override", "updated_at"])
+    with transaction.atomic():
+        case.recheck_override = value
+        case.save(update_fields=["recheck_override", "updated_at"])
+        rechecks.reschedule(case)
     return case
 
 

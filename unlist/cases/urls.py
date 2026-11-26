@@ -2,7 +2,7 @@
 # Copyright (C) 2026 The Unlist contributors
 from django.urls import path
 
-from unlist.cases import views
+from unlist.cases import complaint_views, recheck_views, views
 
 app_name = "cases"
 urlpatterns = [
@@ -19,4 +19,13 @@ urlpatterns = [
     path("drafts/<int:pk>/eml/", views.draft_eml, name="draft_eml"),
     path("drafts/<int:pk>/letter/", views.draft_letter, name="draft_letter"),
     path("attachments/<int:pk>/", views.attachment_download, name="attachment"),
+    # Re-checks (#51)
+    path("<int:pk>/early-recheck/", recheck_views.early_recheck, name="early_recheck"),
+    # Complaints (#52)
+    path("<int:pk>/complaint/", complaint_views.complaint, name="complaint"),
+    path("<int:pk>/complaint/authority/", complaint_views.complaint_authority, name="complaint_authority"),
+    path("<int:pk>/complaint/uk/<slug:step>/", complaint_views.complaint_uk, name="complaint_uk"),
+    path("<int:pk>/complaint/uk-complaint.eml", complaint_views.complaint_uk_eml, name="complaint_uk_eml"),
+    path("<int:pk>/complaint/evidence.zip", complaint_views.complaint_evidence, name="complaint_evidence"),
+    path("<int:pk>/complaint/lodged/", complaint_views.complaint_lodged, name="complaint_lodged"),
 ]

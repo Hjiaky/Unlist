@@ -152,7 +152,7 @@ def render(kind: str, lang: str, context: dict, *, strict: bool = False) -> tupl
         raise ValueError(f"{path}: the first line must be 'Subject: ...', followed by a blank line")
 
     derived = {"uk": jurisdiction == "UK", "gdpr": _LAW_NAMES.get(lang, _LAW_NAMES["en"]).get(jurisdiction, "GDPR")}
-    full_context = Context({**derived, **context})
+    full_context = Context({**derived, **context}, autoescape=False)  # plain text: no HTML escaping
     subject = _engine().from_string(first.removeprefix("Subject:")).render(full_context)
     body = _engine().from_string(_TAG_ONLY_LINE.sub(lambda m: m.group(0).strip(), rest)).render(full_context)
 
