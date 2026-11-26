@@ -1,0 +1,58 @@
+Subject: Antrag auf Löschung meiner Daten nach Art. 17 DSGVO [Ref {{ reference }}]
+
+Sehr geehrte Damen und Herren,
+
+hiermit beantrage ich, alle mich betreffenden personenbezogenen Daten unverzüglich zu löschen (Art. 17 der Datenschutz-Grundverordnung, DSGVO).
+{% if erasure_grounds %}
+
+Mein Antrag stützt sich auf folgende Gründe nach Art. 17 Abs. 1 DSGVO:
+{% if "no_longer_necessary" in erasure_grounds %}
+- Die personenbezogenen Daten sind für die Zwecke, für die sie erhoben oder auf sonstige Weise verarbeitet wurden, nicht mehr notwendig (lit. a).
+{% endif %}
+{% if "consent_withdrawn" in erasure_grounds %}
+- Soweit die Verarbeitung auf meiner Einwilligung beruht, widerrufe ich diese, wie unten ausgeführt (lit. b).
+{% endif %}
+{% if "objection" in erasure_grounds %}
+- Ich widerspreche der Verarbeitung, wie unten ausgeführt (lit. c).
+{% endif %}
+{% if "unlawful" in erasure_grounds %}
+- Soweit es für die Verarbeitung keine Rechtsgrundlage gibt, wurden die personenbezogenen Daten unrechtmäßig verarbeitet (lit. d).
+{% endif %}
+{% endif %}
+
+Ich widerspreche der Verarbeitung meiner personenbezogenen Daten zum Zwecke der Direktwerbung; dies gilt auch für Profiling, soweit es mit solcher Direktwerbung in Verbindung steht (Art. 21 Abs. 2 DSGVO).
+{% if objection_grounds %}
+
+Außerdem widerspreche ich aus Gründen, die sich aus meiner besonderen Situation ergeben, der Verarbeitung meiner personenbezogenen Daten einschließlich Profiling (Art. 21 Abs. 1 DSGVO). Meine Gründe:
+
+„{{ objection_grounds }}“
+{% endif %}
+
+Soweit ich Ihnen eine Einwilligung in die Verarbeitung meiner personenbezogenen Daten erteilt habe, widerrufe ich sie hiermit (Art. 7 Abs. 3 DSGVO).
+
+Falls ich bei Ihnen ein Konto habe, schließen Sie es bitte.
+
+Falls Sie meine personenbezogenen Daten Empfängern offengelegt haben, teilen Sie ihnen bitte die Löschung mit und nennen Sie mir diese Empfänger (Art. 19 DSGVO).
+{% if is_broker %}
+
+Falls Sie meine personenbezogenen Daten öffentlich gemacht haben, etwa auf einer Profilseite oder in Suchergebnissen, treffen Sie bitte auch angemessene Maßnahmen, um andere Verantwortliche, die diese Daten verarbeiten, darüber zu informieren, dass ich ihre Löschung verlangt habe (Art. 17 Abs. 2 DSGVO).
+
+Damit meine Daten nicht erneut erfasst und veröffentlicht werden, bitte ich Sie, nur einen minimalen Sperrvermerk zu behalten: so wenige Angaben wie nötig, um meine Daten künftig wiederzuerkennen, etwa meine E-Mail-Adresse, und zu keinem anderen Zweck verwendet, als meine Daten aus Ihren Beständen und Verzeichnissen fernzuhalten.
+{% endif %}
+
+Falls Sie meinen, einen Teil meiner personenbezogenen Daten aufbewahren zu müssen, teilen Sie mir bitte mit, welche Daten das sind, auf welche konkrete Rechtsvorschrift Sie sich stützen und wie lange Sie sie aufbewahren, und löschen Sie alle übrigen Daten.
+
+Dieser Antrag umfasst alle Marken und Dienste, für die Sie Verantwortlicher sind.
+
+Damit Sie meine Daten finden: Ich nutze bei Ihnen die E-Mail-Adresse {{ subject_email }}.
+{% if identifying_details %}
+Weitere Angaben, die Ihnen helfen können:
+{% for item in identifying_details %}
+- {{ item }}
+{% endfor %}
+{% endif %}
+
+Bitte bestätigen Sie mir per E-Mail an {{ subject_email }}, was Sie unternommen haben, und zwar unverzüglich, spätestens aber innerhalb eines Monats nach Eingang dieses Antrags (Art. 12 Abs. 3 DSGVO).
+
+Mit freundlichen Grüßen
+{{ subject_name }}
