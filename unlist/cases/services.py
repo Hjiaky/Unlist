@@ -36,8 +36,8 @@ REFERENCE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
 # answer within one month).
 ROUND_STARTS = (DraftKind.ACCESS_REQUEST, DraftKind.REMOVAL_REQUEST, DraftKind.RECONSIDER)
 
-# Callables `case -> None`, run after a Case moves to "Complaint draft". The Complaints ticket
-# registers the one that writes the Complaint; until then the state alone is recorded.
+# Callables `case -> None`, run after a Case moves to "Complaint draft", inside the same
+# transaction. `complaints.on_complaint_drafted` is registered from `hooks.register()`.
 complaint_drafters: list[Callable[[Case], None]] = []
 
 
@@ -96,6 +96,18 @@ def reminders_sent(case) -> int:
     return count
 
 
+def pushbacks_sent(case) -> int:
+    """ID pushbacks sent since the current request (an Access or Removal Request) was sent."""
+    count = 0
+    for event in _events(case):
+        kind = _sent_kind(event)
+        if kind in (DraftKind.ACCESS_REQUEST, DraftKind.REMOVAL_REQUEST):
+            count = 0
+        elif kind == DraftKind.ID_PUSHBACK:
+            count += 1
+    return count
+
+
 def recheck_intervals(case) -> tuple[int | None, int | None]:
     organization = case.organization
     return lifecycle.recheck_intervals(organization.broker, organization.recheck_default, case.recheck_override or None)
@@ -116,6 +128,7 @@ def case_state(case) -> lifecycle.CaseState:
         recheck_after_nothing=after_nothing,
         recheck_after_removed=after_removed,
         result=case.result,
+        pushbacks=pushbacks_sent(case),
         suppression_record=case.events.filter(suppression_confirmed=True).exists(),
     )
 
@@ -629,9 +642,10 @@ def prepare_recheck(case, *, on: date | None = None, reason: str = "") -> Draft:
 
 
 def draft_complaint(case, *, on: date | None = None) -> CaseEvent:
-    """Move to "Complaint draft": after overdue plus a reminder, or after a refusal.
+    """Move to "Complaint draft": after overdue plus a reminder, after a refusal, after an ID demand
+    repeated despite a pushback, or after a returned Listing (a Suppression Record was confirmed).
 
-    Placeholder: the Complaints ticket writes the Complaint itself through ``complaint_drafters``.
+    The registered ``complaint_drafters`` (``complaints.on_complaint_drafted``) then prepare it.
     """
     with transaction.atomic():
         require_consent(case.subject)

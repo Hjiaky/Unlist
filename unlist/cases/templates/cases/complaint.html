@@ -1,0 +1,90 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% load static %}
+{% block title %}Complaint · {{ case.reference }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'cases/cases.css' %}"><link rel="stylesheet" href="{% static 'cases/complaints.css' %}">{% endblock %}
+{% block body %}
+<main class="cases-wide complaints-page">
+<div class="complaints-noprint">
+{% include "cases/_nav.html" %}
+<h1>Complaint · <code>{{ case.reference }}</code> {{ case.subject.name }} at {{ case.organization.name }}</h1>
+<p><a href="{% url 'cases:detail' case.pk %}">Back to the Case</a>. Unlist drafts the Complaint; the Subject lodges it with the Supervisory Authority. Unlist never submits it.</p>
+</div>
+
+{% if lodged %}
+<section class="card">
+  <h2>Lodged on {{ lodged.occurred_on|date:"j F Y" }}{% if lodged_text %} with {{ lodged_text.authority_name }}{% endif %}</h2>
+  {% if lodged_text %}
+  <p class="complaints-subject-line">{{ lodged_text.subject_line }}</p>
+  <pre class="complaints-text">{{ lodged_text.body }}</pre>
+  {% endif %}
+  <p class="complaints-noprint"><a href="{% url 'cases:complaint_evidence' case.pk %}">Download the evidence bundle (.zip)</a></p>
+</section>
+{% else %}
+
+{% if uk_letter %}
+<section class="card">
+  <h2>First step: a complaint to the Organization</h2>
+  <p>The UK regulator recommends giving the Organization a chance to put things right first, and its complaint form asks for a copy. Under section 164A of the Data Protection Act 2018 the Organization must acknowledge the complaint within 30 days. The Complaint to the Information Commission follows after the Organization's answer, or after 30 days without one.</p>
+  <p class="muted">{% if uk_letter.channel == "email" %}Send it from <strong>{{ uk_letter.sender }}</strong> to <strong>{{ uk_letter.recipient }}</strong>{% elif uk_letter.channel == "webform" %}Submit it at the Organization's web form, <a href="{{ uk_letter.recipient }}" rel="noopener noreferrer">{{ uk_letter.recipient }}</a>{% else %}Post it to the Organization{% endif %}, then mark it sent. Unlist does not send it.</p>
+  <p class="complaints-subject-line">{{ uk_letter.subject_line }}</p>
+  <pre class="complaints-text">{{ uk_letter.body }}</pre>
+  <div class="cases-actions complaints-noprint">
+    {% if uk_letter.channel == "email" %}<a class="cases-button" href="{% url 'cases:complaint_uk_eml' case.pk %}">Download the .eml</a> <a class="cases-button" href="{{ uk_mailto }}">Open in the mail app (mailto)</a>{% endif %}
+    <form method="post" action="{% url 'cases:complaint_uk' case.pk 'sent' %}" class="cases-inline">{% csrf_token %}
+      {{ day_form.on.label_tag }} {{ day_form.on }} <button type="submit" class="primary">Mark sent</button>
+    </form>
+    <form method="post" action="{% url 'cases:complaint_uk' case.pk 'skip' %}">{% csrf_token %}<button type="submit">Skip: go straight to the Information Commission</button></form>
+  </div>
+</section>
+{% endif %}
+
+{% if progress.stage == "uk_organization_sent" %}
+<section class="card complaints-noprint">
+  <h2>Waiting for the Organization</h2>
+  <p>The complaint to the Organization was sent on {{ progress.sent_on|date:"j F Y" }}. {% if progress.authority_ready %}30 days have passed without a recorded answer, so the Complaint to the Information Commission is ready below.{% else %}The Complaint to the Information Commission is offered once the Organization answers, or from {{ progress.wait_until|date:"j F Y" }}.{% endif %}</p>
+  <form method="post" action="{% url 'cases:complaint_uk' case.pk 'answered' %}" enctype="multipart/form-data" class="cases-form">{% csrf_token %}
+    {{ answer_form.on.label_tag }} {{ answer_form.on }}
+    {{ answer_form.file.label_tag }} {{ answer_form.file }}
+    <button type="submit">The Organization answered</button>
+  </form>
+</section>
+{% endif %}
+
+{% if complaint %}
+<section class="card">
+  <h2>To {% if complaint.authority %}{{ complaint.choice.name }}{% else %}the Supervisory Authority{% endif %}</h2>
+  <p class="muted complaints-noprint">{{ complaint.choice.rule }}</p>
+  {% if complaint.choice.candidates|length > 1 %}
+  <form method="post" action="{% url 'cases:complaint_authority' case.pk %}" class="cases-inline complaints-noprint">{% csrf_token %}
+    <label for="complaints-authority">Supervisory Authority</label>
+    <select name="authority" id="complaints-authority">
+      {% if not complaint.authority %}<option value="">Choose…</option>{% endif %}
+      {% for slug, name in complaint.choice.options %}<option value="{{ slug }}"{% if slug == complaint.authority.slug %} selected{% endif %}>{{ name }}</option>{% endfor %}
+    </select>
+    <button type="submit">Use this authority</button>
+  </form>
+  {% endif %}
+  {% if complaint.authority %}
+  <dl class="cases-fields complaints-channel">
+    {% if complaint.authority.webform %}<dt>Complaint form</dt><dd><a href="{{ complaint.authority.webform }}" rel="noopener noreferrer">{{ complaint.authority.webform }}</a></dd>{% endif %}
+    {% if complaint.authority.email %}<dt>Email</dt><dd>{{ complaint.authority.email }}</dd>{% endif %}
+    {% if complaint.authority.address %}<dt>Postal address</dt><dd class="complaints-address">{{ complaint.authority.address }}</dd>{% endif %}
+    {% if complaint.authority.phone %}<dt>Telephone</dt><dd>{{ complaint.authority.phone }}</dd>{% endif %}
+    {% if complaint.authority.web %}<dt>Website</dt><dd><a href="{{ complaint.authority.web }}" rel="noopener noreferrer">{{ complaint.authority.web }}</a></dd>{% endif %}
+  </dl>
+  {% endif %}
+  <p class="muted complaints-noprint">Paste the text into the authority's form, or send it with the files from the evidence bundle. To get a PDF, print this page and choose “Save as PDF”. Add the Subject's postal address if the authority asks for it.</p>
+  <p class="complaints-subject-line">{{ complaint.subject_line }}</p>
+  <pre class="complaints-text">{{ complaint.body }}</pre>
+  <div class="cases-actions complaints-noprint">
+    <a class="cases-button" href="{% url 'cases:complaint_evidence' case.pk %}">Download the evidence bundle (.zip)</a>
+    <form method="post" action="{% url 'cases:complaint_lodged' case.pk %}" class="cases-inline">{% csrf_token %}
+      {{ day_form.on.label_tag }} {{ day_form.on }} <button type="submit" class="primary">Mark lodged</button>
+    </form>
+  </div>
+</section>
+{% endif %}
+{% endif %}
+</main>
+{% endblock %}

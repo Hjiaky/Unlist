@@ -2,12 +2,12 @@
 # Copyright (C) 2026 The Unlist contributors
 """Panels on the Case page that work out their own context, so the detail view stays unchanged.
 
-{% load case_panels %}{% recheck_panel case %}
+{% load case_panels %}{% recheck_panel case %}{% complaint_panel case %}
 """
 
 from django import template
 
-from unlist.cases import rechecks
+from unlist.cases import complaints, rechecks
 from unlist.cases.lifecycle import State
 
 register = template.Library()
@@ -26,3 +26,10 @@ def recheck_panel(context, case):
         "returned_listing": rechecks.returned_listing(case),
         "early_form": EarlyRecheckForm() if resting else None,
     }
+
+
+@register.inclusion_tag("cases/_complaint_panel.html")
+def complaint_panel(case):
+    if case.state not in complaints.COMPLAINT_STATES:
+        return {"case": case, "shown": False}
+    return {"case": case, "shown": True, "progress": complaints.progress(case)}

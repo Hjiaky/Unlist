@@ -1,0 +1,17 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* Copyright (C) 2026 The Unlist contributors */
+/* The Complaint page (#52). It prints cleanly, so the browser can print it or save it as PDF. */
+.complaints-subject-line { font-weight: 600; margin: 12px 0 4px; }
+.complaints-text { white-space: pre-wrap; overflow-wrap: anywhere; font: .95rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px; }
+.complaints-address { white-space: pre-line; }
+.complaints-channel { margin-bottom: 16px; }
+
+@media print {
+  .complaints-noprint, .site-footer { display: none; }
+  body { background: #fff; color: #000; }
+  main.complaints-page { max-width: none; padding: 0; }
+  .complaints-page .card { border: 0; box-shadow: none; padding: 0; margin: 0 0 12pt; background: none; }
+  .complaints-text { border: 0; background: none; padding: 0; font: 11pt/1.45 Georgia, "Times New Roman", serif; }
+  .complaints-page a { color: #000; text-decoration: none; }
+}
