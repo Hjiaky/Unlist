@@ -64,19 +64,16 @@ You need: the backup file, and (if you want stored passwords to keep working) yo
 2. **Restore:**
 
    ```sh
-   docker compose run --rm --entrypoint sh unlist -c \
-     'python -m unlist.bootstrap && python manage.py restore /data/backups/unlist-backup-20261126-213450.tar.gz && chown -R unlist:unlist /data /key'
+   docker compose run --rm unlist python manage.py restore /data/backups/unlist-backup-20261126-213450.tar.gz
    ```
 
-   Replace the file name with yours. The command prepares the folders, checks the archive and its checksums, restores the database, attachments and signing secret, brings the database up to date (an archive from an older release has an older schema), and checks that every file is there. At the end, it tells you whether the key fits. The last `chown` hands the restored files to the container's own user.
+   Replace the file name with yours. The command prepares the folders, checks the archive and its checksums, restores the database, attachments and signing secret, brings the database up to date (an archive from an older release has an older schema), and checks that every file is there. At the end, it tells you whether the key fits. The start script runs first, as for every command: it prepares the folders and loads the bundled Organization Lists and breach list, which do not count as data, so the instance still counts as empty.
 
 3. **Start Unlist** (it must be restarted to use the restored signing secret) and sign in with the Operator account from the backup:
 
    ```sh
    docker compose up -d
    ```
-
-**Why not plain `docker compose run --rm unlist python manage.py restore ...`?** Unlist's start script always loads the bundled Organization Lists and breach list first, and then the instance is no longer empty, so restore refuses. The command above bypasses the start script. This is a known rough edge (see the end of this page).
 
 ### Test a restore in three steps
 
@@ -104,5 +101,5 @@ If you restore without the original key, **everything restores except the secret
 
 ## Known rough edges
 
-- The restore command above is longer than it should be, because the start script fills an instance with bundled data before a restore can run.
-- The container commands on this page (`--entrypoint sh`, `chown`, `--user unlist`) are written from the Dockerfile and start script and were not run inside a container when this page was written. The restore itself (bootstrap, restore, migrations, checks, signing secret, Operator account) was run end to end outside Docker. If a command fails for you, please report it.
+- The container commands on this page (`docker compose run`, `--user unlist`) are written from the Dockerfile and start script and were not run inside a container when this page was written. The restore itself was run end to end outside Docker, prepared exactly as the start script prepares a container (bootstrap, migrations, bundled lists, breach list, then restore). If a command fails for you, please report it.
+- `docker compose exec` runs commands as root unless you add `--user unlist`. If you forget, files it creates are handed back to Unlist's own user the next time the container starts.

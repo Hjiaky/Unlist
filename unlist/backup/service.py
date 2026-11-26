@@ -32,6 +32,20 @@ ARCHIVE_RE = re.compile(r"^unlist-backup-(\d{8}-\d{6})(?:-(\d+))?\.tar\.gz$")
 # Tables that exist in an instance that was only migrated, or that hold no household data.
 BOOKKEEPING_TABLES = {"django_migrations", "django_content_type", "auth_permission", "django_session"}
 
+# Data every instance loads on start from files shipped with the release (the entrypoint runs
+# load_bundled_lists and load_breaches before any command). Not the Operator's data: a restore
+# replaces it with the archived database anyway. Local overrides, pending contact changes and
+# hand-made breach assignments are the Operator's own and still make an instance non-empty.
+BUNDLED_DATA_TABLES = {
+    "organizations_organizationlist",
+    "organizations_listrecord",
+    "organizations_organization",
+    "organizations_domain",
+    "organizations_supervisoryauthority",
+    "breaches_breach",
+    "breaches_breachcatalogue",
+}
+
 
 class BackupError(Exception):
     """Something the Operator can read and act on; never a traceback."""
@@ -247,14 +261,15 @@ def read_manifest(archive: Path) -> dict:
 def instance_problems(root: Path, db: Path) -> list[str]:
     """Why this instance is not empty. Empty means: no Operator account, no row in any table
     except Django's own bookkeeping (migrations, content types, permissions, sessions), and
-    no file in `attachments/`. A missing database file counts as empty."""
+    no file in `attachments/`. Bundled data loaded on every start does not count. A missing
+    database file counts as empty."""
     problems = []
     if db.exists():
         con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
         try:
             tables = [r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")]
             for table in tables:
-                if table.startswith("sqlite_") or table in BOOKKEEPING_TABLES:
+                if table.startswith("sqlite_") or table in BOOKKEEPING_TABLES or table in BUNDLED_DATA_TABLES:
                     continue
                 if con.execute(f'SELECT 1 FROM "{table}" LIMIT 1').fetchone():
                     problems.append(f"table {table} already holds data")

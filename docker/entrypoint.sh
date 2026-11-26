@@ -11,7 +11,8 @@ set -euo pipefail
 if [ "$(id -u)" = "0" ] && id unlist >/dev/null 2>&1; then
   for dir in "${UNLIST_DATA_DIR:-/data}" "$(dirname "${UNLIST_KEY_FILE:-/key/unlist.key}")"; do
     mkdir -p "$dir"
-    chown unlist:unlist "$dir"
+    # Also hand back anything an earlier `docker compose exec` (which runs as root) created.
+    find "$dir" ! -user unlist -exec chown unlist:unlist {} +
   done
   exec setpriv --reuid=unlist --regid=unlist --init-groups "$0" "$@"
 fi

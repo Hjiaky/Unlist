@@ -210,6 +210,27 @@ class RestoreRefusalTests(TempDirTestCase):
         with data_dir_at(self.target), self.assertRaisesRegex(service.BackupError, "auth_user"):
             service.restore_backup(self.archive)
 
+    def test_bundled_data_loaded_on_start_does_not_count(self):
+        # The entrypoint loads the bundled Organization Lists and breach catalogue before any
+        # command, so a fresh container's database holds them; restore must still accept it.
+        self.target.mkdir()
+        con = sqlite3.connect(self.target / service.DB_NAME)
+        for table in sorted(service.BUNDLED_DATA_TABLES):
+            con.execute(f'CREATE TABLE "{table}" (id INTEGER PRIMARY KEY, name TEXT)')
+            con.execute(f'INSERT INTO "{table}" (name) VALUES (?)', ("bundled",))
+        con.execute("CREATE TABLE organizations_localoverride (id INTEGER PRIMARY KEY)")
+        con.commit()
+        con.close()
+        with data_dir_at(self.target):
+            self.assertEqual(service.instance_problems(self.target, self.target / service.DB_NAME), [])
+        con = sqlite3.connect(self.target / service.DB_NAME)
+        con.execute("INSERT INTO organizations_localoverride DEFAULT VALUES")
+        con.commit()
+        con.close()
+        with data_dir_at(self.target):
+            problems = service.instance_problems(self.target, self.target / service.DB_NAME)
+        self.assertEqual(problems, ["table organizations_localoverride already holds data"])
+
     def test_refuses_existing_attachments(self):
         (self.target / "attachments").mkdir(parents=True)
         (self.target / "attachments" / "x").write_bytes(b"x")
