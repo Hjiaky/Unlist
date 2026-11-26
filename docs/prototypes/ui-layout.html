@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE: Unlist layout</title>
+<!--
+  PROTOTYPE, THROWAWAY. Question: how should Unlist's UI be organised?
+  Three structurally different variants of the whole app, switchable with ?variant=A|B|C,
+  the arrows in the floating bar, or the left/right arrow keys. Fake household data, nothing is sent.
+-->
+<style>
+  :root {
+    --bg: #f6f5f1; --panel: #ffffff; --ink: #1d2125; --muted: #646b73; --line: #e0ddd5;
+    --accent: #2f6f5e; --accent-ink: #fff; --soft: #e8f0ec;
+    --warn: #8a5a00; --warn-bg: #fbf1d8; --bad: #9b2c2c; --bad-bg: #fbe3e3; --info-bg: #e7eef8; --info: #2b4f86;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181a; --panel: #1f2326; --ink: #e7e5df; --muted: #9aa1a8; --line: #33393e;
+      --accent: #6fb7a2; --accent-ink: #10201b; --soft: #22322d;
+      --warn: #f0c56a; --warn-bg: #3a3019; --bad: #f19a9a; --bad-bg: #3d2222; --info-bg: #1f2a3a; --info: #9dbcec;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; padding-bottom: 80px; }
+  button { font: inherit; cursor: pointer; border-radius: 6px; padding: 5px 10px;
+    border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  button.link { border: 0; background: none; color: var(--accent); padding: 0; }
+  h1, h2, h3 { margin: 0; }
+  h2 { font-size: 1.05rem; }
+  h3 { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+  .muted { color: var(--muted); }
+  .small { font-size: .85rem; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: .78rem; font-weight: 600;
+    background: var(--soft); color: var(--accent); white-space: nowrap; }
+  .pill.warn { background: var(--warn-bg); color: var(--warn); }
+  .pill.bad { background: var(--bad-bg); color: var(--bad); }
+  .pill.info { background: var(--info-bg); color: var(--info); }
+  .pill.grey { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  .broker { font-size: .72rem; font-weight: 700; color: var(--bad); letter-spacing: .04em; }
+  .proto-tag { position: fixed; top: 8px; right: 8px; z-index: 50; font-size: .7rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px; background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn); }
+  .toast { position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); z-index: 60;
+    background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: .9rem;
+    max-width: calc(100% - 32px); display: none; }
+  .switcher { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 70;
+    display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: 999px;
+    background: #111; color: #fff; box-shadow: 0 6px 24px rgba(0,0,0,.35); max-width: calc(100% - 24px); }
+  .switcher button { background: #2a2a2a; color: #fff; border: 0; border-radius: 999px; width: 34px; height: 34px; padding: 0; }
+  .switcher span { padding: 0 10px; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .recipient { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .82rem; overflow-wrap: anywhere; }
+
+  /* ---------- Variant A: one action queue ---------- */
+  .va { max-width: 980px; margin: 0 auto; padding: 20px 16px; }
+  .va-top { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; margin-bottom: 18px; }
+  .va-top h1 { font-size: 1.3rem; margin-right: auto; }
+  .va-top nav { display: flex; flex-wrap: wrap; gap: 14px; }
+  .va-top nav a { color: var(--muted); text-decoration: none; }
+  .va-top nav a.on { color: var(--ink); font-weight: 600; }
+  .va-calm { background: var(--soft); border-radius: 8px; padding: 12px 14px; margin-bottom: 18px; }
+  .va-section { margin: 22px 0 8px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+  .va-item { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 12px; align-items: start; margin-bottom: 8px; }
+  .va-item .what { font-weight: 600; }
+  .va-item .acts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+  @media (max-width: 640px) { .va-item { grid-template-columns: auto minmax(0, 1fr); } .va-item .acts { grid-column: 1 / -1; justify-content: flex-start; } }
+
+  /* ---------- Variant B: people first ---------- */
+  .vb { display: grid; grid-template-columns: 1fr; min-height: 100vh; }
+  @media (min-width: 860px) { .vb { grid-template-columns: 230px minmax(0, 1fr); } }
+  .vb aside { background: var(--panel); border-right: 1px solid var(--line); padding: 18px 14px; }
+  .vb aside h1 { font-size: 1.2rem; margin-bottom: 16px; }
+  .vb .person { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 9px 10px; border-radius: 8px; margin-bottom: 4px; }
+  .vb .person.on { background: var(--soft); }
+  .vb .person b { display: block; }
+  .vb aside .tools { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 6px; }
+  .vb aside .tools a { color: var(--muted); text-decoration: none; font-size: .9rem; }
+  .vb main { padding: 20px 16px; min-width: 0; }
+  @media (min-width: 860px) { .vb main { padding: 24px 28px; } }
+  .vb-head { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: baseline; margin-bottom: 16px; }
+  .vb-head h2 { font-size: 1.35rem; }
+  .vb-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 18px; }
+  .vb-stat { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .vb-stat b { display: block; font-size: 1.4rem; }
+  .vb-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .vb-tabs button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .vb-table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .vb-table th, .vb-table td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .vb-table th { font-size: .78rem; color: var(--muted); font-weight: 600; }
+  .vb-wrap { overflow-x: auto; }
+  @media (max-width: 640px) { .vb-table .hide-sm { display: none; } }
+
+  /* ---------- Variant C: board of Cases ---------- */
+  .vc { padding: 18px 16px; }
+  .vc-top { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 14px; }
+  .vc-top h1 { font-size: 1.25rem; margin-right: auto; }
+  .vc-filter { display: flex; flex-wrap: wrap; gap: 6px; }
+  .vc-filter button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .vc-board { display: grid; grid-template-columns: repeat(6, minmax(220px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+  @media (max-width: 900px) { .vc-board { grid-template-columns: repeat(6, 78vw); } }
+  .vc-col { background: color-mix(in srgb, var(--panel) 55%, var(--bg)); border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
+  .vc-col.you { border-color: var(--accent); }
+  .vc-col header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; gap: 8px; }
+  .vc-card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; margin-bottom: 8px; }
+  .vc-card .org { font-weight: 600; }
+  .vc-card .meta { font-size: .82rem; color: var(--muted); }
+  .vc-card .acts { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .vc-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; font-size: .9rem; }
+  .vc-footer a { color: var(--muted); text-decoration: none; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="switcher" aria-label="Prototype variant switcher">
+  <button id="prev" aria-label="Previous variant">&larr;</button>
+  <span id="vlabel"></span>
+  <button id="next" aria-label="Next variant">&rarr;</button>
+</div>
+
+<script>
+/* ----------------------------- Fake household ----------------------------- */
+const SUBJECTS = [
+  { id: 'anna', name: 'Anna', mode: 'live', note: 'Live connection (Gmail)', lastScan: '3 days ago' },
+  { id: 'ben', name: 'Ben', mode: 'import', note: 'Import only (Outlook.com export)', lastScan: '12 Nov' },
+  { id: 'mia', name: 'Mia', mode: 'import', note: 'Import only · child, 14 · consent by Anna', lastScan: '12 Nov' },
+];
+// status keys follow the lifecycle prototype (docs/prototypes/request-lifecycle.html)
+const CASES = [
+  { s: 'anna', org: 'SCHUFA Holding AG', broker: true, status: 'approve', kind: 'Removal Request', to: 'datenschutz@schufa.de', note: 'Listing found on 2 Nov' },
+  { s: 'anna', org: 'AZ Direct GmbH', broker: true, status: 'approve', kind: 'Access Request', to: 'datenschutz@az-direct.com', note: 'Re-check due (90 days)' },
+  { s: 'ben', org: 'Zalando SE', broker: false, status: 'approve', kind: 'Access Request', to: 'datenschutz@zalando.de', note: 'New from discovery · 38 order emails' },
+  { s: 'ben', org: 'Deutsche Bahn AG', broker: false, status: 'handed', kind: 'Access Request', to: 'datenschutz@deutschebahn.com', note: 'Given to Ben to send · not sent yet' },
+  { s: 'anna', org: 'infoscore Consumer Data GmbH', broker: true, status: 'reply', kind: 'Reply to confirm', to: '', note: 'Suggested: "sent the data it holds" · 2 attachments' },
+  { s: 'mia', org: 'Spotify AB', broker: false, status: 'reply', kind: 'Reply to confirm', to: '', note: 'Suggested: "asks for ID" · marked by hand' },
+  { s: 'ben', org: 'OTTO GmbH & Co KG', broker: false, status: 'overdue', kind: 'Overdue', to: '', note: 'Due 18 Nov · no answer · reminder suggested' },
+  { s: 'anna', org: 'Acxiom Deutschland GmbH', broker: true, status: 'waiting', kind: 'Waiting', to: '', note: 'Access Request sent 9 Nov · due 9 Dec' },
+  { s: 'mia', org: 'Instagram (Meta Platforms Ireland)', broker: false, status: 'waiting', kind: 'Waiting', to: '', note: 'Access Request sent 12 Nov · due 12 Dec' },
+  { s: 'ben', org: 'Payback GmbH', broker: false, status: 'waiting', kind: 'Waiting', to: '', note: 'Removal Request sent 20 Nov · due 22 Dec' },
+  { s: 'anna', org: 'Bürgel (EOS)', broker: true, status: 'resting', kind: 'Resting', to: '', note: 'Removed, Suppression Record kept · re-check 14 Feb' },
+  { s: 'ben', org: 'Lieferando', broker: false, status: 'closed', kind: 'Closed', to: '', note: 'Nothing held' },
+  { s: 'anna', org: 'Netflix', broker: false, status: 'closed', kind: 'Closed', to: '', note: 'Kept by choice' },
+  { s: 'mia', org: 'TikTok Technology Ltd', broker: false, status: 'found', kind: 'Found', to: '', note: 'From discovery · 12 account notices' },
+  { s: 'anna', org: 'Klarna Bank AB', broker: false, status: 'found', kind: 'Found', to: '', note: 'From discovery · 9 order emails · breach 2025' },
+];
+const subj = (id) => SUBJECTS.find((x) => x.id === id);
+const NEEDS_YOU = ['approve', 'reply', 'overdue'];
+const STATUS_LABEL = { found: 'Found', approve: 'Draft to approve', handed: 'With the Subject to send',
+  reply: 'Reply to confirm', overdue: 'Overdue', waiting: 'Waiting for answer', resting: 'Resting', closed: 'Closed' };
+const STATUS_PILL = { found: 'grey', approve: 'info', handed: 'grey', reply: 'info', overdue: 'bad', waiting: '', resting: '', closed: 'grey' };
+
+/* ----------------------------- Helpers ----------------------------- */
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const pill = (st) => `<span class="pill ${STATUS_PILL[st]}">${STATUS_LABEL[st]}</span>`;
+const brokerTag = (c) => (c.broker ? ' <span class="broker">BROKER</span>' : '');
+function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block';
+  clearTimeout(toast.h); toast.h = setTimeout(() => (t.style.display = 'none'), 2600); }
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-toast]'); if (b) { e.preventDefault(); toast(b.dataset.toast); } });
+
+function approveButton(c) {
+  const s = subj(c.s);
+  return s.mode === 'live'
+    ? `<button class="primary" data-toast="Approved. Sent from ${s.name}'s own address to ${c.to}. (Prototype: nothing sent.)">Approve &amp; send</button>`
+    : `<button class="primary" data-toast="Approved. Handed to ${s.name} as an .eml file to send from their own mail app.">Approve &amp; hand to ${s.name}</button>`;
+}
+
+/* ----------------------------- Variant A: one action queue ----------------------------- */
+function VariantA() {
+  const groups = [
+    ['approve', 'Emails to approve', 'Nothing leaves without your OK. Each shows the exact recipient.'],
+    ['reply', 'Replies to confirm', 'Unlist suggests what each reply means; you confirm.'],
+    ['overdue', 'Overdue', 'Gentle first: a reminder before any Complaint draft.'],
+    ['handed', 'Waiting on a household member', 'Approved, but the Subject still has to send it themselves.'],
+  ];
+  const count = CASES.filter((c) => NEEDS_YOU.includes(c.status)).length;
+  let html = `<div class="va">
+    <div class="va-top"><h1>Unlist</h1>
+      <nav><a class="on" href="#">To do</a><a href="#" data-toast="Would list every Case, filterable.">All Cases</a>
+      <a href="#" data-toast="Would show Subjects, consent and mail import.">Household</a>
+      <a href="#" data-toast="Would show the statistics dashboard.">Statistics</a>
+      <a href="#" data-toast="Organization Lists, breach list, LLM, backup.">Settings</a></nav></div>
+    <div class="va-calm"><b>${count} things need you.</b> <span class="muted">9 Cases are waiting on Organizations and need nothing from you.
+      Next deadline: Acxiom, 9 Dec.</span></div>`;
+  for (const [st, title, sub] of groups) {
+    const items = CASES.filter((c) => c.status === st);
+    if (!items.length) continue;
+    html += `<div class="va-section"><div><h2>${title} <span class="muted small">(${items.length})</span></h2><div class="muted small">${sub}</div></div>
+      ${st === 'approve' ? `<button data-toast="Would approve all ${items.length} after one final summary screen listing every recipient.">Review &amp; approve all</button>` : ''}</div>`;
+    for (const c of items) {
+      const s = subj(c.s);
+      let acts = '';
+      if (st === 'approve') acts = `<button data-toast="Would open the draft text.">Read draft</button>${approveButton(c)}`;
+      if (st === 'reply') acts = `<button data-toast="Would show the reply and attachments.">Open reply</button><button class="primary" data-toast="Outcome confirmed. The Case moves on.">Confirm</button>`;
+      if (st === 'overdue') acts = `<button class="primary" data-toast="Reminder drafted. It waits in 'Emails to approve'.">Draft reminder</button>`;
+      if (st === 'handed') acts = `<button data-toast="Would download the .eml again.">.eml</button><button class="primary" data-toast="Marked as sent today. The clock starts now.">Mark sent</button>`;
+      html += `<div class="va-item"><span class="pill grey">${esc(s.name)}</span>
+        <div><div class="what">${esc(c.org)}${brokerTag(c)} · ${esc(c.kind)}</div>
+          <div class="muted small">${esc(c.note)}</div>
+          ${c.to ? `<div class="small">To: <span class="recipient">${esc(c.to)}</span> · from ${esc(s.name)}'s own address</div>` : ''}</div>
+        <div class="acts">${acts}</div></div>`;
+    }
+  }
+  html += `<div class="va-section"><div><h2>New from discovery <span class="muted small">(2)</span></h2>
+      <div class="muted small">Pick which to pursue. Nothing is sent until you approve a draft.</div></div></div>`;
+  for (const c of CASES.filter((x) => x.status === 'found')) {
+    html += `<div class="va-item"><span class="pill grey">${esc(subj(c.s).name)}</span><div><div class="what">${esc(c.org)}</div><div class="muted small">${esc(c.note)}</div></div>
+      <div class="acts"><button data-toast="Ignored. It won't come back on later scans.">Ignore</button><button class="primary" data-toast="Case opened; Access Request drafted for approval.">Pursue</button></div></div>`;
+  }
+  return html + `</div>`;
+}
+
+/* ----------------------------- Variant B: people first ----------------------------- */
+let vbPerson = 'anna', vbTab = 'all';
+function VariantB() {
+  const s = subj(vbPerson);
+  const mine = CASES.filter((c) => c.s === vbPerson);
+  const tabs = [['all', 'All'], ['you', 'Needs you'], ['open', 'Open'], ['done', 'Done']];
+  const filt = { all: () => true, you: (c) => NEEDS_YOU.includes(c.status), open: (c) => ['found', 'approve', 'handed', 'reply', 'overdue', 'waiting'].includes(c.status), done: (c) => ['resting', 'closed'].includes(c.status) };
+  const rows = mine.filter(filt[vbTab]);
+  const n = (f) => mine.filter(f).length;
+  let side = `<aside><h1>Unlist</h1><h3 style="margin-bottom:6px">Household</h3>`;
+  for (const p of SUBJECTS) {
+    const you = CASES.filter((c) => c.s === p.id && NEEDS_YOU.includes(c.status)).length;
+    side += `<button class="person ${p.id === vbPerson ? 'on' : ''}" data-person="${p.id}"><b>${esc(p.name)} ${you ? `<span class="pill info">${you}</span>` : ''}</b><span class="muted small">${esc(p.note)}</span></button>`;
+  }
+  side += `<button class="person" data-toast="Would add a Subject: name, consent, mail import."><span class="muted">+ Add a Subject</span></button>
+    <div class="tools"><a href="#" data-toast="Household totals and charts.">Statistics</a><a href="#" data-toast="Subscribed Organization Lists, manual update.">Organization Lists</a>
+    <a href="#" data-toast="Free breach list, manual update.">Breach list</a><a href="#" data-toast="LLM endpoint, backup, About &amp; source.">Settings</a></div></aside>`;
+  let main = `<main><div class="vb-head"><h2>${esc(s.name)}</h2><span class="muted">${esc(s.note)} · last scan ${esc(s.lastScan)}</span>
+      <button data-toast="${s.mode === 'live' ? 'Would re-scan over IMAP (headers only).' : 'Would ask for a new .mbox / Takeout file.'}">${s.mode === 'live' ? 'Re-scan mailbox' : 'Import new export'}</button></div>
+    <div class="vb-stats">
+      <div class="vb-stat"><b>${n(() => true)}</b><span class="muted small">Organizations</span></div>
+      <div class="vb-stat"><b>${n((c) => c.broker)}</b><span class="muted small">Brokers</span></div>
+      <div class="vb-stat"><b>${n((c) => NEEDS_YOU.includes(c.status))}</b><span class="muted small">Need you</span></div>
+      <div class="vb-stat"><b>${n((c) => c.status === 'waiting')}</b><span class="muted small">Waiting</span></div>
+      <div class="vb-stat"><b>${n((c) => ['resting', 'closed'].includes(c.status))}</b><span class="muted small">Done</span></div></div>
+    <div class="vb-tabs">${tabs.map(([k, l]) => `<button class="${k === vbTab ? 'on' : ''}" data-tab="${k}">${l}</button>`).join('')}</div>
+    <div class="vb-wrap"><table class="vb-table"><thead><tr><th>Organization</th><th>State</th><th class="hide-sm">Details</th><th></th></tr></thead><tbody>`;
+  for (const c of rows) {
+    let act = '';
+    if (c.status === 'approve') act = approveButton(c);
+    else if (c.status === 'reply') act = `<button class="primary" data-toast="Would open the reply with the suggested outcome.">Review</button>`;
+    else if (c.status === 'overdue') act = `<button class="primary" data-toast="Reminder drafted for approval.">Remind</button>`;
+    else if (c.status === 'found') act = `<button class="primary" data-toast="Case opened; Access Request drafted.">Pursue</button>`;
+    else if (c.status === 'handed') act = `<button data-toast="Marked as sent; clock starts.">Mark sent</button>`;
+    main += `<tr><td><b>${esc(c.org)}</b>${brokerTag(c)}${c.to ? `<div class="recipient muted">${esc(c.to)}</div>` : ''}</td><td>${pill(c.status)}</td>
+      <td class="hide-sm muted small">${esc(c.note)}</td><td>${act}</td></tr>`;
+  }
+  if (!rows.length) main += `<tr><td colspan="4" class="muted">Nothing here.</td></tr>`;
+  main += `</tbody></table></div></main>`;
+  return `<div class="vb">${side}${main}</div>`;
+}
+
+/* ----------------------------- Variant C: board of Cases ----------------------------- */
+let vcFilter = 'all';
+function VariantC() {
+  const cols = [
+    ['found', 'Found', 'Pick what to pursue'],
+    ['you', 'Needs you', 'Approve, confirm, remind'],
+    ['handed', 'With the Subject', 'To send by hand'],
+    ['waiting', 'Waiting', 'On the Organization'],
+    ['resting', 'Resting', 'Until re-check'],
+    ['closed', 'Closed', ''],
+  ];
+  const inCol = (c, k) => (k === 'you' ? NEEDS_YOU.includes(c.status) : c.status === k);
+  const visible = CASES.filter((c) => vcFilter === 'all' || c.s === vcFilter);
+  let html = `<div class="vc"><div class="vc-top"><h1>Unlist</h1><div class="vc-filter">
+    <button class="${vcFilter === 'all' ? 'on' : ''}" data-filter="all">Everyone</button>
+    ${SUBJECTS.map((p) => `<button class="${vcFilter === p.id ? 'on' : ''}" data-filter="${p.id}">${esc(p.name)}</button>`).join('')}</div></div>
+    <div class="vc-board">`;
+  for (const [k, title, sub] of cols) {
+    const items = visible.filter((c) => inCol(c, k));
+    html += `<section class="vc-col ${k === 'you' ? 'you' : ''}"><header><div><h2>${title} <span class="muted small">${items.length}</span></h2>${sub ? `<div class="muted small">${sub}</div>` : ''}</div>
+      ${k === 'you' && items.some((c) => c.status === 'approve') ? `<button data-toast="Would approve every draft in this column after one summary of all recipients.">Approve drafts</button>` : ''}</header>`;
+    for (const c of items) {
+      const s = subj(c.s);
+      let acts = '';
+      if (c.status === 'approve') acts = approveButton(c);
+      if (c.status === 'reply') acts = `<button class="primary" data-toast="Would open reply with suggested outcome.">Confirm reply</button>`;
+      if (c.status === 'overdue') acts = `<button class="primary" data-toast="Reminder drafted for approval.">Remind</button>`;
+      if (c.status === 'found') acts = `<button class="primary" data-toast="Case opened; Access Request drafted.">Pursue</button><button data-toast="Ignored.">Ignore</button>`;
+      html += `<article class="vc-card"><div class="org">${esc(c.org)}${brokerTag(c)}</div>
+        <div class="meta">${esc(s.name)} · ${esc(c.note)}</div>
+        ${c.to ? `<div class="meta">To <span class="recipient">${esc(c.to)}</span></div>` : ''}
+        ${c.status !== 'found' && k === 'you' ? `<div style="margin-top:4px">${pill(c.status)}</div>` : ''}
+        ${acts ? `<div class="acts">${acts}</div>` : ''}</article>`;
+    }
+    if (!items.length) html += `<div class="muted small">Empty</div>`;
+    html += `</section>`;
+  }
+  html += `</div><div class="vc-footer"><a href="#" data-toast="Household totals and charts.">Statistics</a><a href="#" data-toast="Subjects, consent, mail import.">Household</a>
+    <a href="#" data-toast="Organization Lists, breach list, LLM, backup, About &amp; source.">Settings</a></div></div>`;
+  return html;
+}
+
+/* ----------------------------- Switcher ----------------------------- */
+const VARIANTS = [['A', 'One action queue', VariantA], ['B', 'People first', VariantB], ['C', 'Board of Cases', VariantC]];
+function current() { const v = new URLSearchParams(location.search).get('variant'); return VARIANTS.findIndex(([k]) => k === v) >= 0 ? v : 'A'; }
+function render() {
+  const v = current(); const [, name, fn] = VARIANTS.find(([k]) => k === v);
+  document.getElementById('app').innerHTML = fn();
+  document.getElementById('vlabel').textContent = `PROTOTYPE · ${v} (${name})`;
+  document.title = `PROTOTYPE ${v}: Unlist layout`;
+}
+function go(step) {
+  const i = VARIANTS.findIndex(([k]) => k === current());
+  const k = VARIANTS[(i + step + VARIANTS.length) % VARIANTS.length][0];
+  const u = new URL(location.href); u.searchParams.set('variant', k);
+  try { history.replaceState(null, '', u); } catch (e) { /* file:// in some browsers */ }
+  if (new URLSearchParams(location.search).get('variant') !== k) { window.__v = k; }
+  render(); window.scrollTo(0, 0);
+}
+const _cur = current; current = function () { return window.__v || _cur(); };
+document.getElementById('prev').onclick = () => go(-1);
+document.getElementById('next').onclick = () => go(1);
+document.addEventListener('keydown', (e) => {
+  const t = e.target; if (t.closest && t.closest('input, textarea, [contenteditable]')) return;
+  if (e.key === 'ArrowLeft') go(-1); if (e.key === 'ArrowRight') go(1);
+});
+document.addEventListener('click', (e) => {
+  const p = e.target.closest('[data-person]'); if (p) { vbPerson = p.dataset.person; vbTab = 'all'; render(); }
+  const t = e.target.closest('[data-tab]'); if (t) { vbTab = t.dataset.tab; render(); }
+  const f = e.target.closest('[data-filter]'); if (f) { vcFilter = f.dataset.filter; render(); }
+});
+render();
+</script>
+</body>
+</html>
