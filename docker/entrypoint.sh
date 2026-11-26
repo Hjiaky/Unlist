@@ -28,6 +28,7 @@ python manage.py run_scheduler &
 gunicorn unlist.wsgi:application \
   --bind "0.0.0.0:${UNLIST_PORT:-8000}" \
   --workers "${UNLIST_WORKERS:-2}" \
+  --timeout 600 \
   --access-logfile - &
 
 trap 'kill -TERM $(jobs -p) 2>/dev/null' TERM INT
