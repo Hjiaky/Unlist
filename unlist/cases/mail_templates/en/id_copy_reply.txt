@@ -1,0 +1,14 @@
+Subject: Identity document for my request [Ref {{ reference }}]
+
+Dear Sir or Madam,
+
+Thank you for your reply about my request with the reference {{ reference }}, which I sent from {{ subject_email }}. As you asked, I attach a copy of an identity document so that you can confirm my identity.
+
+I have blacked out the details on it that are not needed to confirm my identity, such as the document number{% if not uk %} (European Data Protection Board, Guidelines 01/2022 on data subject rights - Right of access, version 2.1, paragraphs 76 and 77){% endif %}.
+
+Please use the copy only to confirm my identity for this request, and delete it once you have done so{% if not uk %} (paragraph 79 of the same Guidelines){% endif %}.
+
+Please now continue with my request and answer it without undue delay, within the one-month period ({% if uk %}Articles 12(3) and 12A UK GDPR{% else %}Article 12(3) GDPR{% endif %}).
+
+Kind regards,
+{{ subject_name }}

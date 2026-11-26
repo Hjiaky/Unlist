@@ -170,3 +170,43 @@ class AssignReplyForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields["case"].queryset = Case.objects.filter(subject_id=reply.subject_id).select_related("organization")
         self.fields["case"].label_from_instance = lambda case: f"{case.reference}: {case.organization.name}"
+
+
+class DetailsChoiceForm(forms.Form):
+    """Which of the Subject's identifying details go into the details reply. No file field: ID is never uploaded."""
+
+    details = forms.ModelMultipleChoiceField(
+        queryset=None,
+        widget=forms.CheckboxSelectMultiple,
+        label="Details to send",
+        error_messages={"required": "Choose at least one detail to send."},
+    )
+
+    def __init__(self, *args, case, **kwargs):
+        super().__init__(*args, **kwargs)
+        lang = services.details_language(case)
+        field = self.fields["details"]
+        field.queryset = case.subject.details.all()
+        field.label_from_instance = lambda detail: services.detail_line(detail, lang)
+        field.initial = [detail.pk for detail in services.suggested_details(case)]
+
+
+class SendIdForm(forms.Form):
+    """The Subject's decision to send ID themselves. No file field: the document never reaches Unlist."""
+
+    decided = forms.BooleanField(
+        label="The Subject decided to send a copy of their ID and will attach it from their own device",
+        error_messages={"required": "Tick the box to confirm the Subject's decision."},
+    )
+
+
+class PortalForm(forms.Form):
+    url = forms.CharField(
+        max_length=1000, label="Portal or web form link", help_text="Where the Organization wants the request."
+    )
+
+
+class AuthorityLetterForm(forms.Form):
+    operator_name = forms.CharField(
+        max_length=200, label="Operator's name", help_text="The person the letter authorises (you)."
+    )

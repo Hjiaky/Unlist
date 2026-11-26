@@ -406,6 +406,7 @@ class RulesTests(SimpleTestCase):
             ("To verify your identity, please send us a copy of your passport.", "id_or_details_asked"),
             ("Bitte senden Sie uns eine Kopie Ihres Ausweises.", "id_or_details_asked"),
             ("Please send a photo of your ID.", "id_or_details_asked"),
+            ("Please specify which data you are requesting.", "clarification_asked"),
             (
                 "We need to extend the deadline by two further months because of the number of requests.",
                 "extension_announced",

@@ -162,6 +162,17 @@ RULES: list[tuple[str, list[re.Pattern]]] = [
         ),
     ),
     (
+        "clarification_asked",
+        _rx(
+            r"\bplease (specify|clarify)\b",
+            r"\b(specify|clarify) (which|what) (personal )?(data|information)",
+            r"\bwhich (personal )?(data|information) (you are|you're) (requesting|looking for|interested in)",
+            r"\bnarrow (down )?(your|the) request",
+            r"bitte (präzisieren|konkretisieren|spezifizieren)",
+            r"welche (daten|informationen)\b.{0,40}\b(meinen|wünschen|interessieren)",
+        ),
+    ),
+    (
         "id_or_details_asked",
         _rx(
             r"\bverify (your )?identity\b",

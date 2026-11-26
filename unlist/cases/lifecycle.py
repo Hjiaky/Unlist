@@ -41,6 +41,18 @@ Changes to the prototype (decided by agent, ticket #47)
   Organization that deleted the data before it answered).
 - Asking to reconsider is only offered after a refused Removal Request: the reconsider text is
   about erasure. A refused Access Request is accepted or taken to a Complaint.
+
+ID and details demands (decided by agent, ticket #50)
+-----------------------------------------------------
+- A clarification request ("please specify which data") is its own outcome,
+  ``CLARIFICATION_ASKED``. It pauses the clock like an ID or details demand, but only for an
+  Access Request (the deadline engine's rule), and it is answered with a details reply: no
+  pushback, no ID.
+- The Subject may decide to send an ID document anyway (``SEND_ID``). Unlist drafts a reply
+  saying it is attached; the Subject attaches it from their own device when sending, so that
+  draft is always handed over. Unlist never stores the document.
+- Unlist pushes back once per request. A second ID demand after the pushback (``pushed_back``)
+  leaves the Subject's choice: send ID, or draft a Complaint.
 """
 
 from dataclasses import dataclass, replace
@@ -129,6 +141,7 @@ class DraftKind(StrEnum):
     REMINDER = "reminder"
     DETAILS_REPLY = "details_reply"
     ID_PUSHBACK = "id_pushback"
+    ID_COPY_REPLY = "id_copy_reply"
     RECONSIDER = "reconsider"
 
 
@@ -141,6 +154,7 @@ DRAFT_NAMES = {
     DraftKind.REMINDER: "Reminder",
     DraftKind.DETAILS_REPLY: "Reply with the details asked for",
     DraftKind.ID_PUSHBACK: "Reply pushing back on the ID demand",
+    DraftKind.ID_COPY_REPLY: "Reply the Subject sends with their ID attached",
     DraftKind.RECONSIDER: "Reply asking the Organization to reconsider",
 }
 
@@ -158,11 +172,13 @@ class Action(StrEnum):
     REMOVED = "removed"
     REFUSED = "refused"
     ID_OR_DETAILS_ASKED = "id_or_details_asked"
+    CLARIFICATION_ASKED = "clarification_asked"
     EXTENSION_ANNOUNCED = "extension_announced"
     BOUNCE = "bounce"
     # Follow-ups
     SEND_DETAILS = "send_details"
     PUSH_BACK = "push_back"
+    SEND_ID = "send_id"
     FIX_CONTACT = "fix_contact"
     MARK_OVERDUE = "mark_overdue"
     SEND_REMINDER = "send_reminder"
@@ -181,6 +197,7 @@ OUTCOMES = (
     Action.REMOVED,
     Action.REFUSED,
     Action.ID_OR_DETAILS_ASKED,
+    Action.CLARIFICATION_ASKED,
     Action.EXTENSION_ANNOUNCED,
     Action.BOUNCE,
 )
@@ -191,6 +208,7 @@ OUTCOME_LABELS = {
     Action.REMOVED: "Confirmed removal",
     Action.REFUSED: "Refused, or did only part",
     Action.ID_OR_DETAILS_ASKED: "Asked for ID or more details",
+    Action.CLARIFICATION_ASKED: "Asked which data the Access Request is about (clarification)",
     Action.EXTENSION_ANNOUNCED: "Announced an extension",
     Action.BOUNCE: "The email bounced",
 }
@@ -201,6 +219,7 @@ ACTION_LABELS = {
     Action.KEEP_LISTING: "Keep the Listing",
     Action.SEND_DETAILS: "Send the details asked for",
     Action.PUSH_BACK: "Push back on the ID demand",
+    Action.SEND_ID: "The Subject sends ID anyway",
     Action.FIX_CONTACT: "Contact fixed: prepare the request again",
     Action.SEND_REMINDER: "Prepare a reminder",
     Action.DRAFT_COMPLAINT: "Draft a Complaint",
@@ -213,7 +232,18 @@ ACTION_LABELS = {
 
 # States in which an answer from the Organization is still expected or still welcome.
 LATE_OK = (State.WAITING, State.PAUSED, State.OVERDUE, State.COMPLAINT_DRAFT, State.COMPLAINT_LODGED)
-FOLLOW_UPS = (DraftKind.REMINDER, DraftKind.DETAILS_REPLY, DraftKind.ID_PUSHBACK, DraftKind.RECONSIDER)
+FOLLOW_UPS = (
+    DraftKind.REMINDER,
+    DraftKind.DETAILS_REPLY,
+    DraftKind.ID_PUSHBACK,
+    DraftKind.ID_COPY_REPLY,
+    DraftKind.RECONSIDER,
+)
+# Drafts that answer an ID, details or clarification demand: sending one lets the clock run again.
+ANSWERS = (DraftKind.DETAILS_REPLY, DraftKind.ID_PUSHBACK, DraftKind.ID_COPY_REPLY)
+# What a paused Case waits for (``CaseState.asked``).
+ASKED_ID_OR_DETAILS = "id_or_details"
+ASKED_CLARIFICATION = "clarification"
 # States where the Organization's clock matters.
 CLOCK_STATES = (State.WAITING, State.PAUSED, State.OVERDUE)
 
@@ -234,6 +264,10 @@ class CaseState:
     recheck_after_removed: int | None = BROKER_RECHECK_DAYS
     """Days until the re-check after "removed" or an accepted partial removal; ``None`` closes."""
     result: str = ""
+    asked: str | None = None
+    """For a paused Case: ``"id_or_details"`` or ``"clarification"``; None if unknown."""
+    pushed_back: bool = False
+    """An ID pushback was sent for the current request."""
 
 
 @dataclass(frozen=True)
@@ -340,10 +374,13 @@ def transition(
         effects["delivered"] = kind
         changes.update(draft=None, draft_back=None, state=State.WAITING)
         if kind in DRAFT_REQUEST:
-            changes.update(request=DRAFT_REQUEST[kind], reminders=0, result="")
+            changes.update(request=DRAFT_REQUEST[kind], reminders=0, result="", pushed_back=False, asked=None)
         elif kind is DraftKind.REMINDER:
             changes["reminders"] = s.reminders + 1
-        elif kind in (DraftKind.DETAILS_REPLY, DraftKind.ID_PUSHBACK):
+        elif kind in ANSWERS:
+            changes["asked"] = None
+            if kind is DraftKind.ID_PUSHBACK:
+                changes["pushed_back"] = True
             say("The clock runs again.")
         say(f"{DRAFT_NAMES[kind]} sent from the Subject's own address.")
 
@@ -468,8 +505,29 @@ def transition(
             if effective is not State.WAITING:
                 return no("The Organization can only ask for ID or details while a request is open and the clock runs.")
             drop_pending_follow_up()
-            changes["state"] = State.PAUSED
-            say("The Organization asked for ID or more details. The clock is paused until the Subject answers.")
+            changes.update(state=State.PAUSED, asked=ASKED_ID_OR_DETAILS)
+            if s.pushed_back:
+                say(
+                    "The Organization asked again after the pushback. The clock is paused. The Subject chooses: "
+                    "send ID, or draft a Complaint."
+                )
+            else:
+                say("The Organization asked for ID or more details. The clock is paused until the Subject answers.")
+
+        case Action.CLARIFICATION_ASKED:
+            if effective is not State.WAITING:
+                return no("The Organization can only ask for clarification while a request is open and the clock runs.")
+            if s.request is not Request.ACCESS:
+                return no(
+                    "A clarification of which data is meant only applies to an Access Request. Record a question "
+                    "about a Removal Request as asking for ID or details."
+                )
+            drop_pending_follow_up()
+            changes.update(state=State.PAUSED, asked=ASKED_CLARIFICATION)
+            say(
+                "The Organization asked which data the Access Request is about. The clock is paused until the "
+                "Subject answers."
+            )
 
         case Action.EXTENSION_ANNOUNCED:
             if effective is not State.WAITING:
@@ -492,10 +550,21 @@ def transition(
             say("Unlist prepared a reply with the details asked for.")
 
         case Action.PUSH_BACK:
-            if s.state is not State.PAUSED:
+            if s.state is not State.PAUSED or s.asked == ASKED_CLARIFICATION:
                 return no("There is no ID demand to push back on.")
+            if s.pushed_back:
+                return no("Unlist already pushed back once. The Subject chooses: send ID, or draft a Complaint.")
             make_draft(DraftKind.ID_PUSHBACK)
             say("Unlist prepared a reply saying the ID demand goes too far.")
+
+        case Action.SEND_ID:
+            if s.state is not State.PAUSED or s.asked == ASKED_CLARIFICATION:
+                return no("There is no ID demand to answer.")
+            make_draft(DraftKind.ID_COPY_REPLY)
+            say(
+                "The Subject decided to send ID. Unlist prepared a reply saying it is attached. The Subject attaches "
+                "the document from their own device when sending; Unlist never stores it."
+            )
 
         case Action.FIX_CONTACT:
             if s.state is not State.UNDELIVERABLE:
@@ -519,6 +588,16 @@ def transition(
         case Action.DRAFT_COMPLAINT:
             if s.state is State.REFUSED:
                 say("Unlist drafts a Complaint about the refusal. The Subject lodges it; Unlist does not.")
+            elif s.state is State.PAUSED:
+                if not (s.pushed_back and s.asked == ASKED_ID_OR_DETAILS):
+                    return no(
+                        "Gentle first: a Complaint about an ID demand is only drafted when the Organization insists "
+                        "after the pushback."
+                    )
+                say(
+                    "The Organization insists on ID after the pushback. Unlist drafts a Complaint. The Subject "
+                    "lodges it; Unlist does not."
+                )
             elif s.state is State.OVERDUE:
                 if s.reminders < 1:
                     return no("Gentle first: send a reminder before drafting a Complaint.")

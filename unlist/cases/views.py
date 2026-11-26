@@ -12,16 +12,20 @@ from django.views.decorators.http import require_POST
 from unlist.cases import lifecycle, replies, sending, services, storage
 from unlist.cases.forms import (
     AssignReplyForm,
+    AuthorityLetterForm,
+    DetailsChoiceForm,
     DraftEditForm,
     MarkSentForm,
     OpenCaseForm,
     OutcomeForm,
+    PortalForm,
     RecheckForm,
     ReplyConfirmForm,
     ReplyUploadForm,
+    SendIdForm,
 )
 from unlist.cases.lifecycle import Action, State
-from unlist.cases.models import Attachment, Case, Draft, Reply
+from unlist.cases.models import Attachment, Case, CaseEvent, Draft, Reply
 from unlist.organizations.models import Organization
 from unlist.subjects.consent import ConsentRequired
 from unlist.subjects.models import Subject
@@ -29,12 +33,12 @@ from unlist.subjects.models import Subject
 ERRORS = (services.CaseError, ConsentRequired)
 SEARCH_LIMIT = 50
 
-# Case-level buttons and the service each one calls.
+# Case-level buttons and the service each one calls. Sending details and sending ID have their
+# own pages (the Operator picks the details; the Subject's ID decision is explained first).
 ACTION_SERVICES = {
     Action.PREPARE_REQUEST: services.prepare_request,
     Action.REQUEST_REMOVAL: services.request_removal,
     Action.KEEP_LISTING: services.keep_listing,
-    Action.SEND_DETAILS: services.send_details,
     Action.PUSH_BACK: services.push_back,
     Action.FIX_CONTACT: services.fix_contact,
     Action.SEND_REMINDER: services.send_reminder,
@@ -136,7 +140,12 @@ def _draft_view(draft):
 def case_detail(request, pk):
     case = get_object_or_404(Case.objects.select_related("subject", "organization"), pk=pk)
     deadline = services.case_deadline(case)
-    actions = [(action.value, lifecycle.ACTION_LABELS[action]) for action in services.available_actions(case)]
+    pages = {Action.SEND_DETAILS: "cases:details", Action.SEND_ID: "cases:send_id"}
+    actions = [
+        (action.value, lifecycle.ACTION_LABELS[action], reverse(pages[action], args=[pk]) if action in pages else "")
+        for action in services.available_actions(case)
+    ]
+    asked, pushed_back = services.demands(case)
     context = {
         "case": case,
         "events": case.events.all(),
@@ -144,6 +153,9 @@ def case_detail(request, pk):
         "attachments": case.attachments.all(),
         "replies": case.replies.all(),
         "upload_form": ReplyUploadForm(),
+        "asked": asked if case.state == State.PAUSED else None,
+        "persistent_demand": case.state == State.PAUSED and pushed_back and asked == lifecycle.ASKED_ID_OR_DETAILS,
+        "portal_form": PortalForm() if case.state in services.PORTAL_STATES else None,
         "actions": actions,
         "can_record_outcome": bool(services.available_outcomes(case)),
         "deadline": deadline,
@@ -431,3 +443,96 @@ def case_reply_upload(request, pk):
     else:
         messages.success(request, "Reply taken in. Confirm what it says under Replies.")
     return redirect("cases:detail", pk=pk)
+
+
+# --- ID and details demands (#50) --------------------------------------------------------
+
+
+def _case(pk):
+    return get_object_or_404(Case.objects.select_related("subject", "organization"), pk=pk)
+
+
+def _unavailable(request, case, action):
+    """A redirect with the reason when ``action`` is not possible for the Case now, else None."""
+    if action in services.available_actions(case):
+        return None
+    messages.error(request, lifecycle.transition(services.case_state(case), action).error or "Not possible now.")
+    return redirect("cases:detail", pk=case.pk)
+
+
+@login_required
+def case_details(request, pk):
+    """Pick exactly which of the Subject's identifying details the details reply gives."""
+    case = _case(pk)
+    if blocked := _unavailable(request, case, Action.SEND_DETAILS):
+        return blocked
+    form = DetailsChoiceForm(request.POST if request.method == "POST" else None, case=case)
+    if request.method == "POST" and form.is_valid():
+        try:
+            services.send_chosen_details(case, form.cleaned_data["details"])
+        except ERRORS as error:
+            messages.error(request, str(error))
+        else:
+            return redirect("cases:detail", pk=pk)
+    return render(request, "cases/details.html", {"case": case, "form": form})
+
+
+@login_required
+def case_send_id(request, pk):
+    """The Subject sends ID anyway: explain the hand-over, then draft the reply. Nothing is uploaded."""
+    case = _case(pk)
+    if blocked := _unavailable(request, case, Action.SEND_ID):
+        return blocked
+    form = SendIdForm(request.POST if request.method == "POST" else None)
+    if request.method == "POST" and form.is_valid():
+        try:
+            services.send_id(case)
+        except ERRORS as error:
+            messages.error(request, str(error))
+        else:
+            messages.success(request, "Reply drafted. After approval the Subject attaches their ID and sends it.")
+            return redirect("cases:detail", pk=pk)
+    return render(request, "cases/send_id.html", {"case": case, "form": form})
+
+
+@login_required
+@require_POST
+def case_portal(request, pk):
+    case = _case(pk)
+    form = PortalForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Enter the link to the Organization's portal or web form.")
+        return redirect("cases:detail", pk=pk)
+    try:
+        services.hand_over_to_portal(case, form.cleaned_data["url"])
+    except ERRORS as error:
+        messages.error(request, str(error))
+    else:
+        messages.success(request, "Handed over to the Subject: they use the Organization's portal.")
+    return redirect("cases:detail", pk=pk)
+
+
+@login_required
+def case_authority_letter(request, pk):
+    """Write a fresh, dated letter of authority for this Case's Organization."""
+    case = _case(pk)
+    name = request.user.get_full_name() or request.user.get_username()
+    form = AuthorityLetterForm(request.POST if request.method == "POST" else None, initial={"operator_name": name})
+    if request.method == "POST" and form.is_valid():
+        try:
+            event = services.authority_letter(case, form.cleaned_data["operator_name"])
+        except ERRORS as error:
+            messages.error(request, str(error))
+        else:
+            return redirect("cases:authority_letter_show", pk=event.pk)
+    return render(request, "cases/authority_letter_form.html", {"case": case, "form": form})
+
+
+@login_required
+def authority_letter_show(request, pk):
+    event = get_object_or_404(
+        CaseEvent.objects.select_related("case", "case__subject", "case__organization"),
+        pk=pk,
+        kind=CaseEvent.Kind.AUTHORITY_LETTER,
+    )
+    return render(request, "cases/authority_letter.html", {"event": event, "case": event.case})
