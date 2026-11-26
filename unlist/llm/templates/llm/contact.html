@@ -1,0 +1,38 @@
+{% extends "unlist/base.html" %}
+{% load static %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Find the privacy contact of {{ organization.name }} · Unlist{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'llm/llm.css' %}">{% endblock %}
+{% block body %}
+<main class="llm-wide">
+<p><a href="{% url 'organizations:detail' organization.slug %}">{{ organization.name }}</a></p>
+<h1>Find the privacy contact</h1>
+{% include "llm/_messages.html" %}
+
+{% if proposal_form %}
+<section class="card">
+  <h2>Proposed contact</h2>
+  <p class="llm-source">{{ proposal.label }}</p>
+  <p>Found in <a href="{{ proposal.url }}" rel="noopener noreferrer">{{ proposal.url }}</a>{% if proposal.reason %}
+    <span class="muted">({{ proposal.reason }})</span>{% endif %}. Check it against the page, correct it, and confirm:
+    it is saved as a local override, which also confirms the contact. Empty fields are left as they are.</p>
+  <form method="post" action="{% url 'llm:confirm_contact' organization.slug %}" class="llm-form">{% csrf_token %}
+    {{ proposal_form.as_p }}
+    <div class="llm-actions">
+      <button type="submit" class="primary">Confirm and save as local override</button>
+      <a href="{% url 'organizations:detail' organization.slug %}">Back without saving</a>
+    </div>
+  </form>
+</section>
+{% endif %}
+
+<section class="card">
+  <p>Paste the address of {{ organization.name }}'s privacy policy. Unlist fetches that public page now (only this
+    once), sends its text to the LLM and shows what it finds. Nothing is saved until you confirm.</p>
+  <form method="post" class="llm-form">{% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"{% if not proposal_form %} class="primary"{% endif %}>Fetch the page and ask the LLM</button>
+  </form>
+</section>
+</main>
+{% endblock %}

@@ -6,3 +6,9 @@ from django.apps import AppConfig
 class LlmConfig(AppConfig):
     name = "unlist.llm"
     label = "llm"
+    verbose_name = "Optional LLM"
+
+    def ready(self):
+        from unlist.llm import hooks
+
+        hooks.register()

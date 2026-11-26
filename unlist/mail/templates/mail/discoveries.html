@@ -1,5 +1,5 @@
 {% extends "unlist/base.html" %}
-{% load static %}
+{% load static llm %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% block title %}Discovered Organizations for {{ subject.name }} · Unlist{% endblock %}
 {% block head %}<link rel="stylesheet" href="{% static 'mail/mail.css' %}">{% endblock %}
@@ -56,6 +56,7 @@
         {% if row.marker == "new" %}
         <form method="post" action="{% url 'mail:pursue' subject.pk discovery.pk %}">{% csrf_token %}<button type="submit">Pursue</button></form>
         <form method="post" action="{% url 'mail:ignore' subject.pk discovery.pk %}">{% csrf_token %}<button type="submit">Ignore</button></form>
+        {% llm_sort_button "discovery" discovery %}
         {% elif row.marker == "ignored" %}
         <form method="post" action="{% url 'mail:unignore' subject.pk discovery.pk %}">{% csrf_token %}<button type="submit">Un-ignore</button></form>
         {% endif %}

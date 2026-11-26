@@ -1,5 +1,5 @@
 {% extends "unlist/base.html" %}
-{% load static %}
+{% load static llm %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% block title %}Unassigned senders for {{ subject.name }} · Unlist{% endblock %}
 {% block head %}<link rel="stylesheet" href="{% static 'mail/mail.css' %}">{% endblock %}
@@ -25,6 +25,7 @@ Assign a sender to an Organization, or ignore it.</p>
       <td class="mail-buttons">
         <a href="{% url 'mail:assign' subject.pk sender.pk %}">Assign to Organization</a>
         <form method="post" action="{% url 'mail:ignore_sender' subject.pk sender.pk %}">{% csrf_token %}<button type="submit">Ignore</button></form>
+        {% llm_sort_button "sender" sender %}
       </td>
     </tr>
   {% empty %}

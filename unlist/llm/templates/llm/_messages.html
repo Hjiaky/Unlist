@@ -1,0 +1,6 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% if messages %}
+<ul class="llm-messages">
+  {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
+</ul>
+{% endif %}

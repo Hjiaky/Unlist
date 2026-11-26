@@ -1,6 +1,6 @@
 {% extends "unlist/base.html" %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
-{% load static case_panels %}
+{% load static case_panels llm %}
 {% block title %}{{ case.reference }} · Unlist{% endblock %}
 {% block head %}<link rel="stylesheet" href="{% static 'cases/cases.css' %}">{% endblock %}
 {% block body %}
@@ -76,6 +76,7 @@
     <div class="cases-actions">
       <form method="post" action="{% url 'cases:draft_approve' draft.pk %}">{% csrf_token %}<button type="submit" class="primary">{{ item.approve_label }}</button></form>
       <a class="cases-button" href="{% url 'cases:draft_edit' draft.pk %}">Edit</a>
+      {% llm_adapt_button draft %}
       <form method="post" action="{% url 'cases:draft_discard' draft.pk %}">{% csrf_token %}<button type="submit">Discard</button></form>
     </div>
     {% elif draft.status == "handed_over" %}

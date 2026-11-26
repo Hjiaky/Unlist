@@ -1,5 +1,6 @@
 {% extends "unlist/base.html" %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% load llm %}
 {% block title %}{{ organization.name }} · Unlist{% endblock %}
 {% block body %}
 <main class="org-wide">
@@ -57,6 +58,7 @@
   {% else %}
   <p class="muted">None. A local override beats every list.</p>
   {% endif %}
+  {% llm_contact_link organization %}
   <form method="post" action="{% url 'organizations:add_override' organization.slug %}">
     {% csrf_token %}
     {{ form.as_p }}

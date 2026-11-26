@@ -1,0 +1,20 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* Copyright (C) 2026 The Unlist contributors */
+main.llm-wide { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
+.llm-messages { list-style: none; padding: 0; }
+.llm-messages li { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); margin-bottom: 8px; }
+.llm-messages li.error { color: var(--bad); }
+.llm-example, .llm-body { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.llm-sends { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; }
+.llm-sends dt { font-weight: 600; }
+.llm-sends dd { margin: 0; }
+.llm-remote { border-color: var(--bad); }
+.llm-notice { border: 1px solid var(--bad); border-radius: 6px; padding: 8px 12px; margin-top: 8px; }
+.llm-source { font-size: .85rem; color: var(--muted); font-style: italic; }
+.llm-suggestion { font-size: 1.05rem; }
+.llm-subject-line { font-weight: 600; }
+.llm-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 8px; }
+.llm-actions form { display: inline; margin: 0; }
+.llm-form textarea, .llm-form input[type=text] { width: 100%; box-sizing: border-box; }
+.llm-form ul { list-style: none; padding-left: 0; }
+@media (max-width: 640px) { .llm-sends { grid-template-columns: 1fr; } }
