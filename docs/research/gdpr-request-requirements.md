@@ -4,12 +4,12 @@ Research for issue #5. Researched 2026-11-26. Covers the EU GDPR (Regulation (EU
 
 **This is a factual summary for software design, not legal advice.**
 
-**Verification status — read this first.** The research session could not open any primary source directly: `eur-lex.europa.eu`, `edpb.europa.eu`, `ico.org.uk`, `legislation.gov.uk` and `curia.europa.eu` were all blocked by the session's network policy. Every claim below was checked one of two ways:
+**Verification status — read this first.** Verification pass done 2026-11-26. The original research (same day) could not open any primary source. In this pass the full primary sources were downloaded from `eur-lex.europa.eu`, `www.edpb.europa.eu`, `ico.org.uk` and `www.legislation.gov.uk` and read in context: the GDPR, Reg. 1182/71, Reg. 2025/2518, the CJEU judgments cited, EDPB Guidelines 01/2022 v2.1, both EDPB CEF reports, EDPB 8/2022, the EDPB complaint form and one-stop-shop leaflet, EDPB–EDPS Joint Opinion 2/2026, the EUR-Lex procedure page for the Digital Omnibus, DUAA ss.76, 78, 94, 103, Sch. 10, SIs 2026/82 and 2026/1015, DPA 2018 ss.9, 15, 135, 164A, 165, 166, 208, UK GDPR Arts. 8, 12, 56, 57, 60, and the ICO pages cited. `curia.europa.eu` was not needed (the judgments were read on EUR-Lex). Every host answered; none was blocked.
 
-- **Unmarked claims** were checked against text excerpts of the cited primary source returned by a web search restricted to that source's own domain. That confirms the wording exists at the URL; it is not a read of the whole document, so context around the excerpt was not seen.
-- Claims marked **(unverified against source)** are from memory of the source and were not confirmed even by excerpt. Paragraph numbers carrying that mark are the most likely thing to be wrong.
+- **Unmarked claims** have now been checked against the full cited source, except where the Verification log says otherwise. Many were corrected; see the log at the end.
+- Claims still marked **(unverified against source)** could not be checked against a primary source on the allowed hosts. The log says why for each.
 
-Before any wording from this file goes into a request template, re-check it against the linked source.
+A few statements are still the author's reading of the text, not something a source states; they are labelled as such. Before wording from this file goes into a request template, quote it from the linked source rather than from this summary.
 
 ## Answer
 
