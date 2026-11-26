@@ -6,3 +6,8 @@ from django.apps import AppConfig
 class MailConfig(AppConfig):
     name = "unlist.mail"
     label = "mail"
+
+    def ready(self):
+        from unlist.mail import hooks, jobs  # noqa: F401  (jobs registers itself with the scheduler)
+
+        hooks.register()

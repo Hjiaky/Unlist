@@ -39,5 +39,12 @@ and it deletes the uploaded file when the scan is done.</p>
   cannot connect to them live. Add the account to Thunderbird (it signs in through Microsoft's own page) and
   export the folders as mbox as above. Requests for these Subjects are handed over for them to send.</p>
 </section>
+
+<section class="card">
+  <h2>Live connection (optional)</h2>
+  <p>Where the provider offers app passwords (Gmail with 2-Step Verification, Fastmail, iCloud, GMX, WEB.DE,
+  Posteo, mailbox.org and many others), you can instead <a href="{% url 'mail:connections' subject.pk %}">connect
+  the mailbox</a>: Unlist then scans it over IMAP, read-only, and sends approved requests from it.</p>
+</section>
 </main>
 {% endblock %}

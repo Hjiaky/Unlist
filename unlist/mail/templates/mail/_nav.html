@@ -4,6 +4,7 @@
   <a href="{% url 'mail:discoveries' subject.pk %}">Discovered Organizations</a>
   <a href="{% url 'mail:unassigned' subject.pk %}">Unassigned senders</a>
   <a href="{% url 'mail:upload' subject.pk %}">Import mail</a>
+  <a href="{% url 'mail:connections' subject.pk %}">Live connection</a>
 </nav>
 {% if messages %}
 <ul class="mail-messages">

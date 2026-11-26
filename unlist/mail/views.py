@@ -7,14 +7,15 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.decorators.http import require_POST
 
-from unlist.mail import importer, scanner, services
-from unlist.mail.forms import MboxUploadForm
-from unlist.mail.models import Discovery, UnassignedSender
+from unlist import crypto
+from unlist.mail import imap, importer, jobs, live, providers, scanner, services
+from unlist.mail.forms import ConnectionForm, MboxUploadForm
+from unlist.mail.models import Discovery, ImportRun, MailboxConnection, UnassignedSender
 from unlist.mail.uploads import DataDirUploadHandler
 from unlist.organizations import lookup
 from unlist.organizations import services as organization_services
 from unlist.organizations.models import Domain, Organization
-from unlist.subjects.models import Subject
+from unlist.subjects.models import Mailbox, Subject
 
 SEARCH_LIMIT = 30
 EVIDENCE_RANK = Case(
@@ -183,3 +184,135 @@ def ignore_sender(request, pk, sender_pk):
 def unignore_sender(request, pk, sender_pk):
     services.unignore_sender(_sender(pk, sender_pk))
     return redirect("mail:unassigned", pk=pk)
+
+
+# Live connections -----------------------------------------------------------------------
+
+
+def _mailbox(pk, mailbox_pk):
+    return get_object_or_404(Mailbox.objects.select_related("subject"), pk=mailbox_pk, subject=pk)
+
+
+def _connection(pk, mailbox_pk):
+    return get_object_or_404(
+        MailboxConnection.objects.select_related("mailbox__subject"), mailbox=mailbox_pk, mailbox__subject=pk
+    )
+
+
+@login_required
+def connections(request, pk):
+    subject = get_object_or_404(Subject, pk=pk)
+    by_mailbox = {item.mailbox_id: item for item in MailboxConnection.objects.filter(mailbox__subject=subject)}
+    rows = [{"mailbox": mailbox, "connection": by_mailbox.get(mailbox.pk)} for mailbox in subject.mailboxes.all()]
+    return render(request, "mail/connections.html", {"subject": subject, "rows": rows})
+
+
+@login_required
+def connect(request, pk, mailbox_pk):
+    mailbox = _mailbox(pk, mailbox_pk)
+    existing = MailboxConnection.objects.filter(mailbox=mailbox).first()
+    preset = providers.get(request.GET.get("provider"))
+    if preset is None and existing is None:
+        preset = providers.for_address(mailbox.email)
+    has_password = existing is not None and bool(existing.password_encrypted)
+    results = []
+    if request.method == "POST":
+        form = ConnectionForm(request.POST, has_password=has_password)
+        if form.is_valid():
+            settings = form.settings()
+            password = form.cleaned_data["password"]
+            if request.POST.get("action") == "test":
+                probe = MailboxConnection(mailbox=mailbox, **settings)
+                if not password:
+                    probe.password_encrypted = existing.password_encrypted
+                results = live.test_connection(probe, password or None)
+            else:
+                try:
+                    live.save_connection(mailbox, settings, password)
+                except crypto.MissingKey as error:
+                    messages.error(request, str(error))
+                else:
+                    messages.success(request, f"{mailbox.email} is connected. Test the connection, then scan it.")
+                    return redirect("mail:connection", pk=pk, mailbox_pk=mailbox.pk)
+    else:
+        initial = ConnectionForm.initial_for(None if request.GET.get("provider") else existing, preset, mailbox.email)
+        form = ConnectionForm(initial=initial, has_password=has_password)
+    hosts = (form.data.get("imap_host", ""), form.data.get("smtp_host", "")) if form.is_bound else ()
+    context = {
+        "subject": mailbox.subject,
+        "mailbox": mailbox,
+        "connection": existing,
+        "form": form,
+        "preset": preset,
+        "presets": list(providers.presets().values()),
+        "results": results,
+        "microsoft": providers.looks_like_microsoft(mailbox.email, *hosts),
+    }
+    return render(request, "mail/connect.html", context)
+
+
+@login_required
+def connection(request, pk, mailbox_pk):
+    mailbox = _mailbox(pk, mailbox_pk)
+    item = MailboxConnection.objects.filter(mailbox=mailbox).first()
+    if item is None:
+        return redirect("mail:connect", pk=pk, mailbox_pk=mailbox.pk)
+    context = {
+        "subject": mailbox.subject,
+        "mailbox": mailbox,
+        "connection": item,
+        "run": mailbox.import_runs.filter(source=ImportRun.Source.IMAP).first(),
+        "running": imap.is_running(item),
+        "rescan_hours": jobs.RESCAN_HOURS,
+    }
+    return render(request, "mail/connection.html", context)
+
+
+@login_required
+@require_POST
+def test_connection(request, pk, mailbox_pk):
+    item = _connection(pk, mailbox_pk)
+    for _, ok, message in live.test_connection(item):
+        (messages.success if ok else messages.error)(request, message)
+    return redirect("mail:connection", pk=pk, mailbox_pk=mailbox_pk)
+
+
+@login_required
+@require_POST
+def scan_now(request, pk, mailbox_pk):
+    item = _connection(pk, mailbox_pk)
+    importer.clean_up_stale()  # a scan cut off by a restart must not block a new one
+    if imap.is_running(item):
+        messages.info(request, "A scan of this mailbox is already running.")
+        return redirect("mail:connection", pk=pk, mailbox_pk=mailbox_pk)
+    run = imap.start_scan(item)
+    if run.failure:
+        messages.error(request, run.failure)
+    elif run.finished_at is None:
+        messages.info(request, "The scan has started. A first scan of a large mailbox takes a while: reload to see it.")
+    else:
+        messages.success(request, f"Scanned {run.total} new message{'s' if run.total != 1 else ''}.")
+    return redirect("mail:connection", pk=pk, mailbox_pk=mailbox_pk)
+
+
+@login_required
+@require_POST
+def scheduled_rescans(request, pk, mailbox_pk):
+    item = _connection(pk, mailbox_pk)
+    item.scheduled_rescans = request.POST.get("enabled") == "1"
+    item.save(update_fields=["scheduled_rescans"])
+    if item.scheduled_rescans:
+        messages.success(request, f"Scheduled re-scans are on: at most every {jobs.RESCAN_HOURS} hours.")
+    else:
+        messages.success(request, "Scheduled re-scans are off. Scan with the button when you want.")
+    return redirect("mail:connection", pk=pk, mailbox_pk=mailbox_pk)
+
+
+@login_required
+@require_POST
+def disconnect(request, pk, mailbox_pk):
+    item = _connection(pk, mailbox_pk)
+    email_address = item.mailbox.email
+    live.disconnect(item)
+    messages.success(request, f"{email_address} is disconnected and import-only again. Its app password is deleted.")
+    return redirect("mail:connections", pk=pk)
