@@ -1,0 +1,39 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}{{ breach.title }} · Unlist{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'breaches:index' %}">Breach list</a> › <a href="{% url 'breaches:assign_list' %}">Breaches without a domain</a></p>
+<h1>{{ breach.title }}</h1>
+<p>Breach date {{ breach.breach_date|date:"Y-m-d"|default:"unknown" }}. Data in the breach: {{ breach.data_classes|join:", "|default:"not listed" }}.</p>
+{% if breach.attribution %}<p class="muted">{{ breach.attribution }}</p>{% endif %}
+{% if breach.description %}<p>{{ breach.plain_description }}</p>{% endif %}
+{% if breach.excluded %}<p class="warn">This is a spam list, malware or fabricated entry, so it is never matched to an Organization.</p>{% endif %}
+
+{% if assignment %}
+<p>Assigned to <a href="{% url 'organizations:detail' assignment.organization.slug %}">{{ assignment.organization.name }}</a>{% include "unlist/_broker.html" with organization=assignment.organization %}.</p>
+<form method="post" action="{% url 'breaches:assign_remove' breach.name %}">{% csrf_token %}<button type="submit">Remove assignment</button></form>
+{% endif %}
+
+{% if not breach.excluded %}
+<section class="card">
+  <h2>Assign to an Organization</h2>
+  <form method="get" class="search">
+    <label for="q">Search Organizations by name or domain</label>
+    <input type="search" id="q" name="q" value="{{ query }}">
+    <button type="submit">Search</button>
+  </form>
+  {% if query %}
+  <ul>
+    {% for organization in organizations %}
+    <li>
+      {{ organization.name }}{% include "unlist/_broker.html" with organization=organization %} <span class="muted">{{ organization.slug }}</span>
+      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="organization" value="{{ organization.slug }}"><button type="submit">Assign</button></form>
+    </li>
+    {% empty %}<li class="muted">No Organization matches.</li>{% endfor %}
+  </ul>
+  {% if organizations|length >= limit %}<p class="muted">Only the first {{ limit }} are shown; narrow the search.</p>{% endif %}
+  {% endif %}
+</section>
+{% endif %}
+{% include "breaches/_attribution.html" %}
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Edit draft · {{ case.reference }} · Unlist{% endblock %}
+{% block content %}
+{% include "cases/_crumbs.html" %}
+<h1>Edit the {{ draft.get_kind_display }}</h1>
+<p class="muted">Case <a href="{% url 'cases:detail' case.pk %}"><code>{{ case.reference }}</code></a> · to {{ draft.recipient }}. Keep <code>{{ case.reference }}</code> in the subject line so replies can be matched. Keep it polite: no threats, no compensation demands.</p>
+<form method="post" class="card">
+  {% csrf_token %}
+  {% for field in form %}
+  <div class="field">{{ field.label_tag }} {{ field }} {{ field.errors }}</div>
+  {% endfor %}
+  <button type="submit" class="primary">Save</button>
+</form>
+{% endblock %}

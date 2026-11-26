@@ -1,0 +1,58 @@
+Subject: Request for erasure of my personal data under Article 17 {{ gdpr }} [Ref {{ reference }}]
+
+Dear Sir or Madam,
+
+I ask you to erase all personal data concerning me without undue delay, under Article 17 of the {% if uk %}UK General Data Protection Regulation (UK GDPR){% else %}General Data Protection Regulation (GDPR){% endif %}.
+{% if erasure_grounds %}
+
+This rests on the following grounds in Article 17(1) {{ gdpr }}:
+{% if "no_longer_necessary" in erasure_grounds %}
+- The personal data are no longer necessary for the purposes for which they were collected or otherwise processed (point (a)).
+{% endif %}
+{% if "consent_withdrawn" in erasure_grounds %}
+- To the extent that the processing is based on my consent, I withdraw it, as set out below (point (b)).
+{% endif %}
+{% if "objection" in erasure_grounds %}
+- I object to the processing, as set out below (point (c)).
+{% endif %}
+{% if "unlawful" in erasure_grounds %}
+- To the extent that the processing has no legal basis, the personal data have been unlawfully processed (point (d)).
+{% endif %}
+{% endif %}
+
+I object to the processing of my personal data for direct marketing purposes, including profiling to the extent that it is related to such direct marketing (Article 21(2) {{ gdpr }}).
+{% if objection_grounds %}
+
+I also object, on grounds relating to my particular situation, to the processing of my personal data, including profiling (Article 21(1) {{ gdpr }}). My grounds are:
+
+"{{ objection_grounds }}"
+{% endif %}
+
+Where I have given you consent to process my personal data, I withdraw it (Article 7(3) {{ gdpr }}).
+
+If I have an account with you, please close it.
+
+If you have disclosed my personal data to others, please tell each recipient about this erasure and tell me who these recipients are (Article 19 {{ gdpr }}).
+{% if is_broker %}
+
+If you have made my personal data public, for example on a profile page or in search results, please also take reasonable steps to inform other controllers that process them that I have asked for their erasure (Article 17(2) {{ gdpr }}).
+
+So that my data are not collected and listed again, please keep only a minimal suppression record: the least information you need to recognise my data in future, such as my email address, used for no other purpose than keeping my data out of your records and listings.
+{% endif %}
+
+If you believe that you must keep any of my personal data, please tell me which data, the specific legal provision that requires it and for how long, and erase everything else.
+
+This request covers every brand and service for which you are the controller.
+
+To help you find my data: I use the email address {{ subject_email }} with you.
+{% if identifying_details %}
+Other details you may need:
+{% for item in identifying_details %}
+- {{ item }}
+{% endfor %}
+{% endif %}
+
+Please confirm by email to {{ subject_email }} what you have done, without undue delay and at the latest within one month of receiving this request ({% if uk %}Articles 12(3) and 12A UK GDPR{% else %}Article 12(3) GDPR{% endif %}).
+
+Kind regards,
+{{ subject_name }}

@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Unlist for one household. `docker compose up -d`, then open http://<this machine>:8000
+#
+# ./data holds everything Unlist knows (back it up; it contains personal data).
+# ./key holds the encryption key for stored mailbox passwords. It is created on first start
+# and deliberately kept out of ./data, so backups of ./data do not contain it.
+services:
+  unlist:
+    # Use the published image, or build it yourself from this folder with `docker compose up -d --build`.
+    image: ghcr.io/hjiaky/unlist:1.0.0b1
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/data
+      - ./key:/key
+    environment:
+      TZ: Europe/Berlin
+      # Only if you put Unlist behind your own HTTPS reverse proxy:
+      # UNLIST_PUBLIC_ORIGIN: https://unlist.example.org

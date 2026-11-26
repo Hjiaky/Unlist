@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/hjiaky/unlist-organizations/blob/main/schema.json",
+  "title": "Unlist Organization List",
+  "description": "One Organization List file: a header and its records. Schema version 1. Field names follow datenanfragen/data where a field exists there. Validators only need: type, properties, required, additionalProperties, items, enum, pattern, minItems, minLength, uniqueItems, minimum, format (date, uri, email, domain) and local $ref.",
+  "type": "object",
+  "required": ["header", "records"],
+  "additionalProperties": false,
+  "properties": {
+    "header": {"$ref": "#/definitions/header"},
+    "records": {"type": "array", "items": {"$ref": "#/definitions/record"}},
+    "obsolete": {"type": "array", "items": {"$ref": "#/definitions/obsolete"}}
+  },
+  "definitions": {
+    "slug": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "header": {
+      "type": "object",
+      "required": ["name", "licence", "version", "date", "schema_version"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "licence": {"type": "string", "minLength": 1, "description": "SPDX identifier of the list's licence."},
+        "notice": {"type": "string", "description": "Licence notice that must travel with the file, verbatim."},
+        "credit": {"type": "string"},
+        "homepage": {"type": "string", "format": "uri"},
+        "version": {"type": "string", "minLength": 1},
+        "date": {"type": "string", "format": "date"},
+        "schema_version": {"type": "integer", "enum": [1]},
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {"type": "string"},
+              "url": {"type": "string", "format": "uri"},
+              "commit": {"type": "string", "pattern": "^[0-9a-f]{7,40}$"},
+              "licence": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "required": ["slug", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "slug": {"$ref": "#/definitions/slug"},
+        "name": {"type": "string", "pattern": "^\\S(.*\\S)?$"},
+        "runs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "domains": {
+          "type": "array",
+          "uniqueItems": true,
+          "description": "Registrable domains the Organization uses: lowercase, no scheme, no leading www.",
+          "items": {"type": "string", "format": "domain"}
+        },
+        "relevant-countries": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^([a-z]{2}|all)$"}},
+        "categories": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "address": {"type": "string", "minLength": 1},
+        "phone": {"type": "string", "pattern": "^\\+\\d+ \\d+ (?:\\d+ )*\\d+(?: ext\\. \\d+)?$"},
+        "email": {"type": "string", "format": "email"},
+        "webform": {"type": "string", "format": "uri"},
+        "web": {"type": "string", "format": "uri"},
+        "suggested-transport-medium": {"type": "string", "enum": ["email", "letter", "webform"]},
+        "required-elements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["desc", "type"],
+            "additionalProperties": false,
+            "properties": {
+              "desc": {"type": "string"},
+              "type": {"type": "string", "enum": ["input", "textarea", "email", "address", "name", "birthdate"]},
+              "optional": {"type": "boolean"}
+            }
+          }
+        },
+        "needs-id-document": {"type": "boolean"},
+        "request-language": {"type": "string", "pattern": "^[a-z]{2}$"},
+        "comments": {"type": "array", "items": {"type": "string"}, "description": "Notes carried from the upstream record."},
+        "notes": {"type": "array", "items": {"type": "string"}, "description": "Unlist's own notes on the record."},
+        "sources": {"type": "array", "uniqueItems": true, "items": {"type": "string", "format": "uri"}},
+        "quality": {"type": "string", "enum": ["tested", "verified", "imported", "scraped"]},
+        "supervisory-authority": {"$ref": "#/definitions/slug"},
+        "broker": {"type": "boolean"},
+        "recheck-default": {"type": ["integer", "null"], "minimum": 1, "description": "Days between re-checks; null uses Unlist's default."},
+        "last-checked": {"type": "string", "format": "date"}
+      }
+    },
+    "obsolete": {
+      "type": "object",
+      "required": ["slug", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "slug": {"$ref": "#/definitions/slug"},
+        "name": {"type": "string", "minLength": 1},
+        "reason": {"type": "string"},
+        "redirect-to": {"$ref": "#/definitions/slug"}
+      }
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Cases · Unlist{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Cases{% if organization %} at {{ organization.name }}{% endif %}</h1>
+  <a class="button" href="{% url 'cases:new' %}{% if selected_subject %}?subject={{ selected_subject }}{% endif %}">Open a Case</a>
+</div>
+
+<form method="get" class="filter">
+  <div>
+    <label for="id_subject">Subject</label>
+    <select name="subject" id="id_subject">
+      <option value="">All Subjects</option>
+      {% for subject in subjects %}<option value="{{ subject.pk }}"{% if subject.pk == selected_subject %} selected{% endif %}>{{ subject.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="id_state">State</label>
+    <select name="state" id="id_state">
+      <option value="">Any state</option>
+      {% for value, label in states %}<option value="{{ value }}"{% if value == selected_state %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="id_result">Result</label>
+    <select name="result" id="id_result">
+      <option value="">Any result</option>
+      {% for value, label in results %}<option value="{{ value }}"{% if value == selected_result %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="id_broker">Brokers</label>
+    <select name="broker" id="id_broker">
+      <option value="">Brokers and others</option>
+      <option value="yes"{% if selected_broker == "yes" %} selected{% endif %}>Brokers only</option>
+      <option value="no"{% if selected_broker == "no" %} selected{% endif %}>No Brokers</option>
+    </select>
+  </div>
+  {% if organization_key %}<input type="hidden" name="organization" value="{{ organization_key }}">{% endif %}
+  <button type="submit">Filter</button>
+  {% if filtered %}<a href="{% url 'cases:list' %}">Show all</a>{% endif %}
+</form>
+{% if organization_key and not organization %}<p class="warn">No Organization “{{ organization_key }}”.</p>{% endif %}
+
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Reference</th><th>Subject</th><th>Organization</th><th>State</th><th>Due</th><th>Re-check</th></tr></thead>
+    <tbody>
+    {% for case in cases %}
+      <tr>
+        <td><a href="{% url 'cases:detail' case.pk %}"><code>{{ case.reference }}</code></a></td>
+        <td>{{ case.subject.name }}</td>
+        <td>{{ case.organization.name }}{% include "unlist/_broker.html" with organization=case.organization %}</td>
+        <td>{{ case.state_label }}{% if case.result %} <span class="muted">({{ case.result }})</span>{% endif %}</td>
+        <td class="nowrap">{% if case.due_date %}{{ case.due_date|date:"j M Y" }}{% else %}<span class="muted">none</span>{% endif %}</td>
+        <td class="nowrap">{% if case.recheck_on %}{{ case.recheck_on|date:"j M Y" }}{% else %}<span class="muted">none</span>{% endif %}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6" class="muted">{% if filtered %}No Case matches.{% else %}No Cases yet.{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

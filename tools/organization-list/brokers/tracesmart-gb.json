@@ -1,0 +1,24 @@
+{
+  "slug": "tracesmart-gb",
+  "name": "Tracesmart Limited",
+  "runs": [
+    "TraceIQ"
+  ],
+  "relevant-countries": [
+    "gb"
+  ],
+  "categories": [
+    "addresses"
+  ],
+  "email": "dpo@lexisnexisrisk.com",
+  "suggested-transport-medium": "email",
+  "sources": [
+    "https://ico.org.uk/ESDWebPages/Entry/Z708281X"
+  ],
+  "quality": "verified",
+  "broker": true,
+  "last-checked": "2026-11-26",
+  "notes": [
+    "People tracing and identity data (LexisNexis Risk Solutions, Cardiff). Postal address on the ICO register entry; not copied here."
+  ]
+}

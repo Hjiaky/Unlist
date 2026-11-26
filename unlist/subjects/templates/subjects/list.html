@@ -1,0 +1,19 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Subjects · Unlist{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Subjects</h1><a class="button" href="{% url 'subjects:add' %}">+ Add a Subject</a></div>
+<div class="table-wrap fit">
+  <table class="table">
+    <thead><tr><th>Subject</th><th>Country</th><th>Consent</th></tr></thead>
+    <tbody>
+    {% for subject in subjects %}
+      <tr><td><a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a></td><td>{{ subject.country }}</td>
+        <td>{% if subject.has_active_consent %}consent recorded{% else %}<span class="warn">no consent</span>{% endif %}</td></tr>
+    {% empty %}
+      <tr><td colspan="3" class="muted">No Subjects yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

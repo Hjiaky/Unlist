@@ -1,0 +1,114 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}{{ subject.name }} · Unlist{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ subject.name }}</h1>
+  <span class="muted">{{ mail.mode_label }}{% if mail.last %} · last {% if mail.live and mail.live.last_scan_at == mail.last %}scan{% else %}import{% endif %} {{ mail.last|date:"j M Y" }}{% else %} · no mail imported yet{% endif %}</span>
+  <div class="actions">
+    {% if mail.live %}
+    <form method="post" action="{% url 'mail:scan_now' subject.pk mail.live.mailbox.pk %}">{% csrf_token %}<button type="submit" class="primary">Re-scan mailbox</button></form>
+    {% elif mail.imported %}
+    <a class="button" href="{% url 'mail:upload' subject.pk %}">Import new export</a>
+    {% else %}
+    <a class="button primary" href="{% url 'mail:upload' subject.pk %}">Import mail</a>
+    <a href="{% url 'mail:connections' subject.pk %}">or connect a mailbox</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if not consent %}
+<p class="card card-warn">No active consent. Nothing can be drafted for {{ subject.name }} until it is recorded. <a href="{% url 'subjects:consent' subject.pk %}">Record consent</a></p>
+{% endif %}
+{% if subject.is_child %}
+<p class="card">This Subject is a child.{% if subject.parental_responsibility %} Parental responsibility: {{ subject.parental_responsibility }}.{% endif %}
+{% if subject.needs_own_involvement %} From age 12, the Subject needs their own involvement: talk it through with them.{% endif %}</p>
+{% endif %}
+
+<ul class="counts" aria-label="Counts">
+  {% for label, number, url in counts %}<li><a href="{{ url }}"><b>{{ number }}</b><span>{{ label }}</span></a></li>{% endfor %}
+</ul>
+
+<ul class="links">
+  <li><a href="{% url 'mail:discoveries' subject.pk %}">Found in the mail</a>{% if found %} <span class="count">{{ found|length }}<span class="visually-hidden"> new</span></span>{% endif %}</li>
+  <li><a href="{% url 'mail:unassigned' subject.pk %}">Unassigned senders</a>{% if unassigned %} <span class="count">{{ unassigned }}</span>{% endif %}</li>
+  <li><a href="{% url 'breaches:subject' subject.pk %}">Breaches</a></li>
+  <li><a href="{% url 'cases:new' %}?subject={{ subject.pk }}">Open a Case by hand</a></li>
+  <li><a href="#about">Consent and details</a></li>
+</ul>
+
+<div class="view-bar">
+  <ul class="tabs" aria-label="Which Cases">
+    {% for key, label in tabs %}<li><a href="?tab={{ key }}&amp;view={{ view }}"{% if key == tab %} aria-current="page"{% endif %}>{{ label }}</a></li>{% endfor %}
+  </ul>
+  {% include "unlist/_view_toggle.html" %}
+</div>
+
+<form id="batch" method="post" action="{% url 'approve' %}">{% csrf_token %}</form>
+
+{% if view == "board" %}
+{% include "unlist/_board.html" with show_subject=False %}
+{% else %}
+{% if found %}
+<p class="calm">{{ found|length }} Organization{{ found|length|pluralize }} found in the mail {{ found|length|pluralize:"is,are" }} waiting for a decision. <a href="{% url 'mail:discoveries' subject.pk %}">Pursue or ignore them</a>.</p>
+{% endif %}
+<div class="table-wrap">
+  <table class="table">
+    <caption class="visually-hidden">Cases of {{ subject.name }}</caption>
+    <thead><tr><th>Organization</th><th>State</th><th>Next date</th><th>Who acts next</th></tr></thead>
+    <tbody>
+    {% for row in rows %}{% with case=row.case %}
+      <tr>
+        <td><a href="{% url 'cases:detail' case.pk %}">{{ case.organization.name }}</a>{% include "unlist/_broker.html" with organization=case.organization %}
+          {% if row.awaiting %}<div class="muted small">To <span class="recipient">{{ row.awaiting.draft.recipient }}</span></div>{% endif %}</td>
+        <td><span class="pill{% if row.column == 'you' %} pill-you{% elif row.column == 'resting' or row.column == 'closed' %} pill-quiet{% endif %}">{{ case.state_label }}</span>
+          {% if row.reply_waiting %}<div class="small"><a href="{% url 'cases:replies' %}">A reply to confirm</a></div>{% endif %}</td>
+        <td class="nowrap">{% if row.date %}{{ row.date_label }} {{ row.date|date:"j M Y" }}{% else %}<span class="muted">none</span>{% endif %}</td>
+        <td class="muted">{{ case.next_actor }}</td>
+      </tr>
+    {% endwith %}{% empty %}
+      <tr><td colspan="4" class="muted">{% if tab == "all" %}No Cases yet. Pursue an Organization from the mail, or open a Case by hand.{% else %}Nothing here.{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<h2 id="about">Consent and details</h2>
+<div class="case-grid">
+<section class="card" id="consent" aria-labelledby="h-consent">
+  <h2 id="h-consent">Consent</h2>
+  {% if consent %}
+  <p>Consent recorded on {{ consent.given_at|date:"j F Y" }}, given by {{ consent.get_given_by_display|lower }}.</p>
+  <p class="muted">{{ consent.scope }}</p>
+  <form method="post" action="{% url 'subjects:consent_withdraw' subject.pk %}">{% csrf_token %}
+    <button type="submit">Withdraw consent</button></form>
+  {% else %}
+  <p>No active consent. Nothing can be drafted for this Subject until it is recorded.</p>
+  {% if last_withdrawn %}<p class="muted">Withdrawn on {{ last_withdrawn.withdrawn_at|date:"j F Y" }}.</p>{% endif %}
+  <p><a class="button primary" href="{% url 'subjects:consent' subject.pk %}">Record consent</a></p>
+  {% endif %}
+</section>
+
+<div>
+<section class="card" aria-labelledby="h-mailboxes">
+  <h2 id="h-mailboxes">Email addresses</h2>
+  <p class="muted">Country {{ subject.country }}{% if subject.year_of_birth %}, born {{ subject.year_of_birth }}{% endif %}.</p>
+  <ul class="plain-list">{% for mailbox in mailboxes %}<li class="anywhere">{{ mailbox.email }} <span class="muted">({{ mailbox.get_mode_display|lower }})</span></li>{% endfor %}</ul>
+  <ul class="links"><li><a href="{% url 'subjects:mailbox_add' subject.pk %}">Add an email address</a></li><li><a href="{% url 'mail:connections' subject.pk %}">Live connection</a></li></ul>
+</section>
+
+<section class="card" id="details" aria-labelledby="h-details">
+  <h2 id="h-details">Identifying details</h2>
+  <p class="muted">Sent only when an Organization asks for them, and only the ones you pick.</p>
+  <ul class="plain-list">{% for detail in details %}
+    <li>{{ detail.get_kind_display }}: {{ detail.value }}{% if detail.organization_label %} <span class="muted">({{ detail.organization_label }})</span>{% endif %}
+      <form method="post" action="{% url 'subjects:detail_remove' subject.pk detail.pk %}" class="inline">{% csrf_token %}<button type="submit" class="small">Remove</button></form></li>
+  {% empty %}<li class="muted">None yet.</li>{% endfor %}</ul>
+  <p><a href="{% url 'subjects:detail_add' subject.pk %}">Add a detail</a></p>
+</section>
+</div>
+</div>
+
+<p><a class="warn" href="{% url 'subjects:delete' subject.pk %}">Delete this Subject</a></p>
+{% endblock %}

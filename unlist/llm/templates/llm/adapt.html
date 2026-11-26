@@ -1,0 +1,25 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Adapted draft for {{ case.reference }} · Unlist{% endblock %}
+{% block content %}
+{% include "cases/_crumbs.html" %}
+<h1>{% if proposal %}{{ draft.get_kind_display }} in {{ proposal.language }}{% else %}Adapted draft{% endif %} <span class="muted">for <code>{{ case.reference }}</code></span></h1>
+<section class="card">
+  {% if proposal %}
+  <p class="source">{{ proposal.label }}</p>
+  <p>A machine translation of the {{ draft.lang }} draft. The Subject's details were replaced by placeholders before it
+    was sent and are filled in again here. Read it, correct it, then use it: the draft keeps waiting for your approval.</p>
+  {% endif %}
+  <form method="post" action="{% url 'llm:accept_draft' draft.pk %}">{% csrf_token %}
+    {{ form.as_p }}
+    <div class="actions">
+      <button type="submit" class="primary">Use this text in the draft</button>
+      <a href="{% url 'cases:detail' case.pk %}">Back, keep the draft as it is</a>
+    </div>
+  </form>
+</section>
+<details class="card"><summary>The draft as it is ({{ draft.lang }})</summary>
+  <p class="subject-line">{{ draft.subject_line }}</p>
+  <pre class="text">{{ draft.body }}</pre>
+</details>
+{% endblock %}

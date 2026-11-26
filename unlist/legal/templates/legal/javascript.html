@@ -1,0 +1,25 @@
+{% extends "unlist/base_narrow.html" %}
+{% load static %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Copyright (C) 2026 The Unlist contributors #}
+{% block title %}JavaScript licence information{% endblock %}
+{% block content %}
+<h1>JavaScript licence information</h1>
+<p>Every script these pages load is free software and is served from this instance. The table follows the GNU LibreJS "JavaScript Web Labels" format: script, licence, source.</p>
+<div class="table-wrap fit"><table id="jslicense-labels1" class="table">
+  <thead>
+    <tr><th>Script</th><th>Licence</th><th>Source</th></tr>
+  </thead>
+  <tbody>
+    {% for script in scripts %}
+    <tr>
+      <td><a href="{% static script.path %}">{{ script.name }}</a></td>
+      <td><a href="{% static script.licence_file %}">{{ script.licence }}</a></td>
+      <td><a href="{{ script.source }}">{{ script.name }} source</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table></div>
+<p class="muted">The table format was written from memory of the LibreJS documentation; it could not be checked against gnu.org from the build environment. The licence link points to the licence text served by this instance.</p>
+<p><a href="{% url 'legal:about' %}">Back to About</a></p>
+{% endblock %}

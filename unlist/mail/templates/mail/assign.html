@@ -1,0 +1,50 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Assign a sender · Unlist{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a></p>
+<h1>Assign {% if sender.display_name %}{{ sender.display_name }} {% endif %}<code>{{ sender.domain }}</code></h1>
+{% if sender.ambiguous %}
+<p><code>{{ sender.domain }}</code> is a shared mail or platform domain, so it cannot belong to one Organization.
+Assigning connects only this sender name, for {{ subject.name }}, to the Organization you choose.</p>
+{% else %}
+<p>Assigning adds <code>{{ sender.domain }}</code> to the Organization's domains as a local override, so later
+imports, for every Subject, map it on their own.</p>
+{% endif %}
+
+<form method="get" class="search">
+  <label for="q">Search Organizations by name, slug or domain</label>
+  <input type="text" id="q" name="q" value="{{ query }}">
+  <button type="submit">Search</button>
+</form>
+
+{% if query %}
+<div class="table-wrap">
+<table class="table">
+  <tbody>
+  {% for organization in results %}
+    <tr>
+      <td><a href="{% url 'organizations:detail' organization.slug %}">{{ organization.name }}</a>
+        {% include "unlist/_broker.html" with organization=organization %}</td>
+      <td>{{ organization.domains|join:", " }}</td>
+      <td><div class="actions tight"><form method="post">{% csrf_token %}
+        <input type="hidden" name="organization" value="{{ organization.slug }}">
+        <button type="submit">Assign to this Organization</button></form></div></td>
+    </tr>
+  {% empty %}
+    <tr><td>No Organization found.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}
+{% if not sender.ambiguous %}
+<form method="post" class="card">{% csrf_token %}
+  <p>Not on any list? Create a local Organization for <code>{{ sender.domain }}</code>. It has no contact until you add
+  one on its page, and nothing is sent to it before that.</p>
+  <input type="hidden" name="create_stub" value="1">
+  <button type="submit">Create a local Organization</button>
+</form>
+{% endif %}
+<p><a href="{% url 'mail:unassigned' subject.pk %}">Back</a></p>
+{% endblock %}

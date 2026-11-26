@@ -1,0 +1,13 @@
+{% extends "unlist/base_narrow.html" %}
+{% block title %}Set up Unlist{% endblock %}
+{% block content %}
+<h1>Welcome to Unlist</h1>
+<p>Create the Operator account: the one login for this instance. You will act for the people in your
+  household, with their consent, and approve every email before it leaves in their name.</p>
+<form method="post" class="card">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="primary">Create the Operator account</button>
+</form>
+<p class="muted">Forgot the password later? Run <code>python manage.py changepassword</code> inside the container.</p>
+{% endblock %}

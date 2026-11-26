@@ -1,0 +1,49 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Connect {{ mailbox.email }} · Unlist{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a></p>
+<h1>Connect {{ mailbox.email }}</h1>
+<p>Unlist logs in with an <strong>app password</strong>: a separate password the provider creates for
+one program, which you can revoke at any time. It is stored encrypted with this instance's key. Unlist
+contacts the mail servers only when you press a button here or switch scheduled re-scans on.</p>
+
+{% if microsoft %}
+<p class="card warn">Outlook.com and Microsoft 365 generally require OAuth for IMAP, which Unlist does not
+use, so a live connection is unlikely to work. <a href="{% url 'mail:upload' subject.pk %}">Import the mail from a
+file</a> instead; requests are then handed over for {{ subject.name }} to send.</p>
+{% endif %}
+
+<section class="card">
+  <h2>Provider</h2>
+  <p class="actions tight">
+    {% for item in presets %}<a class="button small{% if preset.key == item.key %} primary{% endif %}"{% if preset.key == item.key %} aria-current="true"{% endif %} href="?provider={{ item.key }}">{{ item.name }}</a>{% endfor %}
+  </p>
+  <p class="muted">Choosing a provider fills in its servers. For another provider, enter the values from its help pages.</p>
+  {% if preset %}
+  <h3>App password for {{ preset.name }}</h3>
+  <p>{{ preset.app_password }}</p>
+  {% endif %}
+</section>
+
+{% if results %}
+<ul class="messages">
+  {% for what, ok, message in results %}<li class="{% if ok %}success{% else %}error{% endif %}">{{ message }}</li>{% endfor %}
+</ul>
+{% if not form.has_password %}<p class="muted">Enter the app password again to save.</p>{% endif %}
+{% endif %}
+
+<form method="post" class="card">{% csrf_token %}
+  {{ form.as_p }}
+  <div class="actions tight">
+    <button type="submit" name="action" value="save" class="primary">Save and use live</button>
+    <button type="submit" name="action" value="test">Test connection</button>
+  </div>
+  <p class="muted">"Test connection" only logs in to IMAP and SMTP and out again; nothing is read, sent or saved.
+  "Save and use live" switches {{ mailbox.email }} to live mode: approved requests from it are sent by Unlist.</p>
+</form>
+
+<p class="muted">If the provider refuses the app password, or has none, use <a href="{% url 'mail:upload' subject.pk %}">file
+import</a>: it finds the same Organizations, and requests are handed over for {{ subject.name }} to send.</p>
+{% if connection %}<p><a href="{% url 'mail:connection' subject.pk mailbox.pk %}">Back to the connection</a></p>{% endif %}
+{% endblock %}

@@ -1,0 +1,8 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% if shown %}
+<section class="card">
+  <h2>Complaint</h2>
+  <p>{% if case.state == "complaint_lodged" %}The Complaint was lodged. The page keeps the text that was lodged and the evidence bundle.{% elif progress.stage == "uk_organization" %}First step (UK): a short complaint to the Organization under DPA 2018 s.164A, which the Subject may skip.{% elif progress.stage == "uk_organization_sent" and not progress.authority_ready %}The complaint to the Organization was sent on {{ progress.sent_on|date:"j F Y" }}. The Complaint to the Information Commission is offered once it answers, or from {{ progress.wait_until|date:"j F Y" }}.{% else %}The Complaint to the Supervisory Authority is ready: the text to paste, the authority's channel and the evidence bundle.{% endif %}</p>
+  <p><a class="button" href="{% url 'cases:complaint' case.pk %}">Open the Complaint</a></p>
+</section>
+{% endif %}

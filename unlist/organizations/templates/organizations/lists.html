@@ -1,0 +1,51 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Organization Lists · Unlist{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'settings' %}">Settings</a></p>
+<h1>Organization Lists</h1>
+<p>Higher lists win field by field; your local overrides beat every list. Lists are fetched only when you press the button below. Bundled lists change with Unlist releases.</p>
+<form method="post" action="{% url 'organizations:update_lists' %}">{% csrf_token %}<button type="submit" class="primary">Update lists</button></form>
+
+<div class="table-wrap">
+<table class="table">
+  <thead><tr><th>Order</th><th>List</th><th>Version</th><th>Last updated</th><th></th></tr></thead>
+  <tbody>
+  {% for list in lists %}
+    <tr{% if not list.enabled %} class="muted"{% endif %}>
+      <td>
+        <form method="post" action="{% url 'organizations:move_list' list.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="direction" value="up"><button type="submit" aria-label="Move {{ list.name }} up">↑</button></form>
+        <form method="post" action="{% url 'organizations:move_list' list.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="direction" value="down"><button type="submit" aria-label="Move {{ list.name }} down">↓</button></form>
+      </td>
+      <td>
+        <strong>{{ list.name }}</strong>{% if list.bundled %} <span class="muted">(bundled)</span>{% endif %}{% if not list.enabled %} <span class="muted">(disabled)</span>{% endif %}<br>
+        <span class="muted">{{ list.licence }}{% if list.url %} · {{ list.url }}{% endif %}</span>
+        {% if list.last_error %}<div class="warn">Last update failed: {{ list.last_error }}</div>{% endif %}
+        {% if list.notes %}
+        <details><summary>{{ list.notes|length }} skipped record{{ list.notes|length|pluralize }} or note{{ list.notes|length|pluralize }}</summary>
+          <ul>{% for note in list.notes %}<li>{{ note }}</li>{% endfor %}</ul>
+        </details>
+        {% endif %}
+      </td>
+      <td>{{ list.version }}{% if list.date %}<br><span class="muted">{{ list.date|date:"Y-m-d" }}</span>{% endif %}</td>
+      <td>{{ list.last_updated|date:"Y-m-d H:i"|default:"never" }}</td>
+      <td>
+        <form method="post" action="{% url 'organizations:toggle_list' list.pk %}" class="inline">{% csrf_token %}<button type="submit">{% if list.enabled %}Disable{% else %}Enable{% endif %}</button></form>
+        {% if not list.bundled %}<form method="post" action="{% url 'organizations:remove_list' list.pk %}" class="inline">{% csrf_token %}<button type="submit">Remove</button></form>{% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<section class="card">
+  <h2>Add a list</h2>
+  <p class="muted">Adding a list fetches it once from its address.</p>
+  <form method="post" action="{% url 'organizations:add_list' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Add</button>
+  </form>
+</section>
+{% endblock %}

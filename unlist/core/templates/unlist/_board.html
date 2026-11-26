@@ -1,0 +1,36 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Board: one column per state, each a list, so a screen reader reads it as six lists. #}
+<div class="board">
+  {% for column in columns %}
+  <section class="board-col{% if column.key == 'you' %} you{% endif %}" aria-labelledby="col-{{ column.key }}">
+    <h2 id="col-{{ column.key }}">{{ column.heading }} <span class="count">{{ column.total }}</span></h2>
+    {% if column.text %}<p class="muted small">{{ column.text }}</p>{% endif %}
+    {% if column.key == "you" and has_drafts %}<p><button form="batch" type="submit" class="small">Review the ticked drafts</button></p>{% endif %}
+    <ul>
+      {% for row in column.rows %}{% with case=row.case %}
+      <li class="board-card">
+        <div class="org"><a href="{% url 'cases:detail' case.pk %}">{{ case.organization.name }}</a>{% include "unlist/_broker.html" with organization=case.organization %}</div>
+        <div class="meta">{% if show_subject %}{{ case.subject.name }} · {% endif %}{{ case.state_label }}{% if row.date %} · {{ row.date_label }} {{ row.date|date:"j M" }}{% endif %}</div>
+        {% if row.reply_waiting %}<div class="meta"><a href="{% url 'cases:replies' %}">A reply to confirm</a></div>{% endif %}
+        {% if row.awaiting %}
+        <div class="meta">To <span class="recipient">{{ row.awaiting.draft.recipient }}</span> · {% if row.awaiting.mode == "send" %}Unlist sends it{% else %}the Subject sends it{% endif %}</div>
+        <label class="check small"><input type="checkbox" form="batch" name="draft" value="{{ row.awaiting.draft.pk }}"> Tick to approve<span class="visually-hidden"> the draft to {{ case.organization.name }}</span></label>
+        {% endif %}
+      </li>
+      {% endwith %}{% endfor %}
+      {% for discovery in column.found %}
+      <li class="board-card">
+        <div class="org">{{ discovery.organization.name }}{% include "unlist/_broker.html" with organization=discovery.organization %}</div>
+        <div class="meta">{% if show_subject %}{{ discovery.subject.name }} · {% endif %}{{ discovery.get_evidence_display }}</div>
+        <div class="actions">
+          <form method="post" action="{% url 'mail:pursue' discovery.subject_id discovery.pk %}">{% csrf_token %}<button type="submit" class="small">Pursue</button></form>
+          <form method="post" action="{% url 'mail:ignore' discovery.subject_id discovery.pk %}">{% csrf_token %}<button type="submit" class="small">Ignore</button></form>
+        </div>
+      </li>
+      {% endfor %}
+      {% if not column.total %}<li class="muted small">Empty</li>{% endif %}
+    </ul>
+    {% if column.more > 0 %}<p class="small">{% if column.more_url %}<a href="{{ column.more_url }}">{{ column.more }} more</a>{% else %}{{ column.more }} more on the discovery lists{% endif %}</p>{% endif %}
+  </section>
+  {% endfor %}
+</div>

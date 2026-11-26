@@ -1,0 +1,6 @@
+{% extends "unlist/base_narrow.html" %}
+{% block title %}Too many attempts{% endblock %}
+{% block content %}
+<h1>Too many failed logins</h1>
+<p>Logins from this address are paused for up to {{ minutes }} minutes. Try again later.</p>
+{% endblock %}

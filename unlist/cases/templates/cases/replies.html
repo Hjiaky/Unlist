@@ -1,0 +1,60 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Replies · Unlist{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'home' %}">Needs you</a></p>
+<h1>Replies</h1>
+<p class="muted">Replies Unlist matched to a Case, with a suggested outcome. Nothing changes until you confirm. Bounces and automatic replies are recorded on their own.</p>
+
+<section class="card">
+  <h2>To confirm</h2>
+  {% for item in to_confirm %}{% with reply=item.reply form=item.form %}
+  <article class="item" id="reply-{{ reply.pk }}">
+    <header>
+      <a href="{% url 'cases:detail' reply.case.pk %}"><code>{{ reply.case.reference }}</code></a>
+      {{ reply.subject.name }} at {{ reply.case.organization.name }}{% include "unlist/_broker.html" with organization=reply.case.organization %}
+      <span class="muted">· {{ reply.case.state_label }}{% if reply.case.due_date %} · due {{ reply.case.due_date|date:"j M Y" }}{% endif %}</span>
+    </header>
+    <p><strong>{{ reply.subject_line|default:"(no subject)" }}</strong>
+      <span class="muted">· from {{ reply.from_name|default:"" }} &lt;{{ reply.from_address }}&gt; · {{ reply.received_at|date:"j M Y H:i" }} · {{ reply.get_kind_display }} · matched by {{ reply.get_matched_by_display|lower }}{% if not reply.authenticated %} · sender not authenticated{% endif %}</span></p>
+    <p class="suggestion">{% if reply.suggested_outcome %}Suggested: {{ reply.suggested_label }} <span class="muted">({{ reply.get_suggestion_source_display }}{% if reply.suggestion_note %}: {{ reply.suggestion_note }}{% endif %})</span>{% else %}No suggestion: read it and choose.{% endif %}</p>
+    <details><summary>Reply text</summary><pre class="text">{{ reply.body|default:"(no text)" }}</pre></details>
+    <p>{% if reply.raw_attachment %}<a href="{% url 'cases:attachment' reply.raw_attachment.pk %}">Download the .eml</a>{% endif %}
+      {% for file in item.files %} · <a href="{% url 'cases:attachment' file.pk %}">{{ file.original_name }}</a> <span class="muted">{{ file.size|filesizeformat }}</span>{% endfor %}</p>
+    <form method="post" action="{% url 'cases:reply_confirm' reply.pk %}" class="reply-form">{% csrf_token %}
+      {% for field in form %}
+      <div class="field">
+        {% if field.field.widget.input_type == "checkbox" %}<label class="check">{{ field }} {{ field.label }}</label>
+        {% else %}{{ field.label_tag }} {{ field }}{% endif %}
+      </div>
+      {% endfor %}
+      <div class="actions"><button type="submit" class="primary">Confirm</button></div>
+    </form>
+    <form method="post" action="{% url 'cases:reply_dismiss' reply.pk %}" class="inline">{% csrf_token %}<button type="submit">Dismiss (deletes the stored copy)</button></form>
+  </article>
+  {% endwith %}{% empty %}
+  <p class="muted">Nothing to confirm.</p>
+  {% endfor %}
+</section>
+
+<section class="card">
+  <h2>Not matched</h2>
+  <p class="muted">Mail from an Organization a Subject has a Case with, or carrying something like a reference code, that Unlist could not put on one Case. Assign it to a Case or dismiss it.</p>
+  {% for item in unmatched %}{% with reply=item.reply form=item.form %}
+  <article class="item" id="reply-{{ reply.pk }}">
+    <header><strong>{{ reply.subject_line|default:"(no subject)" }}</strong>
+      <span class="muted">· for {{ reply.subject.name }} · from {{ reply.from_name|default:"" }} &lt;{{ reply.from_address }}&gt; · {{ reply.received_at|date:"j M Y H:i" }} · {{ reply.get_kind_display }}{% if not reply.authenticated %} · sender not authenticated{% endif %}</span>
+    </header>
+    {% if reply.suggested_outcome %}<p class="suggestion">Suggested: {{ reply.suggested_label }} <span class="muted">({{ reply.get_suggestion_source_display }})</span></p>{% endif %}
+    <details><summary>Reply text</summary><pre class="text">{{ reply.body|default:"(no text)" }}</pre></details>
+    <form method="post" action="{% url 'cases:reply_assign' reply.pk %}" class="inline">{% csrf_token %}
+      {{ form.case.label_tag }} {{ form.case }}
+      <button type="submit" class="primary">Assign</button>
+    </form>
+    <form method="post" action="{% url 'cases:reply_dismiss' reply.pk %}" class="inline">{% csrf_token %}<button type="submit">Dismiss (deletes the stored copy)</button></form>
+  </article>
+  {% endwith %}{% empty %}
+  <p class="muted">Nothing unmatched.</p>
+  {% endfor %}
+</section>
+{% endblock %}

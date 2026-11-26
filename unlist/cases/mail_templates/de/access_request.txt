@@ -1,0 +1,33 @@
+Subject: Auskunftsersuchen nach Art. 15 DSGVO [Ref {{ reference }}]
+
+Sehr geehrte Damen und Herren,
+
+hiermit bitte ich um Auskunft über meine personenbezogenen Daten nach Art. 15 der Datenschutz-Grundverordnung (DSGVO).
+
+Bitte bestätigen Sie mir, ob Sie mich betreffende personenbezogene Daten verarbeiten. Falls ja, bitte ich um:
+
+- eine Kopie aller mich betreffenden personenbezogenen Daten, die Sie verarbeiten (Art. 15 Abs. 3 DSGVO);
+- die Verarbeitungszwecke;
+- die Kategorien personenbezogener Daten, die verarbeitet werden;
+- die Empfänger, gegenüber denen die personenbezogenen Daten offengelegt worden sind oder noch offengelegt werden, insbesondere Empfänger in Drittländern oder bei internationalen Organisationen. Bitte nennen Sie jeden Empfänger namentlich und nicht nur Kategorien von Empfängern (EuGH, Urteil vom 12. Januar 2023, C-154/21);
+- falls möglich die geplante Dauer, für die die personenbezogenen Daten gespeichert werden, oder, falls dies nicht möglich ist, die Kriterien für die Festlegung dieser Dauer;
+- das Bestehen eines Rechts auf Berichtigung oder Löschung der personenbezogenen Daten oder auf Einschränkung der Verarbeitung sowie eines Widerspruchsrechts gegen diese Verarbeitung;
+- das Bestehen eines Beschwerderechts bei einer Aufsichtsbehörde;
+- wenn die personenbezogenen Daten nicht bei mir erhoben wurden, alle verfügbaren Informationen über ihre Herkunft;
+- das Bestehen einer automatisierten Entscheidungsfindung einschließlich Profiling und in diesem Fall aussagekräftige Informationen über die involvierte Logik sowie die Tragweite und die angestrebten Auswirkungen einer derartigen Verarbeitung für mich;
+- bei einer Übermittlung personenbezogener Daten an ein Drittland oder an eine internationale Organisation die geeigneten Garantien im Zusammenhang mit der Übermittlung (Art. 15 Abs. 2 DSGVO).
+
+Diese Anfrage umfasst alle mich betreffenden personenbezogenen Daten, auch solche, die Sie für andere Marken oder Dienste verarbeiten, für die Sie Verantwortlicher sind. Falls Sie keine Daten über mich verarbeiten, teilen Sie mir das bitte ebenfalls mit.
+
+Damit Sie meine Daten finden: Ich nutze bei Ihnen die E-Mail-Adresse {{ subject_email }}.
+{% if identifying_details %}
+Weitere Angaben, die Ihnen helfen können:
+{% for item in identifying_details %}
+- {{ item }}
+{% endfor %}
+{% endif %}
+
+Bitte senden Sie mir Ihre Antwort per E-Mail an {{ subject_email }}, und zwar unverzüglich, spätestens aber innerhalb eines Monats nach Eingang dieser Anfrage (Art. 12 Abs. 3 DSGVO). Die Auskunft ist für mich unentgeltlich (Art. 12 Abs. 5 DSGVO).
+
+Mit freundlichen Grüßen
+{{ subject_name }}

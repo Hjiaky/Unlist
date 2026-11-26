@@ -1,0 +1,75 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% load llm %}
+{% block title %}{{ organization.name }} · Unlist{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'organizations:index' %}">Organizations</a></p>
+<div class="page-head">
+  <h1>{{ organization.name }}{% include "unlist/_broker.html" with organization=organization %}</h1>
+  {% if cases %}<a href="{% url 'cases:list' %}?organization={{ organization.slug }}">{{ cases }} Case{{ cases|pluralize }} here</a>{% endif %}
+</div>
+<p class="muted">Slug <code>{{ organization.slug }}</code>{% if organization.aliases %}, also known as {% for alias in organization.aliases %}<code>{{ alias }}</code>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}.</p>
+{% if organization.obsolete %}<p class="card warn">This record is obsolete and has no successor.</p>{% endif %}
+{% if not organization.listed %}<p class="card warn">No subscribed list has this Organization any more. It is kept because a Case refers to it.</p>{% endif %}
+{% if organization.is_stub %}<p class="card">A local stub: no list knows this Organization. Add a contact below; nothing is sent until there is one.</p>
+{% elif not organization.contact_confirmed %}<p class="card warn">This record is {{ organization.quality }}. Confirm the contact (add it as a local override) before the first request.</p>{% endif %}
+{% if pending %}<p class="card warn">A list update changes this Organization's contact. <a href="{% url 'organizations:pending' %}">Review it</a>.</p>{% endif %}
+
+{% if domain_conflicts %}
+<section class="card">
+  <h2>Domain conflicts</h2>
+  <p>These domains are also claimed by another Organization, so mail from them matches neither until you settle it with a local override of <code>domains</code>.</p>
+  <ul>
+  {% for claim in domain_conflicts %}
+    <li><code>{{ claim.domain }}</code>: also <a href="{% url 'organizations:detail' claim.organization.slug %}">{{ claim.organization.name }}</a>{% if claim.source %} ({{ claim.source.name }}){% else %} (local override){% endif %}</li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<h2>Merged record</h2>
+<p class="muted">Each field comes from the highest Organization List that has it; a local override beats every list.</p>
+<div class="table-wrap">
+<table class="table">
+  <thead><tr><th>Field</th><th>Value</th><th>From</th></tr></thead>
+  <tbody>
+  {% for row in rows %}
+    <tr>
+      <th scope="row">{{ row.field }}</th>
+      <td class="anywhere">{{ row.value|linebreaksbr }}
+        {% if row.conflicts %}
+        <div class="warn small">Lists disagree:
+          <ul>{% for list_name, value in row.conflicts %}<li>{{ list_name }}: {{ value }}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
+      </td>
+      <td>{{ row.source }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<section class="card">
+  <h2>Local overrides</h2>
+  {% if overrides %}
+  <ul class="plain-list">
+    {% for override in overrides %}
+    <li><code>{{ override.field }}</code> = {{ override.value|default_if_none:"(empty)" }}{% if override.note %} <span class="muted">({{ override.note }})</span>{% endif %}
+      <form method="post" action="{% url 'organizations:delete_override' organization.slug override.pk %}" class="inline">{% csrf_token %}<button type="submit">Remove</button></form>
+    </li>
+    {% endfor %}
+  </ul>
+  <p><a class="button" href="{% url 'organizations:export' organization.slug %}">Export overrides as a suggestion (JSON)</a> <span class="muted">to propose them to the list's maintainers.</span></p>
+  {% else %}
+  <p class="muted">None. A local override beats every list.</p>
+  {% endif %}
+  {% llm_contact_link organization %}
+  <h3>Add or change an override</h3>
+  <form method="post" action="{% url 'organizations:add_override' organization.slug %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="primary">Save override</button>
+  </form>
+</section>
+{% endblock %}

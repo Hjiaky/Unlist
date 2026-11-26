@@ -1,0 +1,26 @@
+{
+  "slug": "infobel",
+  "name": "Infobel SA",
+  "relevant-countries": [
+    "be"
+  ],
+  "categories": [
+    "addresses"
+  ],
+  "web": "https://www.infobelpro.com/",
+  "sources": [
+    "https://www.infobelpro.com/en/privacy-policy",
+    "https://www.edpb.europa.eu/system/files/2026-04/spe_databorkersmarketstudy_en.pdf"
+  ],
+  "quality": "scraped",
+  "broker": true,
+  "notes": [
+    "Contact to be confirmed: the EDPB data brokers market study (2026) names no privacy contact; see https://www.infobelpro.com/en/privacy-policy."
+  ],
+  "runs": [
+    "InfobelPro"
+  ],
+  "domains": [
+    "infobelpro.com"
+  ]
+}

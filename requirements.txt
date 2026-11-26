@@ -1,0 +1,11 @@
+# Runtime dependencies, pinned. Each one needs an AGPL-compatible licence and a reason
+# the standard library or Django cannot do the job (AGENTS.md, Tao rule 7).
+#
+# Django       BSD-3-Clause   web framework, ORM, auth, sessions, CSRF   (ADR 0001)
+# gunicorn     MIT            web server                                 (ADR 0001)
+# cryptography Apache-2.0 OR BSD-3-Clause
+#                             authenticated encryption of stored secrets; the standard
+#                             library has no symmetric cipher            (#38)
+Django==5.2.19
+gunicorn==27.0.1
+cryptography==50.0.2

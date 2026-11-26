@@ -1,0 +1,23 @@
+{
+  "slug": "target-search",
+  "name": "Target Search BV",
+  "relevant-countries": [
+    "be"
+  ],
+  "categories": [
+    "addresses"
+  ],
+  "web": "https://www.targetsearch.be/",
+  "sources": [
+    "https://www.targetsearch.be/nl/privacybeleid/",
+    "https://www.edpb.europa.eu/system/files/2026-04/spe_databorkersmarketstudy_en.pdf"
+  ],
+  "quality": "scraped",
+  "broker": true,
+  "notes": [
+    "Contact to be confirmed: the EDPB data brokers market study (2026) names no privacy contact; see https://www.targetsearch.be/nl/privacybeleid/."
+  ],
+  "domains": [
+    "targetsearch.be"
+  ]
+}

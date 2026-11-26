@@ -1,0 +1,39 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Breaches for {{ subject.name }} · Unlist{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a></p>
+<h1>Breaches at Organizations that know {{ subject.name }}</h1>
+<p class="card">{{ not_a_claim }}</p>
+{% if not catalogue %}<p class="warn">No breach list is loaded. See <a href="{% url 'breaches:index' %}">Breach check</a>.</p>{% endif %}
+
+{% if rows %}
+<div class="table-wrap">
+<table class="table">
+  <thead><tr><th>Organization</th><th>Breach</th><th>Date</th><th>Data in the breach</th><th>Compared with mail seen</th><th></th></tr></thead>
+  <tbody>
+  {% for row in rows %}
+    <tr>
+      <td><a href="{% url 'organizations:detail' row.organization.slug %}">{{ row.organization.name }}</a>{% include "unlist/_broker.html" with organization=row.organization %}</td>
+      <td>
+        <strong>{{ row.breach.title }}</strong>
+        {% if row.breach.attribution %}<div class="muted">{{ row.breach.attribution }}</div>{% endif %}
+        {% if row.breach.description %}<details><summary>About this breach</summary><p>{{ row.breach.plain_description }}</p></details>{% endif %}
+      </td>
+      <td>{{ row.breach.breach_date|date:"Y-m-d"|default:"unknown" }}</td>
+      <td>{{ row.breach.data_classes|join:", " }}</td>
+      <td class="breach-{{ row.timing }}">{{ row.timing_text }}</td>
+      <td>
+        {% if row.case %}<a href="{% url 'cases:detail' row.case.pk %}">Open Case {{ row.case.reference }}</a>
+        {% else %}<a href="{% url 'cases:new' %}?subject={{ subject.pk }}&amp;q={{ row.organization.name|urlencode }}">Open a Case</a>{% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<p>No known breaches at the Organizations {{ subject.name }} deals with. This is not proof that none happened: sensitive breaches, breaches without a domain and breaches HIBP does not list are not shown.</p>
+{% endif %}
+{% include "breaches/_attribution.html" %}
+{% endblock %}

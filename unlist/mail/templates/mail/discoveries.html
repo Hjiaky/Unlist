@@ -1,0 +1,92 @@
+{% extends "unlist/base.html" %}
+{% load llm %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Discovered Organizations for {{ subject.name }} · Unlist{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a></p>
+<div class="page-head">
+  <h1>Organizations that mailed {{ subject.name }}</h1>
+  <a class="button" href="{% url 'mail:upload' subject.pk %}">Import mail</a>
+</div>
+
+{% if run %}
+<section class="card">
+  {% if run.failure %}
+  <p class="warn">{{ run.failure }}</p>
+  {% elif run.running %}
+  <p>An import started {{ run.started_at|date:"j F Y H:i" }} is still running ({{ run.total }} messages so far). Reload this page to see it finish.</p>
+  {% elif run.total == 0 %}
+  <p class="warn">The last import{% if run.filename %} of <code>{{ run.filename }}</code>{% endif %} found no messages.
+  Is it an unpacked <code>.mbox</code> file? A Google Takeout download is a <code>.zip</code> or <code>.tgz</code> archive
+  with the <code>.mbox</code> file inside.</p>
+  {% else %}
+  <p>Last import{% if run.filename %} of <code>{{ run.filename }}</code>{% endif %} finished {{ run.finished_at|date:"j F Y H:i" }}:
+  {{ run.total }} message{{ run.total|pluralize }}, {{ run.authenticated }} authenticated
+  ({{ run.duplicates }} already counted before).
+  Skipped: {{ run.personal_skipped }} personal, {{ run.unauthenticated_skipped }} unauthenticated,
+  {{ run.spam_skipped }} spam or trash, {{ run.errors }} unreadable.</p>
+  {% endif %}
+</section>
+{% else %}
+<p class="card">No mail imported yet. <a href="{% url 'mail:upload' subject.pk %}">Import mail</a>.</p>
+{% endif %}
+
+{% if unassigned %}<p><a href="{% url 'mail:unassigned' subject.pk %}">{{ unassigned }} sender{{ unassigned|pluralize }} to assign</a> (shared or unknown domains).</p>{% endif %}
+
+{% if pursuable %}
+<form method="post" action="{% url 'mail:pursue_all' subject.pk %}" class="actions">{% csrf_token %}
+  <button type="submit" class="primary">Pursue all {{ pursuable }} with account evidence</button>
+  <span class="muted">Opens a Case for each and drafts an Access Request. Nothing is sent before you approve it.</span>
+</form>
+{% endif %}
+
+<form method="get" class="filter">
+  <div>
+    <label for="id_evidence">Evidence</label>
+    <select name="evidence" id="id_evidence">
+      <option value="">Any evidence</option>
+      {% for value, label in evidence_choices %}<option value="{{ value }}"{% if value == selected_evidence %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="id_broker">Brokers</label>
+    <select name="broker" id="id_broker">
+      <option value="">Brokers and others</option>
+      <option value="yes"{% if selected_broker == "yes" %} selected{% endif %}>Brokers only</option>
+      <option value="no"{% if selected_broker == "no" %} selected{% endif %}>No Brokers</option>
+    </select>
+  </div>
+  <button type="submit">Filter</button>
+  {% if filtered %}<a href="{% url 'mail:discoveries' subject.pk %}">Show all</a>{% endif %}
+</form>
+
+<div class="table-wrap">
+<table class="table">
+  <thead><tr><th>Organization</th><th>Evidence</th><th class="num">Emails</th><th>Seen</th><th>Status</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+  <tbody>
+  {% for row in rows %}{% with discovery=row.discovery %}
+    <tr{% if row.marker == "ignored" %} class="row-quiet"{% endif %}>
+      <td><a href="{% url 'organizations:detail' discovery.organization.slug %}">{{ discovery.organization.name }}</a>{% include "unlist/_broker.html" with organization=discovery.organization %}
+        {% if discovery.organization.is_stub %}<span class="tag tag-quiet">local stub</span>{% endif %}
+        {% if discovery.strongest_subject %}<div class="muted anywhere">“{{ discovery.strongest_subject }}”</div>{% endif %}</td>
+      <td>{{ discovery.get_evidence_display }}</td>
+      <td class="num">{{ discovery.email_count }}</td>
+      <td class="nowrap">{% if discovery.first_seen %}{{ discovery.first_seen|date:"M Y" }}{% if discovery.last_seen|date:"M Y" != discovery.first_seen|date:"M Y" %} to {{ discovery.last_seen|date:"M Y" }}{% endif %}{% endif %}</td>
+      <td>{% if row.marker == "case" %}<span class="pill pill-quiet">already a Case</span>{% elif row.marker == "ignored" %}<span class="muted">ignored</span>{% else %}<span class="pill">new</span>{% endif %}</td>
+      <td><div class="actions tight">
+        {% if row.marker == "new" %}
+        <form method="post" action="{% url 'mail:pursue' subject.pk discovery.pk %}">{% csrf_token %}<button type="submit" class="small">Pursue</button></form>
+        <form method="post" action="{% url 'mail:ignore' subject.pk discovery.pk %}">{% csrf_token %}<button type="submit" class="small">Ignore</button></form>
+        {% llm_sort_button "discovery" discovery %}
+        {% elif row.marker == "ignored" %}
+        <form method="post" action="{% url 'mail:unignore' subject.pk discovery.pk %}">{% csrf_token %}<button type="submit" class="small">Un-ignore</button></form>
+        {% endif %}
+      </div></td>
+    </tr>
+  {% endwith %}{% empty %}
+    <tr><td colspan="6">{% if filtered %}No Organization matches.{% else %}No Organizations found yet.{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

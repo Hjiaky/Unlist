@@ -1,0 +1,12 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Delete {{ subject.name }} · Unlist{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a></p>
+<h1>Delete {{ subject.name }}?</h1>
+<p>This erases everything about this Subject: Cases, replies, attachments, discovery results, details, consent record and credentials. It cannot be undone.</p>
+<form method="post" class="card card-warn">{% csrf_token %}
+  <button type="submit" class="primary">Delete permanently</button>
+</form>
+<p><a href="{% url 'subjects:detail' subject.pk %}">Cancel</a></p>
+{% endblock %}

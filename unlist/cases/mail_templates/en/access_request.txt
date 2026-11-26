@@ -1,0 +1,36 @@
+Subject: Request for access to my personal data under Article 15 {{ gdpr }} [Ref {{ reference }}]
+
+Dear Sir or Madam,
+
+I am asking for access to my personal data under Article 15 of the {% if uk %}UK General Data Protection Regulation (UK GDPR){% else %}General Data Protection Regulation (GDPR){% endif %}.
+
+Please confirm whether or not you process personal data concerning me. If you do, please give me:
+
+- a copy of all personal data concerning me that you process (Article 15(3) {{ gdpr }});
+- the purposes of the processing;
+- the categories of personal data concerned;
+- the recipients to whom the personal data have been or will be disclosed, in particular recipients in third countries or international organisations. Please name each recipient, not only the categories of recipients{% if not uk %} (Court of Justice of the European Union, judgment of 12 January 2023, C-154/21){% endif %};
+- where possible, the period for which the personal data will be stored or, if that is not possible, the criteria used to determine that period;
+- the existence of the right to request rectification or erasure of personal data or restriction of processing, and of the right to object to processing;
+- the right to lodge a complaint with {% if uk %}the Information Commission{% else %}a supervisory authority{% endif %};
+{% if uk %}
+- the right to make a complaint to you under section 164A of the Data Protection Act 2018;
+{% endif %}
+- where the personal data were not collected from me, all available information as to their source;
+- the existence of automated decision-making, including profiling, and in that case meaningful information about the logic involved and the significance and envisaged consequences of the processing for me;
+- where personal data are transferred to a third country or an international organisation, the appropriate safeguards for the transfer (Article 15(2) {{ gdpr }}).
+
+This request covers all personal data concerning me, including data you hold for any other brand or service for which you are the controller. If you do not process any personal data concerning me, please tell me so.
+
+To help you find my data: I use the email address {{ subject_email }} with you.
+{% if identifying_details %}
+Other details you may need:
+{% for item in identifying_details %}
+- {{ item }}
+{% endfor %}
+{% endif %}
+
+Please send your answer by email to {{ subject_email }}, without undue delay and at the latest within one month of receiving this request ({% if uk %}Articles 12(3) and 12A UK GDPR{% else %}Article 12(3) GDPR{% endif %}). The answer is free of charge (Article 12(5) {{ gdpr }}).
+
+Kind regards,
+{{ subject_name }}

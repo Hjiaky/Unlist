@@ -1,0 +1,9 @@
+.git
+.github
+.claude
+.venv
+data
+key
+staticfiles
+docs
+**/__pycache__

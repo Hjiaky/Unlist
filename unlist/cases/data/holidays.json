@@ -1,0 +1,296 @@
+{
+  "about": "National public holidays used to move a deadline that falls on a non-working day. Rules, not dates, so any year can be computed offline. National holidays only: regional holidays are not included. See HOLIDAYS-README.md for the format, sources, licence (CC0-1.0) and caveats.",
+  "countries": {
+    "AT": {
+      "name": "Austria",
+      "scope": "Statutory public holidays (Feiertagsruhegesetz). Good Friday and 24 December are not public holidays and are not included.",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Neujahr", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Epiphany", "local_name": "Heilige Drei Könige", "rule": "fixed", "month": 1, "day": 6},
+        {"name": "Easter Monday", "local_name": "Ostermontag", "rule": "easter", "offset": 1},
+        {"name": "Labour Day", "local_name": "Staatsfeiertag", "rule": "fixed", "month": 5, "day": 1},
+        {"name": "Ascension Day", "local_name": "Christi Himmelfahrt", "rule": "easter", "offset": 39},
+        {"name": "Whit Monday", "local_name": "Pfingstmontag", "rule": "easter", "offset": 50},
+        {"name": "Corpus Christi", "local_name": "Fronleichnam", "rule": "easter", "offset": 60},
+        {"name": "Assumption Day", "local_name": "Mariä Himmelfahrt", "rule": "fixed", "month": 8, "day": 15},
+        {"name": "National Day", "local_name": "Nationalfeiertag", "rule": "fixed", "month": 10, "day": 26},
+        {"name": "All Saints' Day", "local_name": "Allerheiligen", "rule": "fixed", "month": 11, "day": 1},
+        {"name": "Immaculate Conception", "local_name": "Mariä Empfängnis", "rule": "fixed", "month": 12, "day": 8},
+        {"name": "Christmas Day", "local_name": "Christtag", "rule": "fixed", "month": 12, "day": 25},
+        {"name": "St Stephen's Day", "local_name": "Stefanitag", "rule": "fixed", "month": 12, "day": 26}
+      ]
+    },
+    "BE": {
+      "name": "Belgium",
+      "scope": "The ten statutory public holidays. Replacement days chosen by employers when a holiday falls on a Sunday are not included.",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Nieuwjaar / Jour de l'an", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Easter Monday", "local_name": "Paasmaandag / Lundi de Pâques", "rule": "easter", "offset": 1},
+        {"name": "Labour Day", "local_name": "Dag van de Arbeid / Fête du Travail", "rule": "fixed", "month": 5, "day": 1},
+        {"name": "Ascension Day", "local_name": "Hemelvaart / Ascension", "rule": "easter", "offset": 39},
+        {"name": "Whit Monday", "local_name": "Pinkstermaandag / Lundi de Pentecôte", "rule": "easter", "offset": 50},
+        {"name": "National Day", "local_name": "Nationale feestdag / Fête nationale", "rule": "fixed", "month": 7, "day": 21},
+        {"name": "Assumption Day", "local_name": "O.L.V. Hemelvaart / Assomption", "rule": "fixed", "month": 8, "day": 15},
+        {"name": "All Saints' Day", "local_name": "Allerheiligen / Toussaint", "rule": "fixed", "month": 11, "day": 1},
+        {"name": "Armistice Day", "local_name": "Wapenstilstand / Armistice", "rule": "fixed", "month": 11, "day": 11},
+        {"name": "Christmas Day", "local_name": "Kerstmis / Noël", "rule": "fixed", "month": 12, "day": 25}
+      ]
+    },
+    "CH": {
+      "name": "Switzerland",
+      "scope": "Federal holiday (1 August) plus New Year's Day, Ascension Day and Christmas Day, which every canton observes. All other holidays are cantonal and not included.",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Neujahr / Nouvel An / Capodanno", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Ascension Day", "local_name": "Auffahrt / Ascension / Ascensione", "rule": "easter", "offset": 39},
+        {"name": "Swiss National Day", "local_name": "Bundesfeiertag / Fête nationale / Festa nazionale", "rule": "fixed", "month": 8, "day": 1},
+        {"name": "Christmas Day", "local_name": "Weihnachten / Noël / Natale", "rule": "fixed", "month": 12, "day": 25}
+      ]
+    },
+    "CZ": {
+      "name": "Czechia",
+      "scope": "Public holidays and other holidays on which work is not done (Act No. 245/2000 Coll.).",
+      "holidays": [
+        {"name": "New Year's Day and Restoration Day of the Independent Czech State", "local_name": "Nový rok, Den obnovy samostatného českého státu", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Good Friday", "local_name": "Velký pátek", "rule": "easter", "offset": -2},
+        {"name": "Easter Monday", "local_name": "Velikonoční pondělí", "rule": "easter", "offset": 1},
+        {"name": "Labour Day", "local_name": "Svátek práce", "rule": "fixed", "month": 5, "day": 1},
+        {"name": "Liberation Day", "local_name": "Den vítězství", "rule": "fixed", "month": 5, "day": 8},
+        {"name": "Saints Cyril and Methodius Day", "local_name": "Den slovanských věrozvěstů Cyrila a Metoděje", "rule": "fixed", "month": 7, "day": 5},
+        {"name": "Jan Hus Day", "local_name": "Den upálení mistra Jana Husa", "rule": "fixed", "month": 7, "day": 6},
+        {"name": "Czech Statehood Day", "local_name": "Den české státnosti", "rule": "fixed", "month": 9, "day": 28},
+        {"name": "Independent Czechoslovak State Day", "local_name": "Den vzniku samostatného československého státu", "rule": "fixed", "month": 10, "day": 28},
+        {"name": "Struggle for Freedom and Democracy Day", "local_name": "Den boje za svobodu a demokracii", "rule": "fixed", "month": 11, "day": 17},
+        {"name": "Christmas Eve", "local_name": "Štědrý den", "rule": "fixed", "month": 12, "day": 24},
+        {"name": "Christmas Day", "local_name": "1. svátek vánoční", "rule": "fixed", "month": 12, "day": 25},
+        {"name": "St Stephen's Day", "local_name": "2. svátek vánoční", "rule": "fixed", "month": 12, "day": 26}
+      ]
+    },
+    "DE": {
+      "name": "Germany",
+      "scope": "Only the nine holidays observed in every German state. State holidays (for example Epiphany, Corpus Christi, Reformation Day, All Saints' Day) are not included.",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Neujahr", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Good Friday", "local_name": "Karfreitag", "rule": "easter", "offset": -2},
+        {"name": "Easter Monday", "local_name": "Ostermontag", "rule": "easter", "offset": 1},
+        {"name": "Labour Day", "local_name": "Tag der Arbeit", "rule": "fixed", "month": 5, "day": 1},
+        {"name": "Ascension Day", "local_name": "Christi Himmelfahrt", "rule": "easter", "offset": 39},
+        {"name": "Whit Monday", "local_name": "Pfingstmontag", "rule": "easter", "offset": 50},
+        {"name": "German Unity Day", "local_name": "Tag der Deutschen Einheit", "rule": "fixed", "month": 10, "day": 3},
+        {"name": "Christmas Day", "local_name": "1. Weihnachtstag", "rule": "fixed", "month": 12, "day": 25},
+        {"name": "Boxing Day", "local_name": "2. Weihnachtstag", "rule": "fixed", "month": 12, "day": 26}
+      ]
+    },
+    "DK": {
+      "name": "Denmark",
+      "scope": "Public holidays (helligdage). Constitution Day, Christmas Eve and New Year's Eve are customary days off but not public holidays, and are not included. General Prayer Day was abolished from 2024.",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Nytårsdag", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Maundy Thursday", "local_name": "Skærtorsdag", "rule": "easter", "offset": -3},
+        {"name": "Good Friday", "local_name": "Langfredag", "rule": "easter", "offset": -2},
+        {"name": "Easter Sunday", "local_name": "Påskedag", "rule": "easter", "offset": 0},
+        {"name": "Easter Monday", "local_name": "2. påskedag", "rule": "easter", "offset": 1},
+        {"name": "General Prayer Day", "local_name": "Store bededag", "rule": "easter", "offset": 26, "until_year": 2023},
+        {"name": "Ascension Day", "local_name": "Kristi himmelfartsdag", "rule": "easter", "offset": 39},
+        {"name": "Whit Sunday", "local_name": "Pinsedag", "rule": "easter", "offset": 49},
+        {"name": "Whit Monday", "local_name": "2. pinsedag", "rule": "easter", "offset": 50},
+        {"name": "Christmas Day", "local_name": "Juledag", "rule": "fixed", "month": 12, "day": 25},
+        {"name": "Boxing Day", "local_name": "2. juledag", "rule": "fixed", "month": 12, "day": 26}
+      ]
+    },
+    "ES": {
+      "name": "Spain",
+      "scope": "National holidays common to the whole country. Regional holidays, and holidays a region moves from a Sunday to the Monday, are not included; Maundy Thursday is regional and not included.",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Año Nuevo", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Epiphany", "local_name": "Epifanía del Señor", "rule": "fixed", "month": 1, "day": 6},
+        {"name": "Good Friday", "local_name": "Viernes Santo", "rule": "easter", "offset": -2},
+        {"name": "Labour Day", "local_name": "Fiesta del Trabajo", "rule": "fixed", "month": 5, "day": 1},
+        {"name": "Assumption Day", "local_name": "Asunción de la Virgen", "rule": "fixed", "month": 8, "day": 15},
+        {"name": "National Day", "local_name": "Fiesta Nacional de España", "rule": "fixed", "month": 10, "day": 12},
+        {"name": "All Saints' Day", "local_name": "Todos los Santos", "rule": "fixed", "month": 11, "day": 1},
+        {"name": "Constitution Day", "local_name": "Día de la Constitución", "rule": "fixed", "month": 12, "day": 6},
+        {"name": "Immaculate Conception", "local_name": "Inmaculada Concepción", "rule": "fixed", "month": 12, "day": 8},
+        {"name": "Christmas Day", "local_name": "Natividad del Señor", "rule": "fixed", "month": 12, "day": 25}
+      ]
+    },
+    "FI": {
+      "name": "Finland",
+      "scope": "Public holidays, plus Midsummer Eve and Christmas Eve, which the Finnish act on calculating statutory time limits (150/1930) treats like holidays.",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Uudenvuodenpäivä", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Epiphany", "local_name": "Loppiainen", "rule": "fixed", "month": 1, "day": 6},
+        {"name": "Good Friday", "local_name": "Pitkäperjantai", "rule": "easter", "offset": -2},
+        {"name": "Easter Sunday", "local_name": "Pääsiäispäivä", "rule": "easter", "offset": 0},
+        {"name": "Easter Monday", "local_name": "2. pääsiäispäivä", "rule": "easter", "offset": 1},
+        {"name": "May Day", "local_name": "Vappu", "rule": "fixed", "month": 5, "day": 1},
+        {"name": "Ascension Day", "local_name": "Helatorstai", "rule": "easter", "offset": 39},
+        {"name": "Whit Sunday", "local_name": "Helluntaipäivä", "rule": "easter", "offset": 49},
+        {"name": "Midsummer Eve", "local_name": "Juhannusaatto", "rule": "weekday_on_or_after", "month": 6, "day": 19, "weekday": "friday", "note": "Not a public holiday, but treated as one for statutory time limits."},
+        {"name": "Midsummer Day", "local_name": "Juhannuspäivä", "rule": "weekday_on_or_after", "month": 6, "day": 20, "weekday": "saturday"},
+        {"name": "All Saints' Day", "local_name": "Pyhäinpäivä", "rule": "weekday_on_or_after", "month": 10, "day": 31, "weekday": "saturday"},
+        {"name": "Independence Day", "local_name": "Itsenäisyyspäivä", "rule": "fixed", "month": 12, "day": 6},
+        {"name": "Christmas Eve", "local_name": "Jouluaatto", "rule": "fixed", "month": 12, "day": 24, "note": "Not a public holiday, but treated as one for statutory time limits."},
+        {"name": "Christmas Day", "local_name": "Joulupäivä", "rule": "fixed", "month": 12, "day": 25},
+        {"name": "St Stephen's Day", "local_name": "Tapaninpäivä", "rule": "fixed", "month": 12, "day": 26}
+      ]
+    },
+    "FR": {
+      "name": "France",
+      "scope": "The eleven statutory public holidays (jours fériés, Code du travail). Good Friday and 26 December, holidays only in Alsace-Moselle, and overseas holidays are not included.",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Jour de l'an", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Easter Monday", "local_name": "Lundi de Pâques", "rule": "easter", "offset": 1},
+        {"name": "Labour Day", "local_name": "Fête du Travail", "rule": "fixed", "month": 5, "day": 1},
+        {"name": "Victory in Europe Day", "local_name": "Victoire 1945", "rule": "fixed", "month": 5, "day": 8},
+        {"name": "Ascension Day", "local_name": "Ascension", "rule": "easter", "offset": 39},
+        {"name": "Whit Monday", "local_name": "Lundi de Pentecôte", "rule": "easter", "offset": 50},
+        {"name": "Bastille Day", "local_name": "Fête nationale", "rule": "fixed", "month": 7, "day": 14},
+        {"name": "Assumption Day", "local_name": "Assomption", "rule": "fixed", "month": 8, "day": 15},
+        {"name": "All Saints' Day", "local_name": "Toussaint", "rule": "fixed", "month": 11, "day": 1},
+        {"name": "Armistice Day", "local_name": "Armistice 1918", "rule": "fixed", "month": 11, "day": 11},
+        {"name": "Christmas Day", "local_name": "Noël", "rule": "fixed", "month": 12, "day": 25}
+      ]
+    },
+    "GB": {
+      "name": "the United Kingdom (England and Wales)",
+      "scope": "Bank holidays in England and Wales, with substitute days when a holiday falls on a weekend. Scotland and Northern Ireland have different bank holidays, which are not included. One-off bank holidays proclaimed for a single year are not included.",
+      "holidays": [
+        {"name": "New Year's Day", "rule": "fixed", "month": 1, "day": 1, "substitute": true},
+        {"name": "Good Friday", "rule": "easter", "offset": -2},
+        {"name": "Easter Monday", "rule": "easter", "offset": 1},
+        {"name": "Early May bank holiday", "rule": "nth_weekday", "month": 5, "weekday": "monday", "nth": 1},
+        {"name": "Spring bank holiday", "rule": "nth_weekday", "month": 5, "weekday": "monday", "nth": -1},
+        {"name": "Summer bank holiday", "rule": "nth_weekday", "month": 8, "weekday": "monday", "nth": -1},
+        {"name": "Christmas Day", "rule": "fixed", "month": 12, "day": 25, "substitute": true},
+        {"name": "Boxing Day", "rule": "fixed", "month": 12, "day": 26, "substitute": true}
+      ]
+    },
+    "IE": {
+      "name": "Ireland",
+      "scope": "Public holidays (Organisation of Working Time Act 1997, Schedule 2). When a holiday falls on a weekend no substitute day is set by law, so none is included.",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Lá Caille", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Saint Brigid's Day", "local_name": "Lá Fhéile Bríde", "rule": "nth_weekday", "month": 2, "weekday": "monday", "nth": 1, "unless_day_falls_on": {"day": 1, "weekday": "friday"}, "from_year": 2023, "note": "First Monday in February, or 1 February when that is a Friday."},
+        {"name": "Saint Patrick's Day", "local_name": "Lá Fhéile Pádraig", "rule": "fixed", "month": 3, "day": 17},
+        {"name": "Easter Monday", "local_name": "Luan Cásca", "rule": "easter", "offset": 1},
+        {"name": "May bank holiday", "rule": "nth_weekday", "month": 5, "weekday": "monday", "nth": 1},
+        {"name": "June bank holiday", "rule": "nth_weekday", "month": 6, "weekday": "monday", "nth": 1},
+        {"name": "August bank holiday", "rule": "nth_weekday", "month": 8, "weekday": "monday", "nth": 1},
+        {"name": "October bank holiday", "rule": "nth_weekday", "month": 10, "weekday": "monday", "nth": -1},
+        {"name": "Christmas Day", "local_name": "Lá Nollag", "rule": "fixed", "month": 12, "day": 25},
+        {"name": "Saint Stephen's Day", "local_name": "Lá Fhéile Stiofáin", "rule": "fixed", "month": 12, "day": 26}
+      ]
+    },
+    "IT": {
+      "name": "Italy",
+      "scope": "National public holidays. Local patron saints' days are not included. Saint Francis' Day (4 October) is included from 2026, when it became a national holiday again.",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Capodanno", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Epiphany", "local_name": "Epifania", "rule": "fixed", "month": 1, "day": 6},
+        {"name": "Easter Monday", "local_name": "Lunedì dell'Angelo", "rule": "easter", "offset": 1},
+        {"name": "Liberation Day", "local_name": "Festa della Liberazione", "rule": "fixed", "month": 4, "day": 25},
+        {"name": "Labour Day", "local_name": "Festa del Lavoro", "rule": "fixed", "month": 5, "day": 1},
+        {"name": "Republic Day", "local_name": "Festa della Repubblica", "rule": "fixed", "month": 6, "day": 2},
+        {"name": "Assumption Day", "local_name": "Ferragosto", "rule": "fixed", "month": 8, "day": 15},
+        {"name": "Saint Francis of Assisi Day", "local_name": "San Francesco d'Assisi", "rule": "fixed", "month": 10, "day": 4, "from_year": 2026},
+        {"name": "All Saints' Day", "local_name": "Ognissanti", "rule": "fixed", "month": 11, "day": 1},
+        {"name": "Immaculate Conception", "local_name": "Immacolata Concezione", "rule": "fixed", "month": 12, "day": 8},
+        {"name": "Christmas Day", "local_name": "Natale", "rule": "fixed", "month": 12, "day": 25},
+        {"name": "St Stephen's Day", "local_name": "Santo Stefano", "rule": "fixed", "month": 12, "day": 26}
+      ]
+    },
+    "LU": {
+      "name": "Luxembourg",
+      "scope": "Statutory public holidays (Code du travail). Compensatory days for holidays falling on a Sunday are not included.",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Nouvel An", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Easter Monday", "local_name": "Lundi de Pâques", "rule": "easter", "offset": 1},
+        {"name": "Labour Day", "local_name": "Fête du Travail", "rule": "fixed", "month": 5, "day": 1},
+        {"name": "Europe Day", "local_name": "Journée de l'Europe", "rule": "fixed", "month": 5, "day": 9, "from_year": 2019},
+        {"name": "Ascension Day", "local_name": "Ascension", "rule": "easter", "offset": 39},
+        {"name": "Whit Monday", "local_name": "Lundi de Pentecôte", "rule": "easter", "offset": 50},
+        {"name": "National Day", "local_name": "Fête nationale", "rule": "fixed", "month": 6, "day": 23},
+        {"name": "Assumption Day", "local_name": "Assomption", "rule": "fixed", "month": 8, "day": 15},
+        {"name": "All Saints' Day", "local_name": "Toussaint", "rule": "fixed", "month": 11, "day": 1},
+        {"name": "Christmas Day", "local_name": "Noël", "rule": "fixed", "month": 12, "day": 25},
+        {"name": "St Stephen's Day", "local_name": "Saint-Étienne", "rule": "fixed", "month": 12, "day": 26}
+      ]
+    },
+    "NL": {
+      "name": "the Netherlands",
+      "scope": "Generally recognised holidays used for statutory time limits (Algemene termijnenwet), including Good Friday and Liberation Day. King's Day is 27 April (26 April when the 27th is a Sunday, which is a Saturday and so never a working day).",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Nieuwjaarsdag", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Good Friday", "local_name": "Goede Vrijdag", "rule": "easter", "offset": -2},
+        {"name": "Easter Monday", "local_name": "Tweede Paasdag", "rule": "easter", "offset": 1},
+        {"name": "King's Day", "local_name": "Koningsdag", "rule": "fixed", "month": 4, "day": 27, "from_year": 2014},
+        {"name": "Liberation Day", "local_name": "Bevrijdingsdag", "rule": "fixed", "month": 5, "day": 5},
+        {"name": "Ascension Day", "local_name": "Hemelvaartsdag", "rule": "easter", "offset": 39},
+        {"name": "Whit Monday", "local_name": "Tweede Pinksterdag", "rule": "easter", "offset": 50},
+        {"name": "Christmas Day", "local_name": "Eerste Kerstdag", "rule": "fixed", "month": 12, "day": 25},
+        {"name": "Boxing Day", "local_name": "Tweede Kerstdag", "rule": "fixed", "month": 12, "day": 26}
+      ]
+    },
+    "PL": {
+      "name": "Poland",
+      "scope": "Statutory public holidays (Act on non-working days of 18 January 1951, as amended). Christmas Eve is included from 2025.",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Nowy Rok", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Epiphany", "local_name": "Święto Trzech Króli", "rule": "fixed", "month": 1, "day": 6},
+        {"name": "Easter Sunday", "local_name": "Wielkanoc", "rule": "easter", "offset": 0},
+        {"name": "Easter Monday", "local_name": "Poniedziałek Wielkanocny", "rule": "easter", "offset": 1},
+        {"name": "Labour Day", "local_name": "Święto Pracy", "rule": "fixed", "month": 5, "day": 1},
+        {"name": "Constitution Day", "local_name": "Święto Narodowe Trzeciego Maja", "rule": "fixed", "month": 5, "day": 3},
+        {"name": "Whit Sunday", "local_name": "Zielone Świątki", "rule": "easter", "offset": 49},
+        {"name": "Corpus Christi", "local_name": "Boże Ciało", "rule": "easter", "offset": 60},
+        {"name": "Assumption Day", "local_name": "Wniebowzięcie Najświętszej Maryi Panny", "rule": "fixed", "month": 8, "day": 15},
+        {"name": "All Saints' Day", "local_name": "Wszystkich Świętych", "rule": "fixed", "month": 11, "day": 1},
+        {"name": "Independence Day", "local_name": "Narodowe Święto Niepodległości", "rule": "fixed", "month": 11, "day": 11},
+        {"name": "Christmas Eve", "local_name": "Wigilia Bożego Narodzenia", "rule": "fixed", "month": 12, "day": 24, "from_year": 2025},
+        {"name": "Christmas Day", "local_name": "Boże Narodzenie (pierwszy dzień)", "rule": "fixed", "month": 12, "day": 25},
+        {"name": "Second Day of Christmas", "local_name": "Boże Narodzenie (drugi dzień)", "rule": "fixed", "month": 12, "day": 26}
+      ]
+    },
+    "PT": {
+      "name": "Portugal",
+      "scope": "Mandatory public holidays (Código do Trabalho). Carnival and municipal holidays are optional or local and not included.",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Ano Novo", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Good Friday", "local_name": "Sexta-feira Santa", "rule": "easter", "offset": -2},
+        {"name": "Easter Sunday", "local_name": "Domingo de Páscoa", "rule": "easter", "offset": 0},
+        {"name": "Freedom Day", "local_name": "Dia da Liberdade", "rule": "fixed", "month": 4, "day": 25},
+        {"name": "Labour Day", "local_name": "Dia do Trabalhador", "rule": "fixed", "month": 5, "day": 1},
+        {"name": "Corpus Christi", "local_name": "Corpo de Deus", "rule": "easter", "offset": 60},
+        {"name": "Portugal Day", "local_name": "Dia de Portugal, de Camões e das Comunidades Portuguesas", "rule": "fixed", "month": 6, "day": 10},
+        {"name": "Assumption Day", "local_name": "Assunção de Nossa Senhora", "rule": "fixed", "month": 8, "day": 15},
+        {"name": "Republic Day", "local_name": "Implantação da República", "rule": "fixed", "month": 10, "day": 5},
+        {"name": "All Saints' Day", "local_name": "Dia de Todos os Santos", "rule": "fixed", "month": 11, "day": 1},
+        {"name": "Restoration of Independence", "local_name": "Restauração da Independência", "rule": "fixed", "month": 12, "day": 1},
+        {"name": "Immaculate Conception", "local_name": "Imaculada Conceição", "rule": "fixed", "month": 12, "day": 8},
+        {"name": "Christmas Day", "local_name": "Natal", "rule": "fixed", "month": 12, "day": 25}
+      ]
+    },
+    "SE": {
+      "name": "Sweden",
+      "scope": "Public holidays (allmänna helgdagar), plus Midsummer Eve, Christmas Eve and New Year's Eve, which the Swedish act on calculating statutory time limits (1930:173) treats like holidays.",
+      "holidays": [
+        {"name": "New Year's Day", "local_name": "Nyårsdagen", "rule": "fixed", "month": 1, "day": 1},
+        {"name": "Epiphany", "local_name": "Trettondedag jul", "rule": "fixed", "month": 1, "day": 6},
+        {"name": "Good Friday", "local_name": "Långfredagen", "rule": "easter", "offset": -2},
+        {"name": "Easter Sunday", "local_name": "Påskdagen", "rule": "easter", "offset": 0},
+        {"name": "Easter Monday", "local_name": "Annandag påsk", "rule": "easter", "offset": 1},
+        {"name": "May Day", "local_name": "Första maj", "rule": "fixed", "month": 5, "day": 1},
+        {"name": "Ascension Day", "local_name": "Kristi himmelsfärdsdag", "rule": "easter", "offset": 39},
+        {"name": "Whit Sunday", "local_name": "Pingstdagen", "rule": "easter", "offset": 49},
+        {"name": "National Day", "local_name": "Sveriges nationaldag", "rule": "fixed", "month": 6, "day": 6},
+        {"name": "Midsummer Eve", "local_name": "Midsommarafton", "rule": "weekday_on_or_after", "month": 6, "day": 19, "weekday": "friday", "note": "Not a public holiday, but treated as one for statutory time limits."},
+        {"name": "Midsummer Day", "local_name": "Midsommardagen", "rule": "weekday_on_or_after", "month": 6, "day": 20, "weekday": "saturday"},
+        {"name": "All Saints' Day", "local_name": "Alla helgons dag", "rule": "weekday_on_or_after", "month": 10, "day": 31, "weekday": "saturday"},
+        {"name": "Christmas Eve", "local_name": "Julafton", "rule": "fixed", "month": 12, "day": 24, "note": "Not a public holiday, but treated as one for statutory time limits."},
+        {"name": "Christmas Day", "local_name": "Juldagen", "rule": "fixed", "month": 12, "day": 25},
+        {"name": "Boxing Day", "local_name": "Annandag jul", "rule": "fixed", "month": 12, "day": 26},
+        {"name": "New Year's Eve", "local_name": "Nyårsafton", "rule": "fixed", "month": 12, "day": 31, "note": "Not a public holiday, but treated as one for statutory time limits."}
+      ]
+    }
+  }
+}

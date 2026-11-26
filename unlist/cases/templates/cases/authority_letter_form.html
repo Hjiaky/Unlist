@@ -1,0 +1,17 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Letter of authority · {{ case.reference }} · Unlist{% endblock %}
+{% block content %}
+{% include "cases/_crumbs.html" %}
+<h1>Letter of authority for {{ case.organization.name }}</h1>
+<p class="muted">Case <a href="{% url 'cases:detail' case.pk %}"><code>{{ case.reference }}</code></a>, {{ case.subject.name }}.</p>
+<form method="post" class="card">{% csrf_token %}
+  <p>Unlist writes a new letter dated today, for {{ case.organization.name }} and the reference {{ case.reference }} only. {{ case.subject.name }}{% if case.subject.is_child %} (or the person with parental responsibility){% endif %} signs it. Never reuse it for another Organization: generate a new one there.</p>
+  <div class="field">
+    {{ form.operator_name.label_tag }} {{ form.operator_name }}
+    <p class="helptext">{{ form.operator_name.help_text }}</p>
+    {{ form.operator_name.errors }}
+  </div>
+  <button type="submit" class="primary">Generate the letter</button>
+</form>
+{% endblock %}

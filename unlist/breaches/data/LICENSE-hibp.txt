@@ -1,0 +1,23 @@
+Breach data from Have I Been Pwned (haveibeenpwned.com), CC BY 4.0
+
+hibp-breaches.json in this directory is a snapshot of the free Have I Been Pwned breach
+catalogue.
+
+  Source:      https://haveibeenpwned.com/api/v3/breaches (no API key)
+  Fetched:     2026-11-26 (1,055 breaches)
+  Website:     https://haveibeenpwned.com
+  Licence:     Creative Commons Attribution 4.0 International (CC BY 4.0),
+               https://creativecommons.org/licenses/by/4.0/
+  Attribution: Breach data from Have I Been Pwned (haveibeenpwned.com), CC BY 4.0.
+               Some breaches carry their own "Attribution" value; it is kept in the file
+               and shown next to the breach.
+
+Changes made (the data is NOT unmodified):
+  - The 1,055 records were wrapped in an object with "source", "fetched" and "breaches".
+  - Fields Unlist does not use were dropped: LogoPath, PwnCount, ModifiedDate,
+    DisclosureUrl, IsRetired, IsSubscriptionFree, IsStealerLog. Logos are not included.
+  - Every other field of every record, including Description, is as HIBP served it.
+
+This file is separate from Unlist's code (AGPL-3.0-or-later) and from the CC0 Organization
+List. It is only an aggregate: its own licence governs copying and changing it.
+Unlist contacts Have I Been Pwned only when the Operator presses "Update breach list".

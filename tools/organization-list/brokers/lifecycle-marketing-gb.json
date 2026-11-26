@@ -1,0 +1,22 @@
+{
+  "slug": "lifecycle-marketing-gb",
+  "name": "Lifecycle Marketing (Mother & Baby) Limited",
+  "runs": [
+    "Emma's Diary"
+  ],
+  "relevant-countries": [
+    "gb"
+  ],
+  "categories": [
+    "addresses"
+  ],
+  "sources": [
+    "https://ico.org.uk/ESDWebPages/Entry/ZA478466",
+    "https://ico.org.uk/media2/migrated/2618470/investigation-into-data-protection-compliance-in-the-direct-marketing-data-broking-sector.pdf"
+  ],
+  "quality": "scraped",
+  "broker": true,
+  "notes": [
+    "Contact to be confirmed: the ICO register shows only a named person's mailbox, which is not published here."
+  ]
+}

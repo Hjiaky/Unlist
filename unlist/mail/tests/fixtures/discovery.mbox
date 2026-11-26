@@ -1,0 +1,172 @@
+From 1789000000000000001@xxx Mon Mar 03 09:15:00 +0000 2025
+X-GM-THRID: 1789000000000000001
+X-Gmail-Labels: Inbox,Category Purchases
+Delivered-To: alex@example.org
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@mail.bigshop.de header.s=s1 header.b=AbCdEf;
+       spf=pass (google.com: domain of bounce@mail.bigshop.de designates 192.0.2.1 as permitted sender) smtp.mailfrom=bounce@mail.bigshop.de;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=mail.bigshop.de
+Received: from mail.bigshop.de (mail.bigshop.de [192.0.2.1]) by mx.google.com; Mon, 03 Mar 2025 09:15:00 +0000
+From: "Big Shop" <bestellung@mail.bigshop.de>
+To: alex@example.org
+Subject: =?UTF-8?Q?Ihre_Bestellbest=C3=A4tigung_Nr=2E_12345?=
+Date: Mon, 03 Mar 2025 10:15:00 +0100
+Message-ID: <order-12345@mail.bigshop.de>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="b1"
+
+--b1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hallo Alex, BODYSECRET-PLAIN-A deine Bestellung ist eingegangen. Lieferadresse: Musterstra=C3=9Fe 1.
+
+--b1
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><body>
+<script type=3D"application/ld+json">
+{"@context": "http://schema.org", "@type": "Order", "merchant": {"@type": "Organization", "name": "Big Shop"},
+ "orderNumber": "12345", "orderStatus": "http://schema.org/OrderProcessing"}
+</script>
+<p>Hallo Alex, BODYSECRET-HTML-A deine Bestellung ist eingegangen.</p>
+</body></html>
+
+--b1--
+
+From 1789000000000000002@xxx Tue Apr 01 12:00:00 +0000 2025
+X-Gmail-Labels: Inbox
+Authentication-Results: mx.google.com;
+       dkim=pass header.d=pay.example header.s=k1;
+       spf=pass smtp.mailfrom=receipts@pay.example
+From: PayCo <receipts@pay.example>
+To: alex@example.org
+Subject: Your receipt from PayCo #8812
+Date: Tue, 01 Apr 2025 12:00:00 +0000
+Message-ID: <r-8812@pay.example>
+Content-Type: text/plain; charset=us-ascii
+
+You paid 12.00 EUR. BODYSECRET-B
+>From the PayCo team, with thanks.
+
+From 1789000000000000003@xxx Thu May 15 08:00:00 +0000 2025
+X-Gmail-Labels: Inbox,Category Promotions
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@esp-mail.example header.s=s1 header.b=XyZ;
+       spf=pass (google.com: domain of bounce-123@esp-mail.example designates 198.51.100.7 as permitted sender) smtp.mailfrom=bounce-123@esp-mail.example;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=brand.example
+DKIM-Signature: v=1; a=rsa-sha256; d=esp-mail.example; s=s1; h=from:subject:list-unsubscribe:list-unsubscribe-post; b=XyZ
+From: Brand News <news@brand.example>
+To: alex@example.org
+Subject: Our autumn collection is here
+Date: Thu, 15 May 2025 08:00:00 +0000
+Message-ID: <nl-2025-05@esp-mail.example>
+List-Unsubscribe: <https://esp-mail.example/u/abc>, <mailto:unsub@esp-mail.example>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+Precedence: bulk
+Content-Type: text/html; charset=utf-8
+
+<html><body><p>BODYSECRET-C New arrivals.</p></body></html>
+
+From 1789000000000000004@xxx Fri Jun 20 18:30:00 +0000 2025
+Authentication-Results: mx.google.com;
+       dkim=pass header.d=streamly.example header.s=sel;
+       spf=pass smtp.mailfrom=bounces@accounts.streamly.example
+From: "Streamly" <no-reply@accounts.streamly.example>
+To: alex@example.org
+Subject: Reset your password
+Date: Fri, 20 Jun 2025 18:30:00 +0000
+Message-ID: <reset-1@accounts.streamly.example>
+Auto-Submitted: auto-generated
+Content-Type: text/plain; charset=utf-8
+
+Click here to reset: https://streamly.example/reset/BODYSECRET-D
+
+From 1789000000000000005@xxx Sat Jul 05 10:00:00 +0000 2025
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@gmail.com header.s=20230601;
+       spf=pass smtp.mailfrom=mary.example@gmail.com;
+       dmarc=pass (p=NONE sp=QUARANTINE dis=NONE) header.from=gmail.com
+From: Aunt Mary <mary.example@gmail.com>
+To: alex@example.org
+Subject: Sunday lunch
+Date: Sat, 05 Jul 2025 10:00:00 +0000
+Message-ID: <CAF-personal-1@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+
+See you on Sunday! BODYSECRET-E
+
+From 1789000000000000006@xxx Sun Aug 10 03:00:00 +0000 2025
+Authentication-Results: mx.google.com;
+       dkim=fail header.i=@bigshop.de;
+       spf=softfail smtp.mailfrom=service@bigshop.de;
+       dmarc=fail (p=REJECT) header.from=bigshop.de
+Authentication-Results: mx.google.com; dkim=pass header.d=bigshop.de; dmarc=pass header.from=bigshop.de
+From: "Big Shop" <service@bigshop.de>
+To: alex@example.org
+Subject: Your account is locked - verify now
+Date: Sun, 10 Aug 2025 03:00:00 +0000
+Message-ID: <phish-1@attacker.example>
+Content-Type: text/plain; charset=utf-8
+
+Enter your password here. BODYSECRET-F
+
+From 1789000000000000007@xxx Mon Sep 01 14:00:00 +0000 2025
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@tinystore.example;
+       spf=pass smtp.mailfrom=orders@tinystore.example;
+       dmarc=pass (p=QUARANTINE) header.from=tinystore.example
+From: Tiny Store <orders@tinystore.example>
+To: alex@example.org
+Subject: Order confirmation #A-77
+Date: Mon, 01 Sep 2025 14:00:00 +0000
+Message-ID: <a-77@tinystore.example>
+Content-Type: text/plain; charset=utf-8
+
+Thanks for shopping. BODYSECRET-G
+
+From 1789000000000000008@xxx Tue Sep 02 07:00:00 +0000 2025
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@unknownnews.example;
+       dmarc=pass header.from=unknownnews.example
+From: The Daily Unknown <hello@unknownnews.example>
+To: alex@example.org
+Subject: This week in unknown things
+Date: Tue, 02 Sep 2025 07:00:00 +0000
+Message-ID: <issue-42@unknownnews.example>
+List-Unsubscribe: <https://unknownnews.example/unsubscribe>
+Content-Type: text/plain; charset=utf-8
+
+Issue 42. BODYSECRET-H
+
+From 1789000000000000009@xxx Wed Sep 03 07:00:00 +0000 2025
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@mail.beehiiv.com;
+       spf=pass smtp.mailfrom=bounce@mail.beehiiv.com;
+       dmarc=pass header.from=mail.beehiiv.com
+From: Cool Podcast <coolpodcast@mail.beehiiv.com>
+To: alex@example.org
+Subject: Episode 12 is out
+Date: Wed, 03 Sep 2025 07:00:00 +0000
+Message-ID: <ep12@mail.beehiiv.com>
+List-Id: Cool Podcast <coolpodcast.beehiiv.com>
+List-Unsubscribe: <https://coolpodcast.beehiiv.com/unsubscribe>
+Content-Type: text/plain; charset=utf-8
+
+Listen now. BODYSECRET-I
+
+From 1789000000000000010@xxx Thu Sep 04 07:00:00 +0000 2025
+X-Gmail-Labels: Spam
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@spammy.example;
+       dmarc=pass header.from=spammy.example
+From: Winner <prize@spammy.example>
+To: alex@example.org
+Subject: You won a prize - confirm your account
+Date: Thu, 04 Sep 2025 07:00:00 +0000
+Message-ID: <spam-1@spammy.example>
+Content-Type: text/plain; charset=utf-8
+
+Claim it. BODYSECRET-J
+

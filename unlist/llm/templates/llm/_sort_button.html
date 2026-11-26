@@ -1,0 +1,2 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% if shown %}<form method="post" action="{% url 'llm:sort' kind item.pk %}">{% csrf_token %}<button type="submit" title="Ask the LLM what kind of mail this is">Ask the LLM</button></form>{% endif %}

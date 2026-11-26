@@ -1,0 +1,45 @@
+{
+  "description": "Keyword rules that grade discovery evidence, in English and German. `subject` phrases match the subject line at the start of a word, case-insensitively (\"rechnung\" matches \"Ihre Rechnung\" and \"Rechnungsnummer\", not \"Abrechnung\"). `sender` prefixes match the start of a word of the From: local part (\"order\" matches orders@ and order-update@). Transaction rules are tried before account rules.",
+  "licence": "CC0-1.0",
+  "date": "2026-11-26",
+  "transaction": {
+    "subject": [
+      "your order", "order confirmation", "order confirmed", "order #", "order no", "order number", "order received",
+      "order shipped", "order status", "order update", "thank you for your order", "thanks for your order",
+      "your purchase", "purchase confirmation", "receipt", "invoice", "payment received", "payment confirmation",
+      "your payment", "payment failed", "refund", "has shipped", "has been shipped", "shipping confirmation",
+      "shipment", "dispatched", "out for delivery", "has been delivered", "delivery confirmation", "your delivery",
+      "your parcel", "your package", "tracking number", "booking confirmation", "your booking", "booking reference",
+      "reservation confirmation", "your reservation", "your trip", "itinerary", "e-ticket", "boarding pass",
+      "your statement", "subscription renewal", "renewal reminder",
+      "bestellung", "bestellbestätigung", "bestellnummer", "auftragsbestätigung", "ihr auftrag",
+      "versandbestätigung", "versendet", "verschickt", "zugestellt", "lieferung", "zustellung", "ihr paket",
+      "sendungsverfolgung", "rechnung", "abrechnung", "quittung", "kaufbeleg", "zahlungsbestätigung",
+      "zahlungseingang", "ihre zahlung", "zahlungserinnerung", "rückerstattung", "erstattung", "gutschrift",
+      "buchungsbestätigung", "ihre buchung", "buchungsnummer", "reservierung", "reiseunterlagen", "fahrkarte",
+      "bordkarte", "kontoauszug", "lastschrift"
+    ],
+    "sender": [
+      "order", "bestell", "invoice", "rechnung", "billing", "receipt", "shipping", "shipment", "versand",
+      "delivery", "liefer", "auftrag", "booking", "buchung", "reservation", "reservierung", "payment", "zahlung"
+    ]
+  },
+  "account": {
+    "subject": [
+      "welcome", "verify", "verification", "confirm your email", "confirm your e-mail", "confirm your address",
+      "confirm your account", "confirm your registration", "confirm your subscription", "activate", "activation",
+      "password", "reset", "sign-in", "sign in", "signin", "new login", "login", "log in", "new device",
+      "security", "two-factor", "2-step", "one-time code", "account", "terms of service", "terms of use",
+      "terms and conditions", "privacy policy", "privacy notice", "policy update", "updates to our",
+      "changes to our", "we're updating our", "we are updating our",
+      "willkommen", "bestätige", "bestätigen", "bestätigung", "verifizier", "aktivier", "passwort", "kennwort",
+      "zurücksetzen", "anmeldung", "einloggen", "sicherheit", "bestätigungscode", "zwei-faktor", "einmalcode",
+      "konto", "kundenkonto", "benutzerkonto", "registrierung", "nutzungsbedingungen", "datenschutz", "agb",
+      "geschäftsbedingungen", "änderungen unserer", "aktualisierung unserer"
+    ],
+    "sender": [
+      "account", "konto", "security", "sicherheit", "verify", "verification", "welcome", "password", "passwort",
+      "signup", "register", "registration", "login", "auth", "identity"
+    ]
+  }
+}

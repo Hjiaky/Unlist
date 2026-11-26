@@ -1,0 +1,23 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Suggested evidence · Unlist{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a></p>
+<h1>What kind of mail is this?</h1>
+<section class="card">
+  <p>{% if kind == "discovery" %}{{ item.organization.name }}{% else %}{% if item.display_name %}{{ item.display_name }} {% endif %}<code>{{ item.domain }}</code>{% endif %}
+    {% if item.strongest_subject %}<span class="muted">“{{ item.strongest_subject }}”</span>{% endif %}</p>
+  <p class="lead">{% if applicable %}Suggested: <strong>{{ label }}</strong>{% else %}The model could not sort it either.{% endif %}
+    {% if suggestion.reason %}<span class="muted">({{ suggestion.reason }})</span>{% endif %}</p>
+  <p class="source">{{ suggestion.label }}</p>
+  <div class="actions">
+    {% if applicable %}
+    <form method="post" action="{% url 'llm:apply_evidence' kind item.pk %}">{% csrf_token %}
+      <input type="hidden" name="evidence" value="{{ suggestion.evidence }}">
+      <button type="submit" class="primary">Apply: {{ label }}</button>
+    </form>
+    {% endif %}
+    <a href="{% if kind == 'discovery' %}{% url 'mail:discoveries' subject.pk %}{% else %}{% url 'mail:unassigned' subject.pk %}{% endif %}">Back without changing anything</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Organizations · Unlist{% endblock %}
+{% block content %}
+<h1>Organizations</h1>
+{% if pending %}<p class="card"><a href="{% url 'organizations:pending' %}">{{ pending }} contact change{{ pending|pluralize }} waiting for review</a></p>{% endif %}
+<form method="get" class="search">
+  <label for="q">Search by name, slug or domain</label>
+  <input type="text" id="q" name="q" value="{{ query }}">
+  <button type="submit">Search</button>
+</form>
+<p class="muted">{{ page.paginator.count }} Organization{{ page.paginator.count|pluralize }}.</p>
+<div class="table-wrap">
+<table class="table">
+  <thead><tr><th>Name</th><th>Domains</th><th>Contact</th><th>Quality</th></tr></thead>
+  <tbody>
+  {% for organization in page %}
+    <tr>
+      <td><a href="{% url 'organizations:detail' organization.slug %}">{{ organization.name }}</a>{% include "unlist/_broker.html" with organization=organization %}</td>
+      <td>{{ organization.domains|join:", " }}</td>
+      <td>{% if organization.email %}email{% elif organization.webform %}web form{% elif organization.address %}letter{% else %}<span class="warn">none</span>{% endif %}</td>
+      <td>{{ organization.quality }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4">No Organizations found.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% if page.has_other_pages %}
+<p class="pages">
+  {% if page.has_previous %}<a href="?q={{ query|urlencode }}&amp;page={{ page.previous_page_number }}">Previous</a>{% endif %}
+  Page {{ page.number }} of {{ page.paginator.num_pages }}
+  {% if page.has_next %}<a href="?q={{ query|urlencode }}&amp;page={{ page.next_page_number }}">Next</a>{% endif %}
+</p>
+{% endif %}
+{% endblock %}

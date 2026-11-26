@@ -1,0 +1,16 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* Copyright (C) 2026 The Unlist contributors */
+/* Only what the statistics page needs beyond unlist.css: its grid and the chart's colours. */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 0 24px; }
+.stats-definitions { margin: 8px 0; padding-left: 18px; }
+
+/* The chart: colours from the page's variables, so it follows light and dark mode. */
+.stats-chart { display: block; width: 100%; height: auto; color: var(--ink); }
+.stats-chart .chart-text { fill: currentColor; font-size: 12px; opacity: .8; }
+.stats-chart .chart-value { fill: currentColor; font-size: 12px; font-weight: 600; }
+.stats-chart .chart-grid { stroke: var(--line); stroke-width: 1; }
+.stats-chart .chart-line { fill: none; stroke-width: 2.5; }
+.stats-chart .chart-holding { stroke: var(--bad); fill: var(--bad); }
+.stats-chart .chart-removed { stroke: var(--accent); fill: var(--accent); }
+.stats-chart polyline.chart-line, .stats-chart line.chart-line { fill: none; }
+.stats-chart .chart-holding.chart-line { stroke-dasharray: 6 4; }

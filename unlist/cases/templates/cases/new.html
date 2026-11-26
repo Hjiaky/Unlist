@@ -1,0 +1,45 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Open a Case · Unlist{% endblock %}
+{% block content %}
+<h1>Open a Case</h1>
+<p class="muted">A Case is one Subject at one Organization. Opening it drafts an Access Request (or, if you choose, a Removal Request directly). Nothing leaves before you approve it.</p>
+
+<form method="get" class="filter">
+  <div>
+    <label for="id_subject_search">Subject</label>
+    <select name="subject" id="id_subject_search">
+      {% for subject in subjects %}<option value="{{ subject.pk }}"{% if subject.pk == selected_subject %} selected{% endif %}>{{ subject.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="grow">
+    <label for="id_q">Organization</label>
+    <input type="text" name="q" id="id_q" value="{{ query }}" placeholder="Name, slug or domain">
+  </div>
+  <button type="submit">Search</button>
+</form>
+
+{% if not subjects %}<p class="card">Add a Subject first: <a href="{% url 'subjects:add' %}">add a Subject</a>.</p>{% endif %}
+
+{% if query %}
+  {% if organizations %}
+  <form method="post" class="card">
+    {% csrf_token %}
+    <input type="hidden" name="subject" value="{{ selected_subject|default_if_none:'' }}">
+    <fieldset class="choices">
+      <legend>Organizations matching “{{ query }}”{% if organizations|length == limit %} (first {{ limit }}){% endif %}</legend>
+      {% for organization in organizations %}
+      <label class="choice"><input type="radio" name="organization" value="{{ organization.slug }}" required>
+        {{ organization.name }}{% include "unlist/_broker.html" with organization=organization %}
+        <span class="muted">{% if organization.email %}{{ organization.email }}{% elif organization.webform %}web form{% elif organization.address %}letter{% else %}no contact known{% endif %}{% if not organization.contact_confirmed %}, contact not confirmed{% endif %}</span>
+      </label>
+      {% endfor %}
+    </fieldset>
+    <label class="check"><input type="checkbox" name="direct_removal"> Request removal directly (skip the Access Request)</label>
+    <button type="submit" class="primary">Open the Case</button>
+  </form>
+  {% else %}
+  <p class="card">No Organization matches “{{ query }}”.</p>
+  {% endif %}
+{% endif %}
+{% endblock %}

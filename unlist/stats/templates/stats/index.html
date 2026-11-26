@@ -1,0 +1,122 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% load static %}
+{% block title %}Statistics · Unlist{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'stats/stats.css' %}">{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Statistics</h1></div>
+
+<form method="get" class="filter">
+  <div>
+    <label for="id_subject">Subject</label>
+    <select name="subject" id="id_subject">
+      <option value="">The household (all Subjects)</option>
+      {% for subject in subjects %}<option value="{{ subject.pk }}"{% if subject == selected %} selected{% endif %}>{{ subject.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <button type="submit">Show</button>
+</form>
+
+<section class="card">
+  <h2>Holding data and removed, by month</h2>
+  <p>
+    Holding data now: <a class="stat" href="{{ all_cases_url }}">{{ found.holding }}</a>.
+    Removed now: <a class="stat" href="{{ removed_url }}">{{ found.removed }}</a>.
+  </p>
+  {{ chart }}
+  <ul class="stats-definitions muted">
+    <li><strong>Holding data:</strong> a Listing was found at the Organization and has not been removed, or, with no Listing known, the mail showed an account or better and no Case closed as "nothing held" or "removed".</li>
+    <li><strong>Removed:</strong> the Organization confirmed the removal, and no Listing has been found since.</li>
+    <li>The current month is live. Earlier months are the counts recorded then, once a day; a month with no record is left out.</li>
+  </ul>
+</section>
+
+<div class="stats-grid">
+<section class="card">
+  <h2>Cases by state</h2>
+  {% if state_rows %}
+  <div class="table-wrap fit">
+  <table class="table">
+    <tbody>
+    {% for row in state_rows %}
+      <tr><td>{{ row.label }}</td><td class="num"><a class="stat" href="{{ row.url }}">{{ row.count }}</a></td></tr>
+    {% endfor %}
+    </tbody>
+    <tfoot><tr><th>All Cases</th><td class="num"><a class="stat" href="{{ all_cases_url }}">{{ found.cases }}</a></td></tr></tfoot>
+  </table>
+  </div>
+  {% else %}
+  <p class="muted">No Cases yet.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Outcomes</h2>
+  <div class="table-wrap fit">
+  <table class="table">
+    <tbody>
+    {% for row in outcome_rows %}
+      <tr><td>{{ row.label }}</td><td class="num"><a class="stat" href="{{ row.url }}">{{ row.count }}</a></td></tr>
+      {% if forloop.first %}
+      <tr><td class="muted">of which with a Suppression Record confirmed</td><td class="num"><a class="stat" href="{{ removed_confirmed_url }}">{{ removed_confirmed }}</a></td></tr>
+      {% endif %}
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="muted">Where the last answer stands. A Case that is asked again after a re-check is counted by its newest answer.</p>
+</section>
+</div>
+
+<section class="card">
+  <h2>Organizations found</h2>
+  {% if columns %}
+  <div class="table-wrap fit">
+  <table class="table">
+    <thead>
+      <tr><th>Evidence in the mail</th>{% for column in columns %}<th class="num">{{ column.subject.name }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+    {% for row in evidence_rows %}
+      <tr><td>{{ row.label }}</td>{% for count, url in row.cells %}<td class="num"><a class="stat" href="{{ url }}">{{ count }}</a></td>{% endfor %}</tr>
+    {% endfor %}
+    </tbody>
+    <tfoot>
+    {% for row in discovery_rows %}
+      <tr><th>{{ row.label }}</th>{% for count, url in row.cells %}<td class="num"><a class="stat" href="{{ url }}">{{ count }}</a></td>{% endfor %}</tr>
+    {% endfor %}
+    </tfoot>
+  </table>
+  </div>
+  {% else %}
+  <p class="muted">No Subjects yet.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Per Organization</h2>
+  <p class="muted">From the Cases on this instance only. Days to answer run from the day a request was sent to the first answer; on time means before the Case counted as overdue.</p>
+  {% if organization_rows %}
+  <div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr><th>Organization</th><th class="num">Cases</th><th class="num">Median days to answer</th><th class="num">Answered on time</th><th class="num">ID demands</th></tr>
+    </thead>
+    <tbody>
+    {% for row in organization_rows %}
+      <tr>
+        <td><a href="{{ row.url }}">{{ row.organization.name }}</a>{% include "unlist/_broker.html" with organization=row.organization %}</td>
+        <td class="num"><a class="stat" href="{{ row.cases_url }}">{{ row.cases }}</a></td>
+        <td class="num">{% if row.median %}<a class="stat" href="{{ row.cases_url }}">{{ row.median }}</a>{% else %}<span class="muted">no answer yet</span>{% endif %}</td>
+        <td class="num">{% if row.on_time %}<a class="stat" href="{{ row.cases_url }}">{{ row.on_time }}</a>{% else %}<span class="muted">no answer yet</span>{% endif %}</td>
+        <td class="num"><a class="stat" href="{{ row.cases_url }}">{{ row.id_demands }}</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="muted">No Cases yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

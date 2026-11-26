@@ -1,0 +1,2 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% if shown %}<form method="post" action="{% url 'llm:adapt_draft' draft.pk %}">{% csrf_token %}<button type="submit" title="No template exists for this language: ask the LLM for a translation to review">Adapt to {{ language }}</button></form>{% endif %}

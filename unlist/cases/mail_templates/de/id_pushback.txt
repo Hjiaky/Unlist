@@ -1,0 +1,21 @@
+Subject: Identitätsprüfung zu meiner Anfrage [Ref {{ reference }}]
+
+Sehr geehrte Damen und Herren,
+
+vielen Dank für Ihre Antwort zu meiner Anfrage mit der Referenz {{ reference }}. Sie haben mich um die Kopie eines Ausweisdokuments gebeten.
+
+Ich habe meine Anfrage von {{ subject_email }} geschickt, der E-Mail-Adresse, die Ihnen von mir bereits vorliegt. Nach Art. 12 Abs. 6 DSGVO dürfen Sie zusätzliche Informationen nur anfordern, wenn Sie begründete Zweifel an der Identität der antragstellenden Person haben, und nur solche, die zur Bestätigung der Identität erforderlich sind.
+
+Der Europäische Datenschutzausschuss hält es für unverhältnismäßig, die Kopie eines Ausweisdokuments zu verlangen, wenn die betroffene Person vom Verantwortlichen bereits authentifiziert ist (Leitlinien 01/2022 zu den Rechten der betroffenen Person – Auskunftsrecht, Version 2.1, Rn. 73). Die Verwendung einer Ausweiskopie birgt nach seiner Darstellung ein Risiko für die Sicherheit personenbezogener Daten und sollte als ungeeignet gelten, sofern sie nicht erforderlich, geeignet und mit nationalem Recht vereinbar ist; im Allgemeinen ist sie kein angemessenes Mittel der Authentifizierung (Rn. 74 und 75).
+
+Aus diesen Gründen möchte ich keine Ausweiskopie schicken. Falls Sie dennoch begründete Zweifel an meiner Identität haben, teilen Sie mir diese bitte mit. Gern bestätige ich Ihnen stattdessen andere Angaben{% if offered_details %}, zum Beispiel:
+{% for item in offered_details %}
+- {{ item }}
+{% endfor %}
+{% else %}, etwa zu meinem Konto oder zu unserem bisherigen Kontakt.
+{% endif %}
+
+Bitte bearbeiten Sie meine Anfrage weiter und beantworten Sie sie unverzüglich, innerhalb der Monatsfrist (Art. 12 Abs. 3 DSGVO).
+
+Mit freundlichen Grüßen
+{{ subject_name }}
