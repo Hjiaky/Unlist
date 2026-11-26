@@ -13,8 +13,8 @@ A person whose personal data the **Operator** wants removed. An instance holds o
 _Avoid_: Profile, identity, member, client
 
 **Organization**:
-Any company or body that may hold a **Subject**'s personal data, such as a shop, app, newsletter sender or **Broker**. In GDPR terms, a controller.
-_Avoid_: Service, company, controller, vendor
+Any company or body that may hold a **Subject**'s personal data, such as a shop, app, newsletter sender or **Broker**. One **Organization** is one legal entity that must answer requests (in GDPR terms, a controller); the brands and domains it runs belong to it.
+_Avoid_: Service, company, controller, vendor, brand
 
 **Broker**:
 An **Organization** whose business is collecting personal data and selling, renting or publishing it, including people-search sites.
