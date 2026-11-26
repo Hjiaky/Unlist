@@ -1,0 +1,18 @@
+{
+  "slug": "irish-credit-bureau",
+  "name": "Irish Credit Bureau DAC",
+  "relevant-countries": [
+    "ie"
+  ],
+  "categories": [
+    "credit agency"
+  ],
+  "sources": [
+    "https://www.dataprotection.ie/sites/default/files/uploads/2021-05/Summary%20of%20Decision%20Irish%20Credit%20Bureau.pdf"
+  ],
+  "quality": "scraped",
+  "broker": true,
+  "notes": [
+    "Contact to be confirmed: no privacy contact was found in the research; the regulator source gives none."
+  ]
+}

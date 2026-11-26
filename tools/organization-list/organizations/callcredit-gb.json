@@ -1,0 +1,6 @@
+{
+  "broker": true,
+  "notes": [
+    "Record looks stale after the TransUnion rebrand: on 2026-11-26 the ICO register listed TransUnion International UK Limited, Leeds, with the role mailbox DPO@transunion.co.uk (https://ico.org.uk/ESDWebPages/Entry/Z5169270). To be fixed upstream."
+  ]
+}

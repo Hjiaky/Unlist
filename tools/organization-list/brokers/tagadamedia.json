@@ -1,0 +1,19 @@
+{
+  "slug": "tagadamedia",
+  "name": "TAGADAMEDIA",
+  "relevant-countries": [
+    "fr"
+  ],
+  "categories": [
+    "ads",
+    "addresses"
+  ],
+  "sources": [
+    "https://www.cnil.fr/fr/courtiers-en-donnees-sanction-de-75-000-euros-lencontre-de-la-societe-tagadamedia"
+  ],
+  "quality": "scraped",
+  "broker": true,
+  "notes": [
+    "Contact to be confirmed: no privacy contact was found in the research; the regulator source gives none."
+  ]
+}

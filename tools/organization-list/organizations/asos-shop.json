@@ -1,0 +1,4 @@
+{
+  "web": "https://www.asos.com",
+  "notes": ["Upstream web URL has a typo (httsp://); corrected here until fixed upstream."]
+}

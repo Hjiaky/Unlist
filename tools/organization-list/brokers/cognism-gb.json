@@ -1,0 +1,23 @@
+{
+  "slug": "cognism-gb",
+  "name": "Cognism Limited",
+  "relevant-countries": [
+    "gb"
+  ],
+  "categories": [
+    "addresses"
+  ],
+  "web": "https://www.cognism.com/",
+  "domains": [
+    "cognism.com"
+  ],
+  "sources": [
+    "https://ico.org.uk/ESDWebPages/Entry/ZA217416",
+    "https://www.cognism.com/en/privacy-policy"
+  ],
+  "quality": "scraped",
+  "broker": true,
+  "notes": [
+    "Contact to be confirmed: the ICO register lists no DPO, and the privacy address seen in a search excerpt is unconfirmed. Check https://www.cognism.com/en/privacy-policy before the first request."
+  ]
+}

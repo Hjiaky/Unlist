@@ -1,0 +1,19 @@
+{
+  "slug": "trends-business-information",
+  "name": "Trends Business Information (Roularta Media Group)",
+  "relevant-countries": [
+    "be"
+  ],
+  "categories": [
+    "addresses"
+  ],
+  "sources": [
+    "https://www.roularta.be/nl/privacy-policy",
+    "https://www.edpb.europa.eu/system/files/2026-04/spe_databorkersmarketstudy_en.pdf"
+  ],
+  "quality": "scraped",
+  "broker": true,
+  "notes": [
+    "Contact to be confirmed: the EDPB data brokers market study (2026) names no privacy contact; see https://www.roularta.be/nl/privacy-policy."
+  ]
+}

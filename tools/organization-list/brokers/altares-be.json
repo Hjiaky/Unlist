@@ -1,0 +1,24 @@
+{
+  "slug": "altares-be",
+  "name": "Altares",
+  "relevant-countries": [
+    "be"
+  ],
+  "categories": [
+    "addresses",
+    "credit agency"
+  ],
+  "web": "https://www.altares.be/",
+  "sources": [
+    "https://www.altares.be/en/legal/privacy-policy/",
+    "https://www.edpb.europa.eu/system/files/2026-04/spe_databorkersmarketstudy_en.pdf"
+  ],
+  "quality": "scraped",
+  "broker": true,
+  "notes": [
+    "Contact to be confirmed: the EDPB data brokers market study (2026) names no privacy contact; see https://www.altares.be/en/legal/privacy-policy/."
+  ],
+  "domains": [
+    "altares.be"
+  ]
+}

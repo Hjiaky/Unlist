@@ -1,0 +1,24 @@
+{
+  "slug": "companyweb",
+  "name": "Companyweb",
+  "relevant-countries": [
+    "be"
+  ],
+  "categories": [
+    "addresses",
+    "credit agency"
+  ],
+  "web": "https://www.companyweb.be/",
+  "sources": [
+    "https://www.companyweb.be/en/privacy-policy",
+    "https://www.edpb.europa.eu/system/files/2026-04/spe_databorkersmarketstudy_en.pdf"
+  ],
+  "quality": "scraped",
+  "broker": true,
+  "notes": [
+    "Contact to be confirmed: the EDPB data brokers market study (2026) names no privacy contact; see https://www.companyweb.be/en/privacy-policy."
+  ],
+  "domains": [
+    "companyweb.be"
+  ]
+}
