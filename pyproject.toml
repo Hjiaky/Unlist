@@ -1,0 +1,14 @@
+[project]
+name = "unlist"
+version = "0.1.0.dev0"
+description = "Self-hosted helper for getting a household's personal data removed from the organizations that hold it."
+license = "AGPL-3.0-or-later"
+requires-python = ">=3.12"
+readme = "AGENTS.md"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]

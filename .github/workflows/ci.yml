@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# CI only builds and tests; the app itself never depends on GitHub.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r requirements.txt ruff
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: python manage.py makemigrations --check --dry-run
+        env:
+          UNLIST_TESTING: "1"
+      - run: python manage.py test
+        env:
+          UNLIST_TESTING: "1"
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t unlist:ci .
+      - name: Fresh container reaches the setup page
+        run: |
+          docker run -d --name unlist -p 8000:8000 -v "$PWD/data:/data" -v "$PWD/key:/key" unlist:ci
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/ || true)
+            [ "$code" = "302" ] && break
+            sleep 1
+          done
+          docker logs unlist
+          curl -sf http://localhost:8000/setup/ | grep -q "Create the Operator account"
+          test -s key/unlist.key
+          test ! -e data/unlist.key

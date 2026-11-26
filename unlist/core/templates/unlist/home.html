@@ -1,0 +1,8 @@
+{% extends "unlist/base.html" %}
+{% block content %}
+<header class="bar">
+  <h1>Unlist</h1>
+  <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">Log out</button></form>
+</header>
+<p>Unlist is running. Adding Subjects and importing mail come next.</p>
+{% endblock %}

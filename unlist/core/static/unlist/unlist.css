@@ -1,0 +1,29 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+:root {
+  --bg: #f6f5f1; --panel: #ffffff; --ink: #1d2125; --muted: #646b73; --line: #e0ddd5;
+  --accent: #2f6f5e; --accent-ink: #ffffff; --bad: #9b2c2c;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16181a; --panel: #1f2326; --ink: #e7e5df; --muted: #9aa1a8; --line: #33393e;
+    --accent: #6fb7a2; --accent-ink: #10201b; --bad: #f19a9a;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main.narrow { max-width: 560px; margin: 0 auto; padding: 32px 16px; }
+h1 { font-size: 1.5rem; margin: 0 0 12px; }
+.muted { color: var(--muted); font-size: .9rem; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin: 16px 0; }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.bar h1 { margin: 0; }
+label { display: block; font-weight: 600; margin-bottom: 4px; }
+input[type=text], input[type=password] { width: 100%; font: inherit; padding: 8px 10px; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+.helptext, .helptext ul { color: var(--muted); font-size: .85rem; }
+.errorlist { color: var(--bad); padding-left: 18px; }
+button { font: inherit; padding: 8px 14px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+code { font-size: .9em; }

@@ -1,0 +1,12 @@
+{% extends "unlist/base.html" %}
+{% block title %}Log in to Unlist{% endblock %}
+{% block content %}
+<h1>Unlist</h1>
+<form method="post" class="card">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="hidden" name="next" value="{{ next }}">
+  <button type="submit" class="primary">Log in</button>
+</form>
+<p class="muted">Forgot the password? Run <code>python manage.py changepassword</code> inside the container.</p>
+{% endblock %}

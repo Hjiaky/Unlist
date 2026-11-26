@@ -1,0 +1,17 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Unlist{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'unlist/unlist.css' %}">
+  <script src="{% static 'unlist/htmx.min.js' %}" defer></script>
+</head>
+<body>
+  {% block body %}
+  <main class="narrow">
+    {% block content %}{% endblock %}
+  </main>
+  {% endblock %}
+</body>
+</html>
