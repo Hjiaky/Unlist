@@ -1,0 +1,23 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+main.stats-wide { max-width: 1040px; margin: 0 auto; padding: 24px 16px; }
+.stats-nav { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; }
+.stats-wide a { color: var(--accent); }
+.stats-filter { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin: 12px 0; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0 24px; }
+.stats-wide h2 { font-size: 1.15rem; margin: 0 0 8px; }
+.stats-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+.stats-table th, .stats-table td { text-align: left; vertical-align: top; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.stats-table td.num, .stats-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.stats-scroll { overflow-x: auto; }
+.stats-definitions { margin: 8px 0; padding-left: 18px; }
+
+/* The chart: colours from the page's variables, so it follows light and dark mode. */
+.stats-chart { display: block; width: 100%; height: auto; color: var(--ink); }
+.stats-chart .chart-text { fill: currentColor; font-size: 12px; opacity: .8; }
+.stats-chart .chart-value { fill: currentColor; font-size: 12px; font-weight: 600; }
+.stats-chart .chart-grid { stroke: var(--line); stroke-width: 1; }
+.stats-chart .chart-line { fill: none; stroke-width: 2.5; }
+.stats-chart .chart-holding { stroke: var(--bad); fill: var(--bad); }
+.stats-chart .chart-removed { stroke: var(--accent); fill: var(--accent); }
+.stats-chart polyline.chart-line, .stats-chart line.chart-line { fill: none; }
+.stats-chart .chart-holding.chart-line { stroke-dasharray: 6 4; }
