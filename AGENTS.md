@@ -15,6 +15,15 @@ What these rule out in practice is being decided in https://github.com/Hjiaky/Un
 
 The road to v1.0.0-rc1 is charted as a wayfinder map: https://github.com/Hjiaky/Unlist/issues/1. Research findings live in `docs/research/`.
 
+## Subagent models
+
+Pick the cheapest model tier that does the job well; don't run every subagent on the session's model.
+
+- **Fastest tier:** lookups, file and code searches, mechanical edits, fetching a page for one fact.
+- **Middle tier:** research tickets that read documentation, APIs and repositories and summarise them with sources.
+- **Most capable tier:** work a decision rests on and that is hard to check afterwards: legal and licence reasoning, security review, architecture review.
+- Grilling and prototype tickets stay in the main session with the human.
+
 ## Agent skills
 
 ### Issue tracker
