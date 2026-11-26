@@ -51,7 +51,7 @@ Changes for re-checks (decided by agent, ticket #51)
 Changes for Complaints (decided by agent, ticket #52)
 -----------------------------------------------------
 - Persistent ID demands (spec section 9): a Complaint may be drafted while the Case is paused if
-  the Subject already pushed back on an ID demand in the current request (``pushbacks``) and the
+  the Subject already pushed back on an ID demand in the current request (``pushed_back``) and the
   Organization asked again. Gentle first: the pushback comes before the Complaint.
 
 ID and details demands (decided by agent, ticket #50)
@@ -276,8 +276,6 @@ class CaseState:
     recheck_after_removed: int | None = BROKER_RECHECK_DAYS
     """Days until the re-check after "removed" or an accepted partial removal; ``None`` closes."""
     result: str = ""
-    pushbacks: int = 0
-    """ID pushbacks sent since the current request was sent."""
     suppression_record: bool = False
     """A Suppression Record was confirmed earlier in this Case, so a Listing found now has returned."""
     asked: str | None = None

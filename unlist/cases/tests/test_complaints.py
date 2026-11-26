@@ -233,7 +233,10 @@ class ComplaintContentTests(Fixtures, TestCase):
         paused = CaseState(state=State.PAUSED, request=Request.ACCESS)
         self.assertIn("push back", lifecycle.transition(paused, Action.DRAFT_COMPLAINT).error)
         result = lifecycle.transition(
-            CaseState(state=State.PAUSED, request=Request.ACCESS, pushbacks=1), Action.DRAFT_COMPLAINT
+            CaseState(
+                state=State.PAUSED, request=Request.ACCESS, pushed_back=True, asked=lifecycle.ASKED_ID_OR_DETAILS
+            ),
+            Action.DRAFT_COMPLAINT,
         )
         self.assertEqual(result.case.state, State.COMPLAINT_DRAFT)
 

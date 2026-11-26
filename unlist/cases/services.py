@@ -96,18 +96,6 @@ def reminders_sent(case) -> int:
     return count
 
 
-def pushbacks_sent(case) -> int:
-    """ID pushbacks sent since the current request (an Access or Removal Request) was sent."""
-    count = 0
-    for event in _events(case):
-        kind = _sent_kind(event)
-        if kind in (DraftKind.ACCESS_REQUEST, DraftKind.REMOVAL_REQUEST):
-            count = 0
-        elif kind == DraftKind.ID_PUSHBACK:
-            count += 1
-    return count
-
-
 def _current_round(events: list[CaseEvent]) -> list[CaseEvent]:
     """The events from the latest send of a request (or reconsider reply) on; empty if none was sent."""
     start = None
@@ -157,7 +145,6 @@ def case_state(case) -> lifecycle.CaseState:
         recheck_after_nothing=after_nothing,
         recheck_after_removed=after_removed,
         result=case.result,
-        pushbacks=pushbacks_sent(case),
         suppression_record=case.events.filter(suppression_confirmed=True).exists(),
         asked=asked,
         pushed_back=pushed_back,
