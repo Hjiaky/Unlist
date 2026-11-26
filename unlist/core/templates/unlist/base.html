@@ -1,4 +1,4 @@
-{% load static %}<!doctype html>
+{% load static legal %}<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -13,5 +13,8 @@
     {% block content %}{% endblock %}
   </main>
   {% endblock %}
+  <footer class="site-footer muted">
+    Unlist is free software (AGPL-3.0-or-later) · <a href="{% source_url %}">Source</a> · <a href="{% url 'legal:about' %}">About</a>
+  </footer>
 </body>
 </html>

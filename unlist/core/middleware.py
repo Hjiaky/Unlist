@@ -42,7 +42,7 @@ def operator_exists() -> bool:
 class FirstRunMiddleware:
     """Until the Operator account exists, every page leads to the setup page."""
 
-    ALLOWED_PREFIXES = ("/setup/", "/static/")
+    ALLOWED_PREFIXES = ("/setup/", "/static/", "/about/")
 
     def __init__(self, get_response):
         self.get_response = get_response

@@ -85,6 +85,8 @@ class NothingFromElsewhereTests(TestCase):
     URL_ATTR = re.compile(r"""(?:src|href|action)\s*=\s*["']([^"']*)["']""", re.IGNORECASE)
 
     def assert_only_local_urls(self, html):
+        # The footer's Source link is a link the person may follow (AGPL section 13), not a load.
+        html = re.sub(r"<footer\b.*?</footer>", "", html, flags=re.DOTALL)
         for url in self.URL_ATTR.findall(html):
             self.assertFalse(re.match(r"^(?:[a-z][a-z0-9+.-]*:)?//", url, re.IGNORECASE), f"external URL: {url}")
 

@@ -27,3 +27,5 @@ button { font: inherit; padding: 8px 14px; border-radius: 6px; cursor: pointer;
   border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
 button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 code { font-size: .9em; }
+.site-footer { max-width: 560px; margin: 0 auto; padding: 0 16px 24px; text-align: center; }
+.site-footer a { color: inherit; }

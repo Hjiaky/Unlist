@@ -1,0 +1,8 @@
+{
+  "file": "public_suffix_list.dat",
+  "sha256": "a9f8906c8aa5067a0de9ad8e4b4c5d5a56080f5450187193ddc91ef90885b8d5",
+  "source": "https://publicsuffix.org/list/public_suffix_list.dat",
+  "commit": "88b076a1fb2ae58cd2a6959d570f075e04d21867",
+  "snapshot_date": "2026-11-26",
+  "licence": "MPL-2.0"
+}
