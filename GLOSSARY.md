@@ -37,7 +37,7 @@ A demand, sent to an **Organization** on behalf of a **Subject**, that it delete
 _Avoid_: Opt-out, deletion request, takedown
 
 **Supervisory Authority**:
-The data-protection regulator an **Organization** answers to, such as a national DPA or the UK ICO.
+The data-protection regulator an **Organization** answers to, such as a national data-protection authority in the EU or the UK regulator.
 _Avoid_: DPA, regulator, data protection office
 
 **Complaint**:
