@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE: Unlist request lifecycle</title>
+<style>
+  :root {
+    --bg: #f7f6f2; --panel: #ffffff; --ink: #1f2328; --muted: #646b73;
+    --line: #dcd9d0; --accent: #2f6f5e; --accent-ink: #ffffff;
+    --soft: #e7efe9; --warn: #8a5a00; --warn-bg: #fbf1d8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17191b; --panel: #1f2326; --ink: #e6e4de; --muted: #9aa1a8;
+      --line: #343a3f; --accent: #6fb7a2; --accent-ink: #10201b;
+      --soft: #24332e; --warn: #f0c56a; --warn-bg: #3a3019;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  h2 { font-size: 1.1rem; margin: 32px 0 8px; }
+  h3 { font-size: .8rem; margin: 16px 0 6px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .05em; }
+  p { margin: 0 0 10px; }
+  .tag { display: inline-block; font-size: .72rem; font-weight: 600; letter-spacing: .06em;
+    padding: 2px 8px; border: 1px solid var(--warn); color: var(--warn);
+    background: var(--warn-bg); border-radius: 4px; }
+  .muted { color: var(--muted); }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+  .setup { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin: 12px 0 0; }
+  .setup label { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; max-width: 100%; }
+  select { max-width: 100%; font: inherit; padding: 4px 6px; background: var(--panel); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 6px; }
+  dl { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 0; margin: 0; }
+  dt, dd { overflow-wrap: anywhere; }
+  dt, dd { margin: 0; padding: 7px 8px; border-bottom: 1px solid var(--line); }
+  dt { color: var(--muted); }
+  dd.changed, dt.changed { background: var(--soft); }
+  dd.changed::after { content: "  changed"; color: var(--accent); font-size: .78rem; font-weight: 600; }
+  .status { font-size: 1.15rem; font-weight: 600; margin: 0 0 12px; }
+  .notice { margin: 12px 0 0; padding: 10px 12px; border-radius: 6px;
+    background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn); }
+  .notice:empty { display: none; }
+  .buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+  button { font: inherit; padding: 7px 12px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); }
+  button.cannot { background: transparent; color: var(--muted); border-color: var(--line); }
+  button.plain { background: transparent; color: var(--accent); }
+  button:disabled { opacity: .45; cursor: default; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .tabs button { background: transparent; color: var(--ink); border-color: var(--line); }
+  .tabs button.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  ol.steps { margin: 12px 0 0; padding-left: 22px; }
+  ol.steps li { margin: 0 0 10px; }
+  ol.steps li.done { color: var(--muted); }
+  ol.steps .why { display: block; font-size: .9rem; color: var(--muted); margin-top: 2px; }
+  ul.history { margin: 0; padding-left: 20px; max-height: 240px; overflow: auto; }
+  ul.history li { margin-bottom: 4px; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 24px; }
+  @media (min-width: 900px) {
+    main { max-width: 1240px; }
+    .layout { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+    .side { order: 2; position: sticky; top: 0; align-self: start; max-height: 100vh; overflow: auto; padding-bottom: 16px; }
+    .work { order: 1; }
+  }
+  ul.history { max-height: 200px; }
+</style>
+</head>
+<body>
+<main>
+  <p><span class="tag">PROTOTYPE, THROWAWAY</span></p>
+  <h1>What states does a request to an Organization go through?</h1>
+  <p>This demo follows <strong>one Case</strong>: everything Unlist does for one Subject at one
+    Organization, from the first Access Request to "done". Press buttons and watch the state.
+    The question to answer: <strong>are these the right states and the right moves between them</strong>,
+    including the awkward cases (no reply, ID demand, refusal, bounce, and mail the Subject has to send by hand)?</p>
+  <p class="muted">Time is simulated in days. "One month to answer" is shown as 30 days plus 3 days' grace.
+    A reminder gives 14 more days. An extension adds 60. Re-checks come after 90 days for a Broker and 365 otherwise.
+    All of these numbers are placeholders to react to.</p>
+
+  <div class="setup panel">
+    <label>Mail mode
+      <select id="mode">
+        <option value="live">Live connection (Unlist sends and reads mail)</option>
+        <option value="import">Import only (the Subject sends by hand)</option>
+      </select>
+    </label>
+    <label>Organization is a
+      <select id="broker">
+        <option value="yes">Broker</option>
+        <option value="no">Regular Organization (shop, app, newsletter)</option>
+      </select>
+    </label>
+    <button class="plain" id="reset">Start over</button>
+  </div>
+
+  <div class="layout">
+    <div class="side">
+      <h2>Current state of the Case</h2>
+      <div class="panel">
+        <p class="status" id="status"></p>
+        <dl id="fields"></dl>
+        <div class="notice" id="notice" role="status"></div>
+      </div>
+      <div class="panel" style="margin-top:12px">
+        <h3 style="margin-top:0">What has happened</h3>
+        <ul class="history" id="history"></ul>
+      </div>
+    </div>
+    <div class="work">
+      <h2>Guided walkthroughs</h2>
+      <p class="muted">Each tab resets the Case and walks one situation. Press the highlighted step.</p>
+      <div class="panel">
+        <div class="tabs" id="tabs"></div>
+        <p id="scenarioIntro"></p>
+        <ol class="steps" id="steps"></ol>
+        <button class="plain" id="restart">Restart this walkthrough</button>
+      </div>
+
+      <h2>Free play</h2>
+      <p class="muted">Every button is always clickable. Dimmed ones are not possible right now; press one to see why.</p>
+      <div class="panel" id="freeplay"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ------------------------------------------------------------------
+   The logic. Pure: no DOM, no globals. This is the part worth keeping.
+   transition(state, action) -> { state, error }   (error = why not)
+   ------------------------------------------------------------------ */
+const UnlistCase = (() => {
+  const RULES = { answerDays: 30, graceDays: 3, reminderDays: 14, extensionDays: 60,
+                  recheckBrokerDays: 90, recheckOtherDays: 365 };
+
+  const DRAFT_NAMES = {
+    access: 'Access Request',
+    removal: 'Removal Request',
+    reminder: 'Reminder',
+    info: 'Reply with the details asked for',
+    pushback: 'Reply pushing back on the ID demand',
+    reconsider: 'Reply asking the Organization to reconsider',
+  };
+
+  function initial({ mode = 'live', broker = true } = {}) {
+    return {
+      mode, broker,
+      status: 'found',
+      request: null,        // which request is in flight: 'access' | 'removal' | null
+      draft: null,          // { kind, back } an email waiting for approval or hand-sending
+      day: 0,
+      clock: null,          // { sentDay, dueDay, pausedSince, extended }
+      reminders: 0,
+      result: null,
+      recheckDay: null,
+      complaintFrom: null,
+      history: ['Day 0: Organization found for this Subject. Nothing sent yet.'],
+    };
+  }
+
+  const LATE_OK = ['waiting', 'paused', 'overdue', 'complaint_draft', 'complaint_lodged'];
+
+  function transition(s, a) {
+    const n = JSON.parse(JSON.stringify(s));
+    const say = (t) => n.history.push('Day ' + n.day + ': ' + t);
+    const ok = () => ({ state: n, error: null });
+    const no = (why) => ({ state: s, error: why });
+    const recheckIn = () => (n.broker ? RULES.recheckBrokerDays : RULES.recheckOtherDays);
+    const rest = (result) => {
+      n.status = 'resting'; n.result = result; n.clock = null; n.request = null; n.draft = null;
+      n.recheckDay = n.day + recheckIn();
+    };
+    const makeDraft = (kind) => { n.draft = { kind, back: n.status }; n.status = 'awaiting_approval'; };
+
+    const deliver = () => {
+      const kind = n.draft.kind; n.draft = null;
+      if (kind === 'access' || kind === 'removal') {
+        n.request = kind; n.reminders = 0; n.result = null; n.recheckDay = null;
+        n.clock = { sentDay: n.day, dueDay: n.day + RULES.answerDays, pausedSince: null, extended: false };
+      } else if (kind === 'reminder') {
+        n.reminders += 1; n.clock.dueDay = n.day + RULES.reminderDays;
+      } else if (kind === 'info' || kind === 'pushback') {
+        const pausedFor = n.day - n.clock.pausedSince;
+        n.clock.dueDay += pausedFor; n.clock.pausedSince = null;
+        say('The clock runs again. It was paused for ' + pausedFor + ' day(s), so the deadline moves by that much.');
+      } else if (kind === 'reconsider') {
+        n.clock = n.clock || { sentDay: n.day, extended: false, pausedSince: null };
+        n.clock.dueDay = n.day + RULES.reminderDays;
+      }
+      n.status = 'waiting';
+      say(DRAFT_NAMES[kind] + ' sent from the Subject\'s own address.');
+    };
+
+    switch (a.type) {
+
+      case 'prepare_access':
+        if (s.status !== 'found') return no('An Access Request is only prepared for a Case where nothing is in flight.');
+        makeDraft('access'); say('Unlist prepared an Access Request. It waits for approval.'); return ok();
+
+      case 'ask_removal':
+        if (s.status !== 'decide_listing')
+          return no('Ask, then delete: a Removal Request is only sent after an Access Request showed that a Listing exists.');
+        makeDraft('removal'); say('The Subject chose removal. Unlist prepared a Removal Request.'); return ok();
+
+      case 'keep_listing':
+        if (s.status !== 'decide_listing') return no('There is no Listing to decide about right now.');
+        n.status = 'closed'; n.result = 'Kept by choice (the Subject still wants this Organization to hold the data)';
+        n.clock = null; n.request = null; say('The Subject chose to keep the Listing. Case closed, no re-check.'); return ok();
+
+      case 'approve':
+        if (s.status !== 'awaiting_approval') return no('Nothing is waiting for approval.');
+        if (s.mode === 'live') { say('Approved.'); deliver(); }
+        else { n.status = 'handed_over'; say('Approved. Unlist handed the email to the Subject to send from their own mail app.'); }
+        return ok();
+
+      case 'mark_sent':
+        if (s.mode === 'live') return no('With a live connection Unlist sends the email itself once it is approved.');
+        if (s.status !== 'handed_over') return no('No email is waiting to be sent by hand.');
+        say('The Subject sent it and marked it as sent.'); deliver(); return ok();
+
+      case 'discard':
+        if (s.status !== 'awaiting_approval' && s.status !== 'handed_over') return no('There is no draft to discard.');
+        say('Draft discarded (' + DRAFT_NAMES[s.draft.kind] + ').'); n.status = s.draft.back; n.draft = null; return ok();
+
+      case 'org_nothing':
+        if (!LATE_OK.includes(s.status)) return no('The Organization has not been asked anything that is still open.');
+        if (s.request !== 'access') return no('"We hold nothing" answers an Access Request, and none is open.');
+        say('The Organization answered: it holds nothing about the Subject.'); rest('Nothing held'); return ok();
+
+      case 'org_listing':
+        if (!LATE_OK.includes(s.status)) return no('The Organization has not been asked anything that is still open.');
+        if (s.request !== 'access') return no('A copy of the data answers an Access Request, and none is open.');
+        n.status = 'decide_listing'; n.clock = null;
+        say('The Organization sent the data it holds. A Listing exists. The Subject decides what to do.'); return ok();
+
+      case 'org_removed':
+        if (!LATE_OK.includes(s.status)) return no('The Organization has not been asked anything that is still open.');
+        if (s.request !== 'removal') return no('A removal confirmation answers a Removal Request, and none is open.');
+        say('The Organization confirmed the removal.'); rest('Removed'); return ok();
+
+      case 'org_refused':
+        if (!LATE_OK.includes(s.status)) return no('The Organization has not been asked anything that is still open.');
+        n.status = 'decide_refusal'; if (n.clock) n.clock.pausedSince = null;
+        say('The Organization refused, or did only part, and named a reason. Unlist records which exception it cites.'); return ok();
+
+      case 'org_asks_info':
+        if (s.status !== 'waiting') return no('The Organization can only ask for ID or details while a request is open and the clock is running.');
+        n.status = 'paused'; n.clock.pausedSince = n.day;
+        say('The Organization asked for ID or more details. The clock is paused until the Subject answers.'); return ok();
+
+      case 'send_info':
+        if (s.status !== 'paused') return no('The Organization has not asked for anything.');
+        makeDraft('info'); say('Unlist prepared a reply with the details asked for.'); return ok();
+
+      case 'push_back':
+        if (s.status !== 'paused') return no('There is no ID demand to push back on.');
+        makeDraft('pushback'); say('Unlist prepared a reply saying the ID demand goes too far.'); return ok();
+
+      case 'org_extends':
+        if (s.status !== 'waiting') return no('An extension notice only matters while a request is open.');
+        if (s.clock.extended) { say('The Organization announced a second extension. Not valid: only one is allowed. Deadline unchanged.');
+          return { state: n, error: 'Second extension: not valid, deadline unchanged.' }; }
+        if (s.day > s.clock.sentDay + RULES.answerDays) { say('The Organization announced an extension after the first month. Not valid. Deadline unchanged.');
+          return { state: n, error: 'Too late: an extension must be announced within the first month. Deadline unchanged.' }; }
+        n.clock.dueDay += RULES.extensionDays; n.clock.extended = true;
+        say('The Organization announced an extension with reasons, in time. Deadline moves by ' + RULES.extensionDays + ' days.'); return ok();
+
+      case 'bounce':
+        if (s.status !== 'waiting') return no('Only a sent email can bounce.');
+        n.status = 'undeliverable'; n.clock = null;
+        say('The email bounced. The clock never started: the Organization did not receive it.'); return ok();
+
+      case 'fix_address':
+        if (s.status !== 'undeliverable') return no('No email has bounced.');
+        makeDraft(s.request); say('Contact address corrected. Unlist prepared the ' + DRAFT_NAMES[s.request] + ' again.'); return ok();
+
+      case 'send_reminder':
+        if (s.status !== 'overdue') return no('A reminder is only for an Organization that has missed its deadline.');
+        makeDraft('reminder'); say('Unlist prepared a polite reminder.'); return ok();
+
+      case 'draft_complaint':
+        if (s.status === 'decide_refusal') { n.complaintFrom = 'refusal'; }
+        else if (s.status === 'overdue') {
+          if (s.reminders < 1) return no('Gentle first: send a reminder before drafting a Complaint.');
+          n.complaintFrom = 'silence';
+        } else return no('A Complaint is only drafted after a missed deadline plus a reminder, or after a refusal.');
+        n.status = 'complaint_draft';
+        say('Unlist drafted a Complaint to the Supervisory Authority. The Subject lodges it; Unlist does not.'); return ok();
+
+      case 'complaint_lodged':
+        if (s.status !== 'complaint_draft') return no('There is no Complaint draft.');
+        n.status = 'complaint_lodged'; say('The Subject lodged the Complaint and marked it as lodged.'); return ok();
+
+      case 'accept_refusal':
+        if (s.status !== 'decide_refusal') return no('There is no refusal to accept.');
+        if (s.request === 'removal') { say('The Subject accepted the outcome.'); rest('Partly removed or refused (accepted)'); }
+        else { n.status = 'closed'; n.result = 'Access refused (accepted)'; n.clock = null; n.request = null;
+               say('The Subject accepted the refusal. Case closed.'); }
+        return ok();
+
+      case 'ask_reconsider':
+        if (s.status !== 'decide_refusal') return no('There is no refusal to answer.');
+        makeDraft('reconsider'); say('Unlist prepared a reply asking the Organization to reconsider.'); return ok();
+
+      case 'stop':
+        if (s.status === 'closed') return no('The Case is already closed.');
+        n.status = 'closed'; n.result = 'Stopped by choice'; n.clock = null; n.draft = null; n.request = null; n.recheckDay = null;
+        say('The Operator stopped pursuing this Organization.'); return ok();
+
+      case 'reopen':
+        if (s.status !== 'closed') return no('Only a closed Case can be reopened.');
+        n.status = 'found'; n.result = null; say('Case reopened. Nothing in flight.'); return ok();
+
+      case 'pass_days': {
+        n.day += a.days;
+        if (n.status === 'waiting' && n.day > n.clock.dueDay + RULES.graceDays) {
+          n.status = 'overdue'; say('No answer by the deadline (day ' + n.clock.dueDay + ') plus grace. The Case is overdue.');
+        } else if (n.status === 'resting' && n.recheckDay !== null && n.day >= n.recheckDay) {
+          n.recheckDay = null; n.draft = { kind: 'access', back: 'resting' }; n.status = 'awaiting_approval';
+          say('Re-check due. Unlist prepared a fresh Access Request. It waits for approval like any other email.');
+        }
+        return ok();
+      }
+    }
+    return no('Unknown action.');
+  }
+
+  const can = (s, a) => transition(s, a).error === null;
+  return { RULES, DRAFT_NAMES, initial, transition, can };
+})();
+
+/* ------------------------------------------------------------------
+   The page. Throwaway shell around the module above.
+   ------------------------------------------------------------------ */
+const STATUS_TEXT = {
+  found: 'Found. Nothing sent yet.',
+  awaiting_approval: 'Draft ready. Waiting for approval.',
+  handed_over: 'Approved. Waiting for the Subject to send it from their own mail app.',
+  waiting: 'Sent. Waiting for the Organization\'s answer.',
+  paused: 'The Organization asked for ID or more details. Clock paused.',
+  overdue: 'No answer by the deadline.',
+  undeliverable: 'The email bounced. The contact address needs fixing.',
+  decide_listing: 'Listing found. The Subject decides: remove or keep.',
+  decide_refusal: 'The Organization refused, or did only part. The Subject decides what next.',
+  complaint_draft: 'Complaint draft ready. The Subject lodges it themselves.',
+  complaint_lodged: 'Complaint lodged with the Supervisory Authority.',
+  resting: 'Done for now. Re-check scheduled.',
+  closed: 'Closed.',
+};
+const WHO_NEXT = {
+  found: 'Unlist (prepares the Access Request)',
+  awaiting_approval: 'Operator or Subject (approve or discard)',
+  handed_over: 'Subject (send it, then mark as sent)',
+  waiting: 'The Organization',
+  paused: 'Subject (answer, or push back)',
+  overdue: 'Operator or Subject (reminder first, then a Complaint draft)',
+  undeliverable: 'Operator (correct the contact address)',
+  decide_listing: 'Subject (remove or keep)',
+  decide_refusal: 'Subject (accept, ask again, or complain)',
+  complaint_draft: 'Subject (lodge the Complaint)',
+  complaint_lodged: 'The Supervisory Authority, outside Unlist',
+  resting: 'Nobody, until the re-check day',
+  closed: 'Nobody',
+};
+const GROUPS = [
+  ['Unlist prepares', [
+    ['Prepare an Access Request', { type: 'prepare_access' }],
+  ]],
+  ['Operator or Subject decides', [
+    ['Approve the draft', { type: 'approve' }],
+    ['Discard the draft', { type: 'discard' }],
+    ['Mark as sent (sent by hand)', { type: 'mark_sent' }],
+    ['Ask for removal', { type: 'ask_removal' }],
+    ['Keep the Listing', { type: 'keep_listing' }],
+    ['Send the details asked for', { type: 'send_info' }],
+    ['Push back on the ID demand', { type: 'push_back' }],
+    ['Send a reminder', { type: 'send_reminder' }],
+    ['Draft a Complaint', { type: 'draft_complaint' }],
+    ['Mark Complaint as lodged', { type: 'complaint_lodged' }],
+    ['Accept the refusal', { type: 'accept_refusal' }],
+    ['Ask the Organization to reconsider', { type: 'ask_reconsider' }],
+    ['Correct the contact address', { type: 'fix_address' }],
+    ['Stop pursuing this Organization', { type: 'stop' }],
+    ['Reopen the Case', { type: 'reopen' }],
+  ]],
+  ['The Organization answers', [
+    ['"We hold nothing"', { type: 'org_nothing' }],
+    ['Sends the data it holds', { type: 'org_listing' }],
+    ['Confirms removal', { type: 'org_removed' }],
+    ['Refuses, or does only part', { type: 'org_refused' }],
+    ['Asks for ID or more details', { type: 'org_asks_info' }],
+    ['Announces an extension', { type: 'org_extends' }],
+    ['The email bounces', { type: 'bounce' }],
+  ]],
+  ['Time passes', [
+    ['1 day', { type: 'pass_days', days: 1 }],
+    ['7 days', { type: 'pass_days', days: 7 }],
+    ['30 days', { type: 'pass_days', days: 30 }],
+    ['90 days', { type: 'pass_days', days: 90 }],
+  ]],
+];
+const D = (n) => ({ type: 'pass_days', days: n });
+const SCENARIOS = [
+  { title: 'Happy path', mode: 'live', broker: true,
+    intro: 'A Broker answers properly both times. Watch the two approvals, and the re-check appearing by itself at the end.',
+    steps: [
+      ['Unlist prepares an Access Request', { type: 'prepare_access' }, 'Nothing leaves yet.'],
+      ['Approve the draft', { type: 'approve' }, 'Live connection: approving sends it. The 30-day clock starts.'],
+      ['12 days pass', D(12), ''],
+      ['The Broker sends the data it holds', { type: 'org_listing' }, 'So a Listing exists. The Subject must decide.'],
+      ['Ask for removal', { type: 'ask_removal' }, 'Only possible now that a Listing is known.'],
+      ['Approve the draft', { type: 'approve' }, 'A new 30-day clock for the Removal Request.'],
+      ['20 days pass', D(20), ''],
+      ['The Broker confirms removal', { type: 'org_removed' }, 'Done for now. Re-check in 90 days because it is a Broker.'],
+      ['90 days pass', D(90), 'Unlist prepares a fresh Access Request by itself, but still waits for approval.'],
+    ] },
+  { title: 'Nothing held', mode: 'live', broker: false,
+    intro: 'A shop the Subject never really used answers that it holds nothing. Is "done for now, re-check in a year" right, or should the Case just close?',
+    steps: [
+      ['Unlist prepares an Access Request', { type: 'prepare_access' }, ''],
+      ['Approve the draft', { type: 'approve' }, ''],
+      ['7 days pass', D(7), ''],
+      ['The shop answers "we hold nothing"', { type: 'org_nothing' }, 'No Removal Request is ever sent.'],
+    ] },
+  { title: 'Silence', mode: 'live', broker: true,
+    intro: 'The Broker never answers. Watch the order: deadline, reminder, and only then a Complaint draft. Then the Broker answers late.',
+    steps: [
+      ['Unlist prepares an Access Request', { type: 'prepare_access' }, ''],
+      ['Approve the draft', { type: 'approve' }, ''],
+      ['30 days pass', D(30), 'Deadline day itself: still waiting (3 days\' grace).'],
+      ['7 days pass', D(7), 'Now it is overdue.'],
+      ['Try to draft a Complaint straight away', { type: 'draft_complaint' }, 'Should be refused: gentle first.'],
+      ['Send a reminder', { type: 'send_reminder' }, ''],
+      ['Approve the draft', { type: 'approve' }, 'The reminder gives 14 more days.'],
+      ['30 days pass', D(30), 'Overdue again.'],
+      ['Draft a Complaint', { type: 'draft_complaint' }, 'Now allowed. Unlist drafts; the Subject lodges.'],
+      ['Mark Complaint as lodged', { type: 'complaint_lodged' }, ''],
+      ['The Broker finally sends the data', { type: 'org_listing' }, 'A late answer still moves the Case on.'],
+    ] },
+  { title: 'ID demand and extension', mode: 'live', broker: false,
+    intro: 'The Organization asks for ID, then announces an extension, then tries a second one. Watch the "Answer due" day move.',
+    steps: [
+      ['Unlist prepares an Access Request', { type: 'prepare_access' }, ''],
+      ['Approve the draft', { type: 'approve' }, 'Answer due on day 30.'],
+      ['7 days pass', D(7), ''],
+      ['The Organization asks for ID', { type: 'org_asks_info' }, 'Clock paused. Time passing now does not make it overdue.'],
+      ['7 days pass', D(7), 'Still paused.'],
+      ['Push back on the ID demand', { type: 'push_back' }, 'The Subject could also just send the details.'],
+      ['Approve the draft', { type: 'approve' }, 'Clock runs again; the deadline moved by the 7 paused days.'],
+      ['The Organization announces an extension', { type: 'org_extends' }, 'In time and the first one: valid, plus 60 days.'],
+      ['It announces a second extension', { type: 'org_extends' }, 'Recorded, but not valid. Deadline unchanged.'],
+    ] },
+  { title: 'Refusal', mode: 'live', broker: false,
+    intro: 'A shop refuses to delete invoices, citing a legal duty to keep them. The Subject has three ways on.',
+    steps: [
+      ['Unlist prepares an Access Request', { type: 'prepare_access' }, ''],
+      ['Approve the draft', { type: 'approve' }, ''],
+      ['The shop sends the data it holds', { type: 'org_listing' }, ''],
+      ['Ask for removal', { type: 'ask_removal' }, ''],
+      ['Approve the draft', { type: 'approve' }, ''],
+      ['The shop refuses part, naming a legal duty', { type: 'org_refused' }, 'Options now: accept, ask to reconsider, or draft a Complaint.'],
+      ['Accept the refusal', { type: 'accept_refusal' }, 'Counts as done for now, with a re-check in a year.'],
+    ] },
+  { title: 'Import only', mode: 'import', broker: true,
+    intro: 'No live mailbox connection. Unlist cannot send or read mail, so the Subject sends by hand and the Operator marks what happened.',
+    steps: [
+      ['Unlist prepares an Access Request', { type: 'prepare_access' }, ''],
+      ['Approve the draft', { type: 'approve' }, 'Not sent yet: it is handed to the Subject. No clock.'],
+      ['3 days pass', D(3), 'The Subject has not got round to it. Nothing is overdue, because nothing was sent.'],
+      ['The Subject sends it and marks it as sent', { type: 'mark_sent' }, 'The clock starts now, on day 3.'],
+      ['10 days pass', D(10), ''],
+      ['The Operator marks: "we hold nothing"', { type: 'org_nothing' }, 'Same outcome as with a live connection; only who records it differs.'],
+    ] },
+  { title: 'Still a customer', mode: 'live', broker: false,
+    intro: 'The Access Request shows what a shop holds, but the Subject still shops there and wants to keep the account.',
+    steps: [
+      ['Unlist prepares an Access Request', { type: 'prepare_access' }, ''],
+      ['Approve the draft', { type: 'approve' }, ''],
+      ['The shop sends the data it holds', { type: 'org_listing' }, ''],
+      ['Keep the Listing', { type: 'keep_listing' }, 'Case closed, no re-check. It can be reopened later.'],
+    ] },
+  { title: 'Should be impossible', mode: 'live', broker: true,
+    intro: 'Each step tries something the rules forbid. Every one should be refused, with a reason, and change nothing.',
+    steps: [
+      ['Ask for removal before anything is known', { type: 'ask_removal' }, 'Ask, then delete.'],
+      ['Unlist prepares an Access Request', { type: 'prepare_access' }, '(a legal step, to set up the next ones)'],
+      ['The Organization "answers" before anything was sent', { type: 'org_listing' }, 'Nothing is open yet.'],
+      ['Mark as sent by hand, with a live connection', { type: 'mark_sent' }, ''],
+      ['Approve the draft', { type: 'approve' }, '(legal)'],
+      ['Send a reminder on day 0', { type: 'send_reminder' }, 'Not overdue.'],
+      ['Draft a Complaint on day 0', { type: 'draft_complaint' }, ''],
+      ['The Organization confirms a removal nobody asked for', { type: 'org_removed' }, 'Only an Access Request is open.'],
+    ] },
+];
+
+let state, prevFields = null, scenario = null, stepIndex = 0;
+const $ = (id) => document.getElementById(id);
+const el = (tag, text, cls) => { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (cls) e.className = cls; return e; };
+
+function fieldsOf(s) {
+  const c = s.clock;
+  return [
+    ['Who acts next', WHO_NEXT[s.status]],
+    ['Today', 'Day ' + s.day],
+    ['Request in flight', s.request ? UnlistCase.DRAFT_NAMES[s.request] : 'None'],
+    ['Draft waiting', s.draft ? UnlistCase.DRAFT_NAMES[s.draft.kind] : 'None'],
+    ['Sent on', c && c.sentDay !== undefined ? 'Day ' + c.sentDay : 'Not sent'],
+    ['Answer due', c && c.dueDay !== undefined ? 'Day ' + c.dueDay + ' (then ' + UnlistCase.RULES.graceDays + ' days\' grace)' + (c.extended ? ', extended once' : '') : 'No deadline running'],
+    ['Clock', !c ? 'Not running' : (c.pausedSince !== null && c.pausedSince !== undefined ? 'Paused since day ' + c.pausedSince : 'Running')],
+    ['Reminders sent', String(s.reminders)],
+    ['Result', s.result || 'None yet'],
+    ['Next re-check', s.recheckDay !== null ? 'Day ' + s.recheckDay : 'None scheduled'],
+  ];
+}
+
+function render(notice) {
+  $('status').textContent = STATUS_TEXT[state.status];
+  const fields = fieldsOf(state), dl = $('fields');
+  dl.replaceChildren();
+  fields.forEach(([k, v], i) => {
+    const changed = prevFields && prevFields[i][1] !== v;
+    dl.append(el('dt', k, changed ? 'changed' : ''), el('dd', v, changed ? 'changed' : ''));
+  });
+  prevFields = fields;
+  $('notice').textContent = notice || '';
+  const h = $('history'); h.replaceChildren();
+  state.history.slice().reverse().forEach((line) => h.append(el('li', line)));
+
+  const fp = $('freeplay'); fp.replaceChildren();
+  GROUPS.forEach(([name, actions]) => {
+    fp.append(el('h3', name));
+    const row = el('div', undefined, 'buttons');
+    actions.forEach(([label, action]) => {
+      const b = el('button', label, UnlistCase.can(state, action) ? '' : 'cannot');
+      b.onclick = () => dispatch(action);
+      row.append(b);
+    });
+    fp.append(row);
+  });
+  renderSteps();
+}
+
+function dispatch(action) {
+  const r = UnlistCase.transition(state, action);
+  state = r.state;
+  render(r.error ? 'Not possible: ' + r.error : '');
+}
+
+function reset() {
+  state = UnlistCase.initial({ mode: $('mode').value, broker: $('broker').value === 'yes' });
+  prevFields = null; render('');
+}
+
+function renderSteps() {
+  const ol = $('steps'); ol.replaceChildren();
+  if (!scenario) { $('scenarioIntro').textContent = 'Pick a walkthrough above.'; return; }
+  $('scenarioIntro').textContent = scenario.intro;
+  scenario.steps.forEach(([label, action, why], i) => {
+    const li = el('li', undefined, i < stepIndex ? 'done' : '');
+    const b = el('button', (i < stepIndex ? 'Done: ' : '') + label, i === stepIndex ? '' : 'cannot');
+    b.disabled = i !== stepIndex;
+    b.onclick = () => { stepIndex += 1; dispatch(action); };
+    li.append(b);
+    if (why) li.append(el('span', why, 'why'));
+    ol.append(li);
+  });
+  if (stepIndex >= scenario.steps.length) ol.append(el('li', 'End of this walkthrough. Carry on in free play, or restart.', 'done'));
+}
+
+function startScenario(sc) {
+  scenario = sc; stepIndex = 0;
+  $('mode').value = sc.mode; $('broker').value = sc.broker ? 'yes' : 'no';
+  [...$('tabs').children].forEach((b) => b.classList.toggle('on', b.textContent === sc.title));
+  reset();
+}
+
+SCENARIOS.forEach((sc) => { const b = el('button', sc.title); b.onclick = () => startScenario(sc); $('tabs').append(b); });
+$('reset').onclick = () => { scenario = null; [...$('tabs').children].forEach((b) => b.classList.remove('on')); reset(); };
+$('restart').onclick = () => { if (scenario) startScenario(scenario); };
+$('mode').onchange = $('broker').onchange = () => { scenario = null; [...$('tabs').children].forEach((b) => b.classList.remove('on')); reset(); };
+reset();
+</script>
+</body>
+</html>
