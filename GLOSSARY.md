@@ -5,7 +5,7 @@ A self-hosted alternative to commercial personal-data removal services: one hous
 ## Language
 
 **Operator**:
-The person who installs and runs an Unlist instance and acts on behalf of its **Subjects**. One per instance.
+The person who installs and runs an Unlist instance and acts on behalf of its **Subjects**, with their consent. One per instance, trusted fully by the **Subjects**: Unlist does not hide one **Subject**'s data from the **Operator**.
 _Avoid_: User, admin, account
 
 **Subject**:
