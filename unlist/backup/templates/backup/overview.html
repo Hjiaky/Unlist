@@ -1,0 +1,29 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Copyright (C) 2026 The Unlist contributors #}
+{% extends "unlist/base.html" %}
+{% block title %}Backup - Unlist{% endblock %}
+{% block content %}
+<header class="bar">
+  <h1>Backup</h1>
+  <a href="{% url 'home' %}">Back</a>
+</header>
+
+<section class="card">
+  {% if last_backup %}
+    <p>Last backup: <time datetime="{{ last_backup|date:'c' }}">{{ last_backup|date:"j F Y, H:i" }} UTC</time></p>
+  {% else %}
+    <p>No backup has been made on this instance yet.</p>
+  {% endif %}
+  <form method="post" action="{% url 'backup:download' %}">{% csrf_token %}
+    <button type="submit" class="primary">Download backup</button>
+  </form>
+  <p class="muted">A copy is also kept in the <code>backups</code> folder of the data directory.</p>
+</section>
+
+<section class="card">
+  <p>The backup contains the household's data and replies. Store it encrypted and private.</p>
+  <p>The encryption key is not inside it. Keep the key file separately: without it, mailbox and LLM credentials
+    must be entered again after a restore.</p>
+  <p class="muted">To restore, start a fresh instance and run <code>python manage.py restore &lt;archive&gt;</code>.</p>
+</section>
+{% endblock %}
