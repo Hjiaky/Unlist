@@ -30,6 +30,10 @@ The RC is the core loop: import mail, discover Organizations, send requests, tra
 
 Every email leaving in a Subject's name is approved first. Reading, matching, deadline tracking and reminders to the Operator run on their own.
 
+## Working with the human
+
+Ask the human only high-value decisions: hard to reverse, changing scope, touching the principles above, or carrying legal or privacy risk for Subjects. Decide everything else yourself with the best default, and record it on the ticket as "decided by agent" so it can be overturned. When unsure whether something is high-value, decide it and say so plainly.
+
 ## Planning
 
 The road to v1.0.0-rc1 is charted as a wayfinder map: https://github.com/Hjiaky/Unlist/issues/1. Research findings live in `docs/research/`.
