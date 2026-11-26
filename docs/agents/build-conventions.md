@@ -36,7 +36,9 @@ One Django app per area, all registered in `unlist/settings.py` and mounted in `
 - Use the glossary's words in names: `Subject`, `Organization`, `Case`, `Listing`, `AccessRequest`, `RemovalRequest`, `SuppressionRecord`, `Complaint`, `SupervisoryAuthority`, `OrganizationList`, `Operator`. Never `user` for a Subject, `company` for an Organization, or `opt-out` for a Removal Request.
 - No new dependency without a free, AGPL-compatible licence and a reason the standard library or Django cannot do it. Add it to `requirements.txt` with a comment.
 - Nothing may contact another host unless the Operator explicitly triggered it (a button) or switched it on. Tests must not touch the network.
-- Pages extend `unlist/base.html` and put their content in `{% block content %}`. No inline `<script>` or `style=""` (the Content-Security-Policy forbids them); use classes in `unlist/core/static/unlist/unlist.css` or an app stylesheet under `unlist/<app>/static/<app>/`.
+- Logged-in pages extend `unlist/base.html` (sidebar layout) and put their content in `{% block content %}`; pages without the sidebar (setup, login, About) extend `unlist/base_narrow.html`. Start a page with a breadcrumb or `page-head`; mark Brokers with `{% include "unlist/_broker.html" with organization=... %}`.
+- One stylesheet: `unlist/core/static/unlist/unlist.css`. Add an app stylesheet (via `{% block head %}`) only for something truly specific, as `complaints.css` (print) and `stats.css` (chart colours) do. No inline `<script>` or `style=""` (the Content-Security-Policy forbids them).
+- After UI changes, run the browser walkthrough: `node scripts/ui-smoke.mjs` (not in CI).
 
 ## Mail templates
 
@@ -46,7 +48,7 @@ One Django app per area, all registered in `unlist/settings.py` and mounted in `
 
 ## Tests and checks
 
-- `UNLIST_TESTING=1 python manage.py test` must pass, along with `ruff check .`, `ruff format --check .` and `UNLIST_TESTING=1 python manage.py makemigrations --check --dry-run`.
+- `./scripts/check.sh` must print "All checks passed." (ruff, format, missing migrations, tests, licence check).
 - Each ticket's "Done when" criteria become tests.
 
 ## Commits
