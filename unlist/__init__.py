@@ -2,4 +2,4 @@
 # Copyright (C) 2026 The Unlist contributors
 
 # Keep in sync with `version` in pyproject.toml (a test checks it).
-__version__ = "0.1.0.dev0"
+__version__ = "1.0.0b1"

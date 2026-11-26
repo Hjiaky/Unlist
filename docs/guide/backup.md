@@ -85,7 +85,7 @@ A backup you have never restored is a hope, not a backup. Test it once, on a spa
    ```yaml
    services:
      unlist:
-       image: unlist:dev
+       image: ghcr.io/hjiaky/unlist:1.0.0b1
        ports: ["8001:8000"]
        volumes: ["./data:/data", "./key:/key"]
    ```

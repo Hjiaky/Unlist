@@ -6,8 +6,9 @@
 # and deliberately kept out of ./data, so backups of ./data do not contain it.
 services:
   unlist:
+    # Use the published image, or build it yourself from this folder with `docker compose up -d --build`.
+    image: ghcr.io/hjiaky/unlist:1.0.0b1
     build: .
-    image: unlist:dev
     restart: unless-stopped
     ports:
       - "8000:8000"

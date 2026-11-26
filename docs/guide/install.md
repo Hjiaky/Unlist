@@ -28,8 +28,8 @@ Open <http://localhost:8000>. The first page asks you to create the Operator acc
 ```yaml
 services:
   unlist:                      # the one service. Commands below say "unlist" for this name.
-    build: .                   # build the image from the Dockerfile in this folder
-    image: unlist:dev          # the name the built image gets
+    image: ghcr.io/hjiaky/unlist:1.0.0b1   # the published pre-release image
+    build: .                   # or build it yourself: docker compose up -d --build
     restart: unless-stopped    # start again after a reboot or a crash
     ports:
       - "8000:8000"            # computer-port : container-port

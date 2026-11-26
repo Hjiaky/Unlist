@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Publishes the container image when a version tag is pushed (v1.0.0b1, v1.0.0rc1, v1.0.0 ...).
+# The app itself never depends on GitHub; this only builds and publishes the image.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: The tag matches the version in the code
+        run: |
+          version=$(python -c "import unlist; print(unlist.__version__)")
+          test "${GITHUB_REF_NAME}" = "v${version}" || { echo "Tag ${GITHUB_REF_NAME} != v${version}"; exit 1; }
+      - run: pip install -r requirements.txt ruff && ./scripts/check.sh
+      - name: Build
+        run: docker build -t unlist:release .
+      - name: Publish to the GitHub container registry
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          image="ghcr.io/$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')/unlist"
+          version="${GITHUB_REF_NAME#v}"
+          echo "$TOKEN" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+          docker tag unlist:release "$image:$version"
+          docker push "$image:$version"
+          # Only final releases move the "latest" tag; pre-releases (a, b, rc) never do.
+          if ! echo "$version" | grep -Eq '(a|b|rc)[0-9]+$'; then
+            docker tag unlist:release "$image:latest"
+            docker push "$image:latest"
+          fi
