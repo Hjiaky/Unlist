@@ -1,0 +1,41 @@
+{% extends "unlist/base.html" %}
+{% block title %}{{ subject.name }} - Unlist{% endblock %}
+{% block content %}
+<header class="bar"><h1>{{ subject.name }}</h1><a href="{% url 'subjects:list' %}">All Subjects</a></header>
+<p class="muted">Country {{ subject.country }}{% if subject.year_of_birth %}, born {{ subject.year_of_birth }}{% endif %}.</p>
+{% if subject.is_child %}
+<p class="card">This Subject is a child.{% if subject.parental_responsibility %} Parental responsibility: {{ subject.parental_responsibility }}.{% endif %}
+{% if subject.needs_own_involvement %} From age 12, the Subject needs their own involvement: talk it through with them.{% endif %}</p>
+{% endif %}
+
+<section class="card">
+  <h2>Consent</h2>
+  {% if consent %}
+  <p>Consent recorded on {{ consent.given_at|date:"j F Y" }}, given by {{ consent.get_given_by_display|lower }}.</p>
+  <p class="muted">{{ consent.scope }}</p>
+  <form method="post" action="{% url 'subjects:consent_withdraw' subject.pk %}">{% csrf_token %}
+    <button type="submit">Withdraw consent</button></form>
+  {% else %}
+  <p>No active consent. Nothing can be drafted for this Subject until it is recorded.</p>
+  {% if last_withdrawn %}<p class="muted">Withdrawn on {{ last_withdrawn.withdrawn_at|date:"j F Y" }}.</p>{% endif %}
+  <p><a href="{% url 'subjects:consent' subject.pk %}">Record consent</a></p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Email addresses</h2>
+  <ul>{% for mailbox in mailboxes %}<li>{{ mailbox.email }} <span class="muted">({{ mailbox.get_mode_display|lower }})</span></li>{% endfor %}</ul>
+  <p><a href="{% url 'subjects:mailbox_add' subject.pk %}">Add an email address</a></p>
+</section>
+
+<section class="card">
+  <h2>Identifying details</h2>
+  <ul>{% for detail in details %}
+    <li>{{ detail.get_kind_display }}: {{ detail.value }}{% if detail.organization_label %} <span class="muted">({{ detail.organization_label }})</span>{% endif %}
+      <form method="post" action="{% url 'subjects:detail_remove' subject.pk detail.pk %}">{% csrf_token %}<button type="submit">Remove</button></form></li>
+  {% empty %}<li class="muted">None yet.</li>{% endfor %}</ul>
+  <p><a href="{% url 'subjects:detail_add' subject.pk %}">Add a detail</a></p>
+</section>
+
+<p><a href="{% url 'subjects:delete' subject.pk %}">Delete this Subject</a></p>
+{% endblock %}
