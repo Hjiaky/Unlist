@@ -1,0 +1,9 @@
+{
+  "Django": "BSD-3-Clause",
+  "asgiref": "BSD-3-Clause",
+  "sqlparse": "BSD-3-Clause",
+  "gunicorn": "MIT",
+  "cryptography": "Apache-2.0 OR BSD-3-Clause",
+  "cffi": "MIT-0",
+  "pycparser": "BSD-3-Clause"
+}

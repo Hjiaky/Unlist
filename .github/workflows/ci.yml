@@ -26,6 +26,9 @@ jobs:
       - run: python manage.py test
         env:
           UNLIST_TESTING: "1"
+      - run: python manage.py check_licences
+        env:
+          UNLIST_TESTING: "1"
 
   image:
     runs-on: ubuntu-latest
