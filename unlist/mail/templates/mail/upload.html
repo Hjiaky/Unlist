@@ -1,0 +1,43 @@
+{% extends "unlist/base.html" %}
+{% load static %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Import mail for {{ subject.name }} · Unlist{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'mail/mail.css' %}">{% endblock %}
+{% block body %}
+<main class="mail-wide">
+{% include "mail/_nav.html" %}
+<h1>Import mail for {{ subject.name }}</h1>
+<p>Upload an export of {{ subject.name }}'s mailbox as an <code>.mbox</code> file. Unlist reads who sent each
+message and, for order and booking markup, its HTML. It keeps, per Organization, the dates, the number of
+messages, the kind of evidence and the subject line of the strongest one. It never stores a message body,
+and it deletes the uploaded file when the scan is done.</p>
+
+<form method="post" enctype="multipart/form-data" class="card">{% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="primary">Import</button>
+</form>
+
+<section class="card">
+  <h2>Gmail (Google Takeout)</h2>
+  <ol>
+    <li>Open <code>takeout.google.com</code> while signed in to the Gmail account.</li>
+    <li>Click "Deselect all", then select only "Mail". You can limit it to some labels; "All Mail data included" gives the most results.</li>
+    <li>Create the export. Google emails a download link when it is ready, which can take hours or days.</li>
+    <li>Download and unpack the archive. The mail is in <code>Takeout/Mail/</code> as a file ending in <code>.mbox</code>. Upload that file here.</li>
+  </ol>
+  <p class="muted">Spam and Trash in the export are skipped.</p>
+</section>
+
+<section class="card">
+  <h2>Other providers</h2>
+  <p>Most mail programs can save a folder as mbox. In Thunderbird, add the account, then use the
+  ImportExportTools NG add-on: right-click the folder, "Export folder" (or "Save all messages") as mbox.
+  Providers with their own export (for example Fastmail, Posteo, mailbox.org) usually offer mbox or a
+  format Thunderbird can open.</p>
+  <h3>Outlook.com and Microsoft 365</h3>
+  <p>These mailboxes are import-only in Unlist: Microsoft has turned off password sign-in for IMAP, so Unlist
+  cannot connect to them live. Add the account to Thunderbird (it signs in through Microsoft's own page) and
+  export the folders as mbox as above. Requests for these Subjects are handed over for them to send.</p>
+</section>
+</main>
+{% endblock %}

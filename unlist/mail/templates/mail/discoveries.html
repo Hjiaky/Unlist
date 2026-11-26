@@ -1,0 +1,70 @@
+{% extends "unlist/base.html" %}
+{% load static %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Discovered Organizations for {{ subject.name }} · Unlist{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'mail/mail.css' %}">{% endblock %}
+{% block body %}
+<main class="mail-wide">
+{% include "mail/_nav.html" %}
+<h1>Organizations that mailed {{ subject.name }}</h1>
+
+{% if run %}
+<section class="card mail-run">
+  {% if run.failure %}
+  <p class="mail-warn">{{ run.failure }}</p>
+  {% elif run.running %}
+  <p>An import started {{ run.started_at|date:"j F Y H:i" }} is still running ({{ run.total }} messages so far). Reload this page to see it finish.</p>
+  {% elif run.total == 0 %}
+  <p class="mail-warn">The last import{% if run.filename %} of <code>{{ run.filename }}</code>{% endif %} found no messages.
+  Is it an unpacked <code>.mbox</code> file? A Google Takeout download is a <code>.zip</code> or <code>.tgz</code> archive
+  with the <code>.mbox</code> file inside.</p>
+  {% else %}
+  <p>Last import{% if run.filename %} of <code>{{ run.filename }}</code>{% endif %} finished {{ run.finished_at|date:"j F Y H:i" }}:
+  {{ run.total }} message{{ run.total|pluralize }}, {{ run.authenticated }} authenticated
+  ({{ run.duplicates }} already counted before).
+  Skipped: {{ run.personal_skipped }} personal, {{ run.unauthenticated_skipped }} unauthenticated,
+  {{ run.spam_skipped }} spam or trash, {{ run.errors }} unreadable.</p>
+  {% endif %}
+</section>
+{% else %}
+<p class="card">No mail imported yet. <a href="{% url 'mail:upload' subject.pk %}">Import mail</a>.</p>
+{% endif %}
+
+{% if unassigned %}<p><a href="{% url 'mail:unassigned' subject.pk %}">{{ unassigned }} sender{{ unassigned|pluralize }} to assign</a> (shared or unknown domains).</p>{% endif %}
+
+{% if pursuable %}
+<form method="post" action="{% url 'mail:pursue_all' subject.pk %}" class="mail-actions">{% csrf_token %}
+  <button type="submit" class="primary">Pursue all {{ pursuable }} with account evidence</button>
+  <span class="muted">Opens a Case for each and drafts an Access Request. Nothing is sent before you approve it.</span>
+</form>
+{% endif %}
+
+<table class="mail-table">
+  <thead><tr><th>Organization</th><th>Evidence</th><th>Emails</th><th>Seen</th><th>Status</th><th>Actions</th></tr></thead>
+  <tbody>
+  {% for row in rows %}{% with discovery=row.discovery %}
+    <tr class="mail-row-{{ row.marker }}">
+      <td><a href="{% url 'organizations:detail' discovery.organization.slug %}">{{ discovery.organization.name }}</a>
+        {% if discovery.organization.broker %}<span class="mail-badge">Broker</span>{% endif %}
+        {% if discovery.organization.is_stub %}<span class="mail-badge mail-badge-quiet">local stub</span>{% endif %}
+        {% if discovery.strongest_subject %}<div class="muted mail-subject">“{{ discovery.strongest_subject }}”</div>{% endif %}</td>
+      <td>{{ discovery.get_evidence_display }}</td>
+      <td>{{ discovery.email_count }}</td>
+      <td>{% if discovery.first_seen %}{{ discovery.first_seen|date:"M Y" }}{% if discovery.last_seen|date:"M Y" != discovery.first_seen|date:"M Y" %} to {{ discovery.last_seen|date:"M Y" }}{% endif %}{% endif %}</td>
+      <td>{% if row.marker == "case" %}<span class="mail-marker mail-marker-case">already a Case</span>{% elif row.marker == "ignored" %}<span class="mail-marker mail-marker-ignored">ignored</span>{% else %}<span class="mail-marker mail-marker-new">new</span>{% endif %}</td>
+      <td class="mail-buttons">
+        {% if row.marker == "new" %}
+        <form method="post" action="{% url 'mail:pursue' subject.pk discovery.pk %}">{% csrf_token %}<button type="submit">Pursue</button></form>
+        <form method="post" action="{% url 'mail:ignore' subject.pk discovery.pk %}">{% csrf_token %}<button type="submit">Ignore</button></form>
+        {% elif row.marker == "ignored" %}
+        <form method="post" action="{% url 'mail:unignore' subject.pk discovery.pk %}">{% csrf_token %}<button type="submit">Un-ignore</button></form>
+        {% endif %}
+      </td>
+    </tr>
+  {% endwith %}{% empty %}
+    <tr><td colspan="6">No Organizations found yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</main>
+{% endblock %}

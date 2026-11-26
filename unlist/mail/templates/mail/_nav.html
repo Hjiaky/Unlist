@@ -1,0 +1,12 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+<nav class="mail-nav">
+  <a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a>
+  <a href="{% url 'mail:discoveries' subject.pk %}">Discovered Organizations</a>
+  <a href="{% url 'mail:unassigned' subject.pk %}">Unassigned senders</a>
+  <a href="{% url 'mail:upload' subject.pk %}">Import mail</a>
+</nav>
+{% if messages %}
+<ul class="mail-messages">
+  {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
+</ul>
+{% endif %}
