@@ -95,6 +95,13 @@
         <option value="no">Regular Organization (shop, app, newsletter)</option>
       </select>
     </label>
+    <label>After "we hold nothing"
+      <select id="recheckNothing">
+        <option value="default">Default for this kind of Organization</option>
+        <option value="yes">Re-check later (set for this Case)</option>
+        <option value="no">Close for good (set for this Case)</option>
+      </select>
+    </label>
     <button class="plain" id="reset">Start over</button>
   </div>
 
@@ -146,9 +153,12 @@ const UnlistCase = (() => {
     reconsider: 'Reply asking the Organization to reconsider',
   };
 
-  function initial({ mode = 'live', broker = true } = {}) {
+  // recheckIfNothing: after "we hold nothing", re-check later (true) or close (false).
+  // Default: Brokers yes, other Organizations no; can be set per Organization or per Case.
+  function initial({ mode = 'live', broker = true, recheckIfNothing = null } = {}) {
     return {
       mode, broker,
+      recheckIfNothing: recheckIfNothing === null ? broker : recheckIfNothing,
       status: 'found',
       request: null,        // which request is in flight: 'access' | 'removal' | null
       draft: null,          // { kind, back } an email waiting for approval or hand-sending
@@ -204,7 +214,10 @@ const UnlistCase = (() => {
       case 'ask_removal':
         if (s.status !== 'decide_listing')
           return no('Ask, then delete: a Removal Request is only sent after an Access Request showed that a Listing exists.');
-        makeDraft('removal'); say('The Subject chose removal. Unlist prepared a Removal Request.'); return ok();
+        makeDraft('removal');
+        say(s.broker ? 'The Subject chose removal. Unlist prepared a Removal Request that also asks the Broker to keep a minimal suppression record, so the Subject is not re-listed.'
+                     : 'The Subject chose removal. Unlist prepared a Removal Request.');
+        return ok();
 
       case 'keep_listing':
         if (s.status !== 'decide_listing') return no('There is no Listing to decide about right now.');
@@ -229,7 +242,11 @@ const UnlistCase = (() => {
       case 'org_nothing':
         if (!LATE_OK.includes(s.status)) return no('The Organization has not been asked anything that is still open.');
         if (s.request !== 'access') return no('"We hold nothing" answers an Access Request, and none is open.');
-        say('The Organization answered: it holds nothing about the Subject.'); rest('Nothing held'); return ok();
+        say('The Organization answered: it holds nothing about the Subject.');
+        if (s.recheckIfNothing) { rest('Nothing held'); }
+        else { n.status = 'closed'; n.result = 'Nothing held'; n.clock = null; n.request = null; n.recheckDay = null;
+               say('Case closed. No re-check for this Organization unless it shows up again in a mail import.'); }
+        return ok();
 
       case 'org_listing':
         if (!LATE_OK.includes(s.status)) return no('The Organization has not been asked anything that is still open.');
@@ -240,7 +257,10 @@ const UnlistCase = (() => {
       case 'org_removed':
         if (!LATE_OK.includes(s.status)) return no('The Organization has not been asked anything that is still open.');
         if (s.request !== 'removal') return no('A removal confirmation answers a Removal Request, and none is open.');
-        say('The Organization confirmed the removal.'); rest('Removed'); return ok();
+        if (s.broker && a.suppressed) { say('The Broker confirmed the removal and that it keeps a minimal suppression record, so it will not re-list the Subject.'); rest('Removed, suppression record kept'); }
+        else if (s.broker) { say('The Broker confirmed the removal but said nothing about a suppression record. Re-listing is possible; the re-check will show it.'); rest('Removed, no suppression confirmed'); }
+        else { say('The Organization confirmed the removal.'); rest('Removed'); }
+        return ok();
 
       case 'org_refused':
         if (!LATE_OK.includes(s.status)) return no('The Organization has not been asked anything that is still open.');
@@ -391,6 +411,7 @@ const GROUPS = [
     ['"We hold nothing"', { type: 'org_nothing' }],
     ['Sends the data it holds', { type: 'org_listing' }],
     ['Confirms removal', { type: 'org_removed' }],
+    ['Confirms removal and keeps a suppression record', { type: 'org_removed', suppressed: true }],
     ['Refuses, or does only part', { type: 'org_refused' }],
     ['Asks for ID or more details', { type: 'org_asks_info' }],
     ['Announces an extension', { type: 'org_extends' }],
@@ -415,11 +436,11 @@ const SCENARIOS = [
       ['Ask for removal', { type: 'ask_removal' }, 'Only possible now that a Listing is known.'],
       ['Approve the draft', { type: 'approve' }, 'A new 30-day clock for the Removal Request.'],
       ['20 days pass', D(20), ''],
-      ['The Broker confirms removal', { type: 'org_removed' }, 'Done for now. Re-check in 90 days because it is a Broker.'],
+      ['The Broker confirms removal and keeps a suppression record', { type: 'org_removed', suppressed: true }, 'Done for now. Re-check in 90 days because it is a Broker.'],
       ['90 days pass', D(90), 'Unlist prepares a fresh Access Request by itself, but still waits for approval.'],
     ] },
   { title: 'Nothing held', mode: 'live', broker: false,
-    intro: 'A shop the Subject never really used answers that it holds nothing. Is "done for now, re-check in a year" right, or should the Case just close?',
+    intro: 'A shop the Subject never really used answers that it holds nothing. By default a regular Organization is then closed for good; a Broker would be re-checked. Change "After we hold nothing" above to override it for this Case.',
     steps: [
       ['Unlist prepares an Access Request', { type: 'prepare_access' }, ''],
       ['Approve the draft', { type: 'approve' }, ''],
@@ -513,6 +534,7 @@ function fieldsOf(s) {
     ['Clock', !c ? 'Not running' : (c.pausedSince !== null && c.pausedSince !== undefined ? 'Paused since day ' + c.pausedSince : 'Running')],
     ['Reminders sent', String(s.reminders)],
     ['Result', s.result || 'None yet'],
+    ['After "we hold nothing"', s.recheckIfNothing ? 'Re-check later' : 'Close for good'],
     ['Next re-check', s.recheckDay !== null ? 'Day ' + s.recheckDay : 'None scheduled'],
   ];
 }
@@ -551,7 +573,9 @@ function dispatch(action) {
 }
 
 function reset() {
-  state = UnlistCase.initial({ mode: $('mode').value, broker: $('broker').value === 'yes' });
+  const rn = $('recheckNothing').value;
+  state = UnlistCase.initial({ mode: $('mode').value, broker: $('broker').value === 'yes',
+                               recheckIfNothing: rn === 'default' ? null : rn === 'yes' });
   prevFields = null; render('');
 }
 
@@ -573,7 +597,7 @@ function renderSteps() {
 
 function startScenario(sc) {
   scenario = sc; stepIndex = 0;
-  $('mode').value = sc.mode; $('broker').value = sc.broker ? 'yes' : 'no';
+  $('mode').value = sc.mode; $('broker').value = sc.broker ? 'yes' : 'no'; $('recheckNothing').value = 'default';
   [...$('tabs').children].forEach((b) => b.classList.toggle('on', b.textContent === sc.title));
   reset();
 }
@@ -581,7 +605,7 @@ function startScenario(sc) {
 SCENARIOS.forEach((sc) => { const b = el('button', sc.title); b.onclick = () => startScenario(sc); $('tabs').append(b); });
 $('reset').onclick = () => { scenario = null; [...$('tabs').children].forEach((b) => b.classList.remove('on')); reset(); };
 $('restart').onclick = () => { if (scenario) startScenario(scenario); };
-$('mode').onchange = $('broker').onchange = () => { scenario = null; [...$('tabs').children].forEach((b) => b.classList.remove('on')); reset(); };
+$('mode').onchange = $('broker').onchange = $('recheckNothing').onchange = () => { scenario = null; [...$('tabs').children].forEach((b) => b.classList.remove('on')); reset(); };
 reset();
 </script>
 </body>

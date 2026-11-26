@@ -36,6 +36,14 @@ _Avoid_: Lookup, search, DSAR, subject access request
 A demand, sent to an **Organization** on behalf of a **Subject**, that it delete that **Subject**'s data and stop processing it. In the EU/UK this is a GDPR Art. 17 erasure request.
 _Avoid_: Opt-out, deletion request, takedown
 
+**Case**:
+Everything Unlist does for one **Subject** at one **Organization**: its **Access Requests**, **Removal Requests**, the **Organization**'s answers, deadlines and re-checks. A **Case** is open, resting until its next re-check, or closed.
+_Avoid_: Request (for the whole exchange), thread, ticket, job
+
+**Suppression Record**:
+The minimal note a **Broker** keeps after removing a **Subject**'s data, so it does not collect and list that **Subject** again. A **Removal Request** to a **Broker** asks for one.
+_Avoid_: Blocklist entry, do-not-sell flag, opt-out record
+
 **Supervisory Authority**:
 The data-protection regulator an **Organization** answers to, such as a national data-protection authority in the EU or the UK regulator.
 _Avoid_: DPA, regulator, data protection office
