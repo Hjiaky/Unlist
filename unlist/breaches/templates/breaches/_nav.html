@@ -1,0 +1,11 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+<nav class="breach-nav">
+  <a href="{% url 'home' %}">Unlist</a>
+  <a href="{% url 'breaches:index' %}">Breach check</a>
+  <a href="{% url 'breaches:assign_list' %}">Breaches without a domain</a>
+</nav>
+{% if messages %}
+<ul class="breach-messages">
+  {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
+</ul>
+{% endif %}

@@ -1,0 +1,43 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% load static %}
+{% block title %}{{ breach.title }} · Unlist{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'breaches/breaches.css' %}">{% endblock %}
+{% block body %}
+<main class="breach-wide">
+{% include "breaches/_nav.html" %}
+<h1>{{ breach.title }}</h1>
+<p>Breach date {{ breach.breach_date|date:"Y-m-d"|default:"unknown" }}. Data in the breach: {{ breach.data_classes|join:", "|default:"not listed" }}.</p>
+{% if breach.attribution %}<p class="muted">{{ breach.attribution }}</p>{% endif %}
+{% if breach.description %}<p>{{ breach.plain_description }}</p>{% endif %}
+{% if breach.excluded %}<p class="breach-warn">This is a spam list, malware or fabricated entry, so it is never matched to an Organization.</p>{% endif %}
+
+{% if assignment %}
+<p>Assigned to <a href="{% url 'organizations:detail' assignment.organization.slug %}">{{ assignment.organization.name }}</a>.</p>
+<form method="post" action="{% url 'breaches:assign_remove' breach.name %}">{% csrf_token %}<button type="submit">Remove assignment</button></form>
+{% endif %}
+
+{% if not breach.excluded %}
+<section class="card">
+  <h2>Assign to an Organization</h2>
+  <form method="get" class="breach-search">
+    <label for="q">Search Organizations by name or domain</label>
+    <input type="search" id="q" name="q" value="{{ query }}">
+    <button type="submit">Search</button>
+  </form>
+  {% if query %}
+  <ul>
+    {% for organization in organizations %}
+    <li>
+      {{ organization.name }} <span class="muted">{{ organization.slug }}</span>
+      <form method="post" class="breach-inline">{% csrf_token %}<input type="hidden" name="organization" value="{{ organization.slug }}"><button type="submit">Assign</button></form>
+    </li>
+    {% empty %}<li class="muted">No Organization matches.</li>{% endfor %}
+  </ul>
+  {% if organizations|length >= limit %}<p class="muted">Only the first {{ limit }} are shown; narrow the search.</p>{% endif %}
+  {% endif %}
+</section>
+{% endif %}
+{% include "breaches/_attribution.html" %}
+</main>
+{% endblock %}

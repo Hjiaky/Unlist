@@ -1,0 +1,18 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+main.breach-wide { max-width: 1040px; margin: 0 auto; padding: 24px 16px; }
+.breach-nav { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; }
+.breach-nav a { color: var(--accent); }
+.breach-messages { list-style: none; padding: 0; }
+.breach-messages li { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); margin-bottom: 8px; }
+.breach-messages li.error { color: var(--bad); }
+.breach-note { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); }
+.breach-warn { color: var(--bad); }
+.breach-table { width: 100%; border-collapse: collapse; margin: 12px 0; background: var(--panel); }
+.breach-table th, .breach-table td { text-align: left; vertical-align: top; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.breach-search { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.breach-search label { width: 100%; }
+.breach-search input { flex: 1; font: inherit; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+.breach-inline { display: inline; }
+.breach-pages { display: flex; gap: 12px; }
+.breach-attribution { margin-top: 24px; }
+@media (max-width: 640px) { .breach-table thead { display: none; } .breach-table td, .breach-table th { display: block; } }

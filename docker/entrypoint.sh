@@ -19,6 +19,7 @@ fi
 python -m unlist.bootstrap
 python manage.py migrate --noinput
 python manage.py load_bundled_lists   # bundled Organization Lists; local files only
+python manage.py load_breaches        # bundled Have I Been Pwned breach list (CC BY 4.0); local file only
 
 if [ "$#" -gt 0 ]; then
   exec "$@"   # e.g. `docker compose run --rm unlist python manage.py changepassword`

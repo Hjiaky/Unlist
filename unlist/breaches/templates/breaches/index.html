@@ -1,0 +1,32 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% load static %}
+{% block title %}Breach check · Unlist{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'breaches/breaches.css' %}">{% endblock %}
+{% block body %}
+<main class="breach-wide">
+{% include "breaches/_nav.html" %}
+<h1>Breach check</h1>
+<p>Shows publicly known breaches at the Organizations a Subject deals with. It never looks up an email address and sends nothing about a Subject anywhere.</p>
+
+<section class="card">
+  <h2>Breach list</h2>
+  {% if catalogue %}
+  <p>{{ catalogue.count }} breaches, {% if catalogue.bundled %}bundled with this release{% else %}fetched from Have I Been Pwned{% endif %}, dated {{ catalogue.fetched_at|date:"Y-m-d" }}. {{ assignments }} hand assignment{{ assignments|pluralize }}.</p>
+  {% else %}
+  <p>No breach list is loaded. Run <code>python manage.py load_breaches</code>, or update it below.</p>
+  {% endif %}
+  <form method="post" action="{% url 'breaches:update' %}">{% csrf_token %}
+    <button type="submit">Update breach list</button>
+  </form>
+  <p class="muted">Pressing the button sends one request to an outside service, Have I Been Pwned (haveibeenpwned.com), a proprietary online service (nonfree). Unlist is complete without it: the bundled list works offline. Nothing is fetched unless you press it.</p>
+</section>
+
+<h2>Subjects</h2>
+<ul>
+  {% for subject in subjects %}<li><a href="{% url 'breaches:subject' subject.pk %}">{{ subject.name }}</a></li>
+  {% empty %}<li class="muted">No Subjects yet.</li>{% endfor %}
+</ul>
+{% include "breaches/_attribution.html" %}
+</main>
+{% endblock %}
