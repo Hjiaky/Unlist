@@ -1,0 +1,12 @@
+{% extends "unlist/base.html" %}
+{% block title %}Record consent - Unlist{% endblock %}
+{% block content %}
+<h1>Record consent for {{ subject.name }}</h1>
+<p>Consent covers the following:</p>
+<blockquote class="card">{{ scope }}</blockquote>
+<form method="post" class="card">{% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="primary">Record consent</button>
+</form>
+<p><a href="{% url 'subjects:detail' subject.pk %}">Back</a></p>
+{% endblock %}

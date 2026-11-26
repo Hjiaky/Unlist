@@ -1,0 +1,10 @@
+{% extends "unlist/base.html" %}
+{% block title %}Add a detail - Unlist{% endblock %}
+{% block content %}
+<h1>Add an identifying detail for {{ subject.name }}</h1>
+<form method="post" class="card">{% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="primary">Add</button>
+</form>
+<p><a href="{% url 'subjects:detail' subject.pk %}">Back</a></p>
+{% endblock %}

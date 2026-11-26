@@ -1,0 +1,12 @@
+{% extends "unlist/base.html" %}
+{% block title %}Subjects - Unlist{% endblock %}
+{% block content %}
+<header class="bar"><h1>Subjects</h1><a href="{% url 'subjects:add' %}">Add a Subject</a></header>
+{% for subject in subjects %}
+<p class="card"><a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a>
+  <span class="muted">{{ subject.country }}{% if subject.has_active_consent %}, consent recorded{% else %}, no consent{% endif %}</span></p>
+{% empty %}
+<p>No Subjects yet.</p>
+{% endfor %}
+<p><a href="{% url 'home' %}">Home</a></p>
+{% endblock %}
