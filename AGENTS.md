@@ -4,12 +4,31 @@ Self-hosted alternative to personal-data removal services such as DeleteMe and I
 
 ## Principles
 
-These rank above convenience and features.
+These rank above convenience and features. Principled, not hardcore. Decided in https://github.com/Hjiaky/Unlist/issues/22.
 
-- **Tao:** simple and unforced. Fewest moving parts, good defaults over settings, nothing done without being asked. Done means nothing left to remove.
-- **Free Software, as St IGNUcius would approve:** AGPL, free dependencies only, the user stays in control of their own computing. Flag anything that leans on a proprietary service instead of quietly adding it.
+### Free Software, as St IGNUcius would approve
 
-What these rule out in practice is being decided in https://github.com/Hjiaky/Unlist/issues/22.
+- Unlist's own code is **AGPL-3.0-or-later**.
+- Every dependency and bundled data file carries a free licence that can be combined with the AGPL. Check once when adding it.
+- Proprietary online services (cloud LLMs, Have I Been Pwned and similar) are optional, off by default, marked as nonfree in the UI, and only allowed where a free alternative exists and is documented. Unlist is complete without them.
+- The instance contacts nobody unless the Operator turned that on. No telemetry.
+- JavaScript is fine, but free-licensed and served from the instance: no CDNs, no third-party fonts or scripts.
+- The project lives on GitHub; the app must never depend on GitHub.
+- Flag anything that leans on a proprietary service instead of quietly adding it.
+
+### Tao
+
+The RC is the core loop: import mail, discover Organizations, send requests, track, re-check. An extra ships only if it adds no new service, dependency or setting. Check every build ticket against these:
+
+1. One container, one database file, no extra services to run.
+2. Works with no configuration beyond adding a Subject and importing mail. A setting exists only if a sensible default cannot.
+3. Data stays inspectable: plain files for lists and templates, one SQLite file for state.
+4. The instance contacts nobody unless the Operator turned that on.
+5. Gentle first: polite request, then a reminder, then a Complaint draft. Never threats, never compensation demands.
+6. No nagging, no streaks, no scores that exist to pull the Operator back in.
+7. A feature is done when nothing can be removed from it. A new feature must say what it lets us remove, or why the core loop is incomplete without it.
+
+Every email leaving in a Subject's name is approved first. Reading, matching, deadline tracking and reminders to the Operator run on their own.
 
 ## Planning
 
