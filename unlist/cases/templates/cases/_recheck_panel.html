@@ -12,7 +12,7 @@
   <p><strong>{{ suggestion.text }}</strong> <span class="muted">Its answer came on {{ suggestion.answered_on|date:"j F Y" }}; mail from it was seen on {{ suggestion.last_seen|date:"j F Y" }}.</span></p>
   {% endif %}
   <p class="muted">{% if case.recheck_on %}The re-check is due on {{ case.recheck_on|date:"j F Y" }}. {% endif %}A fresh Access Request before then needs a reason, which is recorded on the Case.</p>
-  <form method="post" action="{% url 'cases:early_recheck' case.pk %}" class="cases-form">{% csrf_token %}
+  <form method="post" action="{% url 'cases:early_recheck' case.pk %}">{% csrf_token %}
     {{ early_form.reason.label_tag }} {{ early_form.reason }}
     <button type="submit">Prepare an early re-check</button>
   </form>

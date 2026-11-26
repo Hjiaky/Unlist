@@ -244,7 +244,7 @@ class ConnectionPageTests(KeyMixin, DataDirMixin, TestCase):
         self.assertContains(response, "myaccount.google.com/apppasswords")
         self.assertContains(response, "?provider=fastmail")
         self.assertContains(response, "Test connection")
-        self.assertContains(response, "mail/mail.css")
+        self.assertContains(response, "unlist/unlist.css")  # the one stylesheet (#53)
         self.assertNotContains(response, "style=")
         self.assertNotContains(response, "<script>")
         response = self.client.get(self.base + "connect/?provider=posteo")

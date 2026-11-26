@@ -1,0 +1,13 @@
+{% extends "unlist/base.html" %}
+{% load legal %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# The simple centred layout: setup, login, About, and pages reachable without logging in. #}
+{% block body %}
+<main class="narrow" id="main">
+  {% include "unlist/_messages.html" %}
+  {% block content %}{% endblock %}
+</main>
+<footer class="site-footer">
+  Unlist is free software (AGPL-3.0-or-later) · <a href="{% source_url %}">Source</a> · <a href="{% url 'legal:about' %}">About</a>{% if user.is_authenticated %} · <a href="{% url 'home' %}">Back to Unlist</a>{% endif %}
+</footer>
+{% endblock %}

@@ -174,7 +174,7 @@ class ViewTests(TestCase):
         self.login()
         response = self.add()
         subject = Subject.objects.get()
-        self.assertRedirects(response, f"/subjects/{subject.pk}/")
+        self.assertRedirects(response, f"/subjects/{subject.pk}/consent/")  # the first run's next step (#53)
         self.assertEqual(subject.mailboxes.get().email, "ada@example.org")
         self.assertEqual(subject.mailboxes.get().mode, "import")
 

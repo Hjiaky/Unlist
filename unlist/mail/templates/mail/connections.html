@@ -1,11 +1,8 @@
 {% extends "unlist/base.html" %}
-{% load static %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% block title %}Live connection for {{ subject.name }} · Unlist{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'mail/mail.css' %}">{% endblock %}
-{% block body %}
-<main class="mail-wide">
-{% include "mail/_nav.html" %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a></p>
 <h1>Live connection for {{ subject.name }}</h1>
 <p>Optional. File import works for every mailbox and needs no password. A live connection lets Unlist
 scan a mailbox over IMAP (read-only, headers only, nothing marked read) and send approved requests over
@@ -14,7 +11,8 @@ SMTP from the Subject's own address, with an app password. Nothing is sent befor
 import their mail from a file instead.</p>
 
 {% if rows %}
-<table class="mail-table">
+<div class="table-wrap">
+<table class="table">
   <thead><tr><th>Email address</th><th>Mode</th><th>Status</th><th></th></tr></thead>
   <tbody>
   {% for row in rows %}
@@ -23,7 +21,7 @@ import their mail from a file instead.</p>
     <td>{{ row.mailbox.get_mode_display }}</td>
     <td>
       {% if not row.connection %}<span class="muted">Not connected</span>
-      {% elif row.connection.last_error %}<span class="mail-warn">Problem: see the connection page</span>
+      {% elif row.connection.last_error %}<span class="warn">Problem: see the connection page</span>
       {% elif row.connection.last_scan_at %}Last scan {{ row.connection.last_scan_at|date:"j F Y H:i" }}
       {% else %}Connected, not scanned yet{% endif %}
     </td>
@@ -35,8 +33,8 @@ import their mail from a file instead.</p>
   {% endfor %}
   </tbody>
 </table>
+</div>
 {% else %}
 <p class="card">{{ subject.name }} has no email address yet. <a href="{% url 'subjects:mailbox_add' subject.pk %}">Add one</a>.</p>
 {% endif %}
-</main>
 {% endblock %}

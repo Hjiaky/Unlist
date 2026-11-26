@@ -1,0 +1,42 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Settings · Unlist{% endblock %}
+{% block content %}
+<h1>Settings</h1>
+<p class="muted">Unlist works without any of these. Each is off or empty until you change it.</p>
+
+<section class="card" aria-labelledby="s-lists">
+  <h2 id="s-lists"><a href="{% url 'organizations:lists' %}">Organization Lists</a></h2>
+  <p>Which lists describe the Organizations, in which order, and updating them. Lists are fetched only when you press the button there.</p>
+</section>
+
+<section class="card" aria-labelledby="s-mail">
+  <h2 id="s-mail">Mailbox connections</h2>
+  <p>Optional, per Subject: a live connection scans a mailbox over IMAP and sends approved requests from it. Without one, mail is imported from a file and requests are handed over.</p>
+  {% if subjects %}
+  <ul class="plain-list">
+    {% for subject in subjects %}
+    <li><a href="{% url 'mail:connections' subject.pk %}">{{ subject.name }}</a>
+      <span class="muted">{% for mailbox in subject.mailboxes.all %}{{ mailbox.email }} ({{ mailbox.get_mode_display|lower }}){% if not forloop.last %}, {% endif %}{% empty %}no email address yet{% endfor %}</span></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">No Subjects yet. <a href="{% url 'subjects:add' %}">Add a Subject</a>.</p>
+  {% endif %}
+</section>
+
+<section class="card" aria-labelledby="s-llm">
+  <h2 id="s-llm"><a href="{% url 'llm:settings' %}">LLM (optional)</a></h2>
+  <p>A language model can help with four jobs. Off unless you switch it on. A local, free model is recommended; a remote one is a nonfree service.</p>
+</section>
+
+<section class="card" aria-labelledby="s-backup">
+  <h2 id="s-backup"><a href="{% url 'backup:overview' %}">Backup</a></h2>
+  <p>Download the household's data as one archive.</p>
+</section>
+
+<section class="card" aria-labelledby="s-about">
+  <h2 id="s-about"><a href="{% url 'legal:about' %}">About and source</a></h2>
+  <p>Version, licence (AGPL-3.0-or-later), the source code of this running version, and third-party notices.</p>
+</section>
+{% endblock %}

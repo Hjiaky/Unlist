@@ -1,11 +1,7 @@
 {% extends "unlist/base.html" %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
-{% load static %}
 {% block title %}Breach check · Unlist{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'breaches/breaches.css' %}">{% endblock %}
-{% block body %}
-<main class="breach-wide">
-{% include "breaches/_nav.html" %}
+{% block content %}
 <h1>Breach check</h1>
 <p>Shows publicly known breaches at the Organizations a Subject deals with. It never looks up an email address and sends nothing about a Subject anywhere.</p>
 
@@ -22,11 +18,10 @@
   <p class="muted">Pressing the button sends one request to an outside service, Have I Been Pwned (haveibeenpwned.com), a proprietary online service (nonfree). Unlist is complete without it: the bundled list works offline. Nothing is fetched unless you press it.</p>
 </section>
 
-<h2>Subjects</h2>
-<ul>
+<h2>Breaches at the Organizations of each Subject</h2>
+<ul class="plain-list">
   {% for subject in subjects %}<li><a href="{% url 'breaches:subject' subject.pk %}">{{ subject.name }}</a></li>
   {% empty %}<li class="muted">No Subjects yet.</li>{% endfor %}
 </ul>
 {% include "breaches/_attribution.html" %}
-</main>
 {% endblock %}

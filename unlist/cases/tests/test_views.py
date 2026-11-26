@@ -68,7 +68,7 @@ class CaseViewTests(TestCase):
         self.assertNotContains(response, "Record the Organization")
         self.assertNotContains(response, 'style="')
         self.assertNotContains(response, "<script>")
-        self.assertContains(response, "cases/cases.css")
+        self.assertContains(response, "unlist/unlist.css")  # the one stylesheet (#53)
 
         self.assertEqual(self.client.get(f"/cases/drafts/{draft.pk}/eml/").status_code, 404)
         self.client.post(f"/cases/drafts/{draft.pk}/approve/")

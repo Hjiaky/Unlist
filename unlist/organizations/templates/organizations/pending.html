@@ -1,27 +1,27 @@
 {% extends "unlist/base.html" %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% block title %}Contact changes · Unlist{% endblock %}
-{% block body %}
-<main class="org-wide">
-{% include "organizations/_nav.html" %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'organizations:index' %}">Organizations</a></p>
 <h1>Contact changes to review</h1>
 <p>A list update changed the contact of an Organization you have a Case with. The old contact stays in use until you accept the new one.</p>
 {% for change in changes %}
 <section class="card">
   <h2><a href="{% url 'organizations:detail' change.organization.slug %}">{{ change.organization.name }}</a></h2>
-  <table class="org-table org-compare">
+  <div class="table-wrap">
+<table class="table">
     <thead><tr><th>Field</th><th>In use now</th><th>From the update</th></tr></thead>
     <tbody>
     {% for field, old, new in change.rows %}
-      <tr{% if old != new %} class="org-changed"{% endif %}><th scope="row">{{ field }}</th><td>{{ old|linebreaksbr }}</td><td>{{ new|linebreaksbr }}</td></tr>
+      <tr{% if old != new %} class="changed"{% endif %}><th scope="row">{{ field }}</th><td>{{ old|linebreaksbr }}</td><td>{{ new|linebreaksbr }}</td></tr>
     {% endfor %}
     </tbody>
   </table>
-  <form method="post" action="{% url 'organizations:decide_change' change.pk %}" class="org-inline">{% csrf_token %}<input type="hidden" name="decision" value="accept"><button type="submit" class="primary">Accept the new contact</button></form>
-  <form method="post" action="{% url 'organizations:decide_change' change.pk %}" class="org-inline">{% csrf_token %}<input type="hidden" name="decision" value="reject"><button type="submit">Keep the old contact</button></form>
+</div>
+  <form method="post" action="{% url 'organizations:decide_change' change.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="decision" value="accept"><button type="submit" class="primary">Accept the new contact</button></form>
+  <form method="post" action="{% url 'organizations:decide_change' change.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="decision" value="reject"><button type="submit">Keep the old contact</button></form>
 </section>
 {% empty %}
 <p class="muted">Nothing to review.</p>
 {% endfor %}
-</main>
 {% endblock %}

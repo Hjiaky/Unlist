@@ -10,7 +10,7 @@ from django.views.decorators.http import require_POST
 from unlist import crypto
 from unlist.mail import imap, importer, jobs, live, providers, scanner, services
 from unlist.mail.forms import ConnectionForm, MboxUploadForm
-from unlist.mail.models import Discovery, ImportRun, MailboxConnection, UnassignedSender
+from unlist.mail.models import Discovery, Evidence, ImportRun, MailboxConnection, UnassignedSender
 from unlist.mail.uploads import DataDirUploadHandler
 from unlist.organizations import lookup
 from unlist.organizations import services as organization_services
@@ -48,16 +48,27 @@ def _upload(request, pk):
     return render(request, "mail/upload.html", {"subject": subject, "form": form})
 
 
+YES_NO = {"yes": True, "no": False}
+
+
 @login_required
 def discoveries(request, pk):
+    """The Organizations found in the Subject's mail, filtered by evidence and Broker (yes/no)."""
     subject = get_object_or_404(Subject, pk=pk)
     with_case = services.case_organization_ids(subject)
+    found = subject.discoveries.select_related("organization")
+    evidence = request.GET.get("evidence", "")
+    broker = request.GET.get("broker", "")
+    if evidence in Evidence.values:
+        found = found.filter(evidence=evidence)
+    else:
+        evidence = ""
+    if broker in YES_NO:
+        found = found.filter(organization__broker=YES_NO[broker])
+    else:
+        broker = ""
     rows = []
-    for discovery in (
-        subject.discoveries.select_related("organization")
-        .annotate(rank=EVIDENCE_RANK)
-        .order_by("rank", "-last_seen", "organization__name")
-    ):
+    for discovery in found.annotate(rank=EVIDENCE_RANK).order_by("rank", "-last_seen", "organization__name"):
         if discovery.status == Discovery.Status.IGNORED:
             marker = "ignored"
         elif discovery.status == Discovery.Status.PURSUED or discovery.organization_id in with_case:
@@ -71,6 +82,10 @@ def discoveries(request, pk):
         "run": subject.import_runs.first(),
         "pursuable": len(services.pursuable_with_account_evidence(subject)),
         "unassigned": subject.unassigned_senders.filter(status=UnassignedSender.Status.OPEN).count(),
+        "evidence_choices": [(kind, Evidence(kind).label) for kind in scanner.EVIDENCE_ORDER],
+        "selected_evidence": evidence,
+        "selected_broker": broker,
+        "filtered": bool(evidence or broker),
     }
     return render(request, "mail/discoveries.html", context)
 

@@ -1,10 +1,17 @@
 {% extends "unlist/base.html" %}
-{% block title %}Add a Subject - Unlist{% endblock %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Add a Subject · Unlist{% endblock %}
 {% block content %}
+{% if first %}
+<p class="breadcrumb">First steps: 1 of 3</p>
+<h1>Add your first Subject</h1>
+<p>A Subject is a person whose personal data should be removed: you, or someone in your household. Next you record their consent, then import their mail.</p>
+{% else %}
+<p class="breadcrumb"><a href="{% url 'subjects:list' %}">Subjects</a></p>
 <h1>Add a Subject</h1>
+{% endif %}
 <form method="post" class="card">{% csrf_token %}
   {{ form.as_p }}
   <button type="submit" class="primary">Add</button>
 </form>
-<p><a href="{% url 'subjects:list' %}">Back to Subjects</a></p>
 {% endblock %}

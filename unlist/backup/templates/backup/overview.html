@@ -3,10 +3,8 @@
 {% extends "unlist/base.html" %}
 {% block title %}Backup - Unlist{% endblock %}
 {% block content %}
-<header class="bar">
-  <h1>Backup</h1>
-  <a href="{% url 'home' %}">Back</a>
-</header>
+<p class="breadcrumb"><a href="{% url 'settings' %}">Settings</a></p>
+<h1>Backup</h1>
 
 <section class="card">
   {% if last_backup %}

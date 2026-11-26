@@ -1,18 +1,18 @@
 {% extends "unlist/base.html" %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
-{% load static case_panels llm %}
-{% block title %}{{ case.reference }} · Unlist{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'cases/cases.css' %}">{% endblock %}
-{% block body %}
-<main class="cases-wide">
-{% include "cases/_nav.html" %}
-<h1><code>{{ case.reference }}</code> {{ case.subject.name }} at {{ case.organization.name }}{% if case.organization.broker %} <span class="cases-badge">Broker</span>{% endif %}</h1>
-<p class="muted"><a href="{% url 'subjects:detail' case.subject.pk %}">{{ case.subject.name }}</a> · <a href="{% url 'organizations:detail' case.organization.slug %}">{{ case.organization.name }}</a>{% if case.direct_removal %} · removal requested directly{% endif %}</p>
+{% load case_panels llm %}
+{% block title %}{{ case.reference }} · {{ case.organization.name }} · Unlist{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'subjects:detail' case.subject.pk %}">{{ case.subject.name }}</a> › Case <code>{{ case.reference }}</code></p>
+<div class="page-head">
+  <h1>{{ case.organization.name }}{% include "unlist/_broker.html" with organization=case.organization %}</h1>
+  <span class="muted"><a href="{% url 'organizations:detail' case.organization.slug %}">Organization details</a>{% if case.direct_removal %} · removal requested directly{% endif %}</span>
+</div>
 
-<section class="card">
-  <h2>{{ case.state_label }}</h2>
+<section class="card card-accent" aria-labelledby="h-state">
+  <h2 id="h-state">{{ case.state_label }}</h2>
   <p>{{ case.state_text }}</p>
-  <dl class="cases-fields">
+  <dl class="fields">
     <dt>Who acts next</dt><dd>{{ case.next_actor }}</dd>
     {% if case.request %}<dt>Request in flight</dt><dd>{{ case.get_request_display }}</dd>{% endif %}
     {% if case.result %}<dt>Result</dt><dd>{{ case.result }}</dd>{% endif %}
@@ -25,14 +25,15 @@
       {% if deadline.reminder_due_date %}<dt>Reminder answer due</dt><dd>{{ deadline.reminder_due_date|date:"l j F Y" }}</dd>{% endif %}
       <dt>Overdue from</dt><dd>{{ case.overdue_from|date:"l j F Y" }}</dd>
       {% endif %}
-      <dt>Rule used</dt><dd>{% if deadline.jurisdiction == "UK" %}UK GDPR{% else %}GDPR{% endif %}, country {{ deadline.country|default:"unknown" }}{% if deadline.holidays_known %}, public holidays counted{% else %}, weekends only{% endif %}</dd>
+      <dt>Rule used</dt><dd>{% if deadline.jurisdiction == "UK" %}UK GDPR{% else %}GDPR{% endif %}, country {{ deadline.country|default:"unknown" }}{% if deadline.holidays_known %}, public holidays counted{% else %}, weekends only{% endif %} <a href="#deadline-steps">How it was worked out</a></dd>
     {% endif %}
   </dl>
   {% if actions or can_record_outcome %}
-  <div class="cases-actions">
-    {% if can_record_outcome %}<a class="cases-button" href="{% url 'cases:outcome' case.pk %}">Record the Organization's answer</a>{% endif %}
+  <h3>Next step</h3>
+  <div class="actions">
+    {% if can_record_outcome %}<a class="button primary" href="{% url 'cases:outcome' case.pk %}">Record the Organization's answer</a>{% endif %}
     {% for value, label, url in actions %}
-    {% if url %}<a class="cases-button" href="{{ url }}">{{ label }}</a>
+    {% if url %}<a class="button" href="{{ url }}">{{ label }}</a>
     {% else %}<form method="post" action="{% url 'cases:action' case.pk value %}">{% csrf_token %}<button type="submit">{{ label }}</button></form>{% endif %}
     {% endfor %}
   </div>
@@ -42,7 +43,7 @@
 {% recheck_panel case %}
 {% complaint_panel case %}
 {% if asked %}
-<section class="card cases-demand">
+<section class="card card-accent">
   {% if asked == "clarification" %}
   <h2>The Organization asked which data is meant</h2>
   <p>Answer with a short reply that names the data the Access Request is about. The clock is paused until it is sent{% if deadline.jurisdiction == "UK" %}; the days until then do not count{% endif %}.</p>
@@ -57,49 +58,51 @@
 </section>
 {% endif %}
 
-<section class="card">
-  <h2>Drafts</h2>
+<section class="card" aria-labelledby="h-drafts">
+  <h2 id="h-drafts">Drafts</h2>
   {% for item in drafts %}{% with draft=item.draft %}
-  <article class="cases-draft cases-status-{{ draft.status }}">
+  <article class="item{% if draft.status == 'discarded' or draft.status == 'sent' %} item-quiet{% endif %}">
     <header>
       <strong>{{ draft.get_kind_display }}</strong> · {{ draft.get_status_display }}
-      <span class="muted">· {{ draft.get_channel_display }} to {{ draft.recipient }} · from {{ draft.sender }} · {{ draft.lang }}{% if draft.sent_on %} · sent {{ draft.sent_on|date:"j F Y" }}{% endif %}</span>
+      <div class="muted">{{ draft.get_channel_display }} to <span class="recipient">{{ draft.recipient }}</span> · from {{ draft.sender }} · {{ draft.lang }}{% if draft.sent_on %} · sent {{ draft.sent_on|date:"j F Y" }}{% endif %}</div>
     </header>
     {% if draft.is_pending %}
-    <p class="cases-subject-line">{{ draft.subject_line }}</p>
-    <pre class="cases-body">{{ draft.body }}</pre>
+    <p class="subject-line">{{ draft.subject_line }}</p>
+    <pre class="text">{{ draft.body }}</pre>
     {% else %}
-    <details><summary>{{ draft.subject_line }}</summary><pre class="cases-body">{{ draft.body }}</pre></details>
+    <details><summary>{{ draft.subject_line }}</summary><pre class="text">{{ draft.body }}</pre></details>
     {% endif %}
 
     {% if draft.status == "awaiting_approval" %}
-    <div class="cases-actions">
+    <div class="actions">
       <form method="post" action="{% url 'cases:draft_approve' draft.pk %}">{% csrf_token %}<button type="submit" class="primary">{{ item.approve_label }}</button></form>
-      <a class="cases-button" href="{% url 'cases:draft_edit' draft.pk %}">Edit</a>
+      <a class="button" href="{% url 'cases:draft_edit' draft.pk %}">Edit</a>
       {% llm_adapt_button draft %}
       <form method="post" action="{% url 'cases:draft_discard' draft.pk %}">{% csrf_token %}<button type="submit">Discard</button></form>
     </div>
     {% elif draft.status == "handed_over" %}
-    <div class="cases-handover">
-      {% if draft.kind == "id_copy_reply" %}<p class="cases-warning">The Subject attaches the copy of their ID from their own device when sending, with the details that are not needed blacked out. Unlist never stores it.</p>{% endif %}
+    <div class="handover">
+      {% if draft.kind == "id_copy_reply" %}<p class="warn">The Subject attaches the copy of their ID from their own device when sending, with the details that are not needed blacked out. Unlist never stores it.</p>{% endif %}
       {% if draft.channel == "email" %}
-      <p>Send this from <strong>{{ draft.sender }}</strong> to <strong>{{ draft.recipient }}</strong>, then mark it sent.</p>
+      <p>Send this from <strong>{{ draft.sender }}</strong> to <strong class="anywhere">{{ draft.recipient }}</strong>, then mark it sent.</p>
       <p><a href="{% url 'cases:draft_eml' draft.pk %}">Download the .eml</a> · <a href="{{ item.mailto }}">Open in the mail app (mailto)</a></p>
       {% elif draft.channel == "webform" %}
-      <p>Submit the text above at the Organization's web form, then mark it sent: <a href="{{ draft.recipient }}" rel="noopener noreferrer">{{ draft.recipient }}</a></p>
+      <p>Submit the text above at the Organization's web form, then mark it sent: <a class="anywhere" href="{{ draft.recipient }}" rel="noopener noreferrer">{{ draft.recipient }}</a></p>
       {% else %}
       <p>Print the letter, have it signed, post it to the address below, then mark it sent.</p>
-      <pre class="cases-body">{{ draft.recipient }}</pre>
+      <pre class="text">{{ draft.recipient }}</pre>
       <p><a href="{% url 'cases:draft_letter' draft.pk %}">Printable letter</a></p>
       {% endif %}
-      <form method="post" action="{% url 'cases:draft_sent' draft.pk %}" class="cases-inline">{% csrf_token %}
-        {{ mark_sent_form.sent_on.label_tag }} {{ mark_sent_form.sent_on }}
-        <button type="submit" class="primary">Mark sent</button>
-      </form>
-      <form method="post" action="{% url 'cases:draft_discard' draft.pk %}" class="cases-inline">{% csrf_token %}<button type="submit">Discard</button></form>
+      <div class="actions">
+        <form method="post" action="{% url 'cases:draft_sent' draft.pk %}" class="inline">{% csrf_token %}
+          {{ mark_sent_form.sent_on.label_tag }} {{ mark_sent_form.sent_on }}
+          <button type="submit" class="primary">Mark sent</button>
+        </form>
+        <form method="post" action="{% url 'cases:draft_discard' draft.pk %}" class="inline">{% csrf_token %}<button type="submit">Discard</button></form>
+      </div>
     </div>
     {% elif draft.status == "sent" and draft.channel == "email" %}
-    <p><a href="{% url 'cases:draft_eml' draft.pk %}">Download the .eml</a>{% if draft.message_id %} <span class="muted">Message-ID {{ draft.message_id }}</span>{% endif %}</p>
+    <p><a href="{% url 'cases:draft_eml' draft.pk %}">Download the .eml</a>{% if draft.message_id %} <span class="muted anywhere">Message-ID {{ draft.message_id }}</span>{% endif %}</p>
     {% endif %}
   </article>
   {% endwith %}{% empty %}
@@ -107,12 +110,12 @@
   {% endfor %}
 </section>
 
-<section class="card" id="replies">
-  <h2>Replies</h2>
+<section class="card" id="replies" aria-labelledby="h-replies">
+  <h2 id="h-replies">Replies and attachments</h2>
   {% for reply in replies %}
-  <article class="cases-reply cases-reply-{{ reply.status }}">
-    <header><strong>{{ reply.subject_line|default:"(no subject)" }}</strong>
-      <span class="muted">· {{ reply.received_at|date:"j M Y" }} · {{ reply.from_address }} · {{ reply.get_kind_display }} · {{ reply.get_status_display }}{% if reply.suggested_outcome and reply.status == "to_confirm" %} · suggested: {{ reply.suggested_label }}{% endif %}</span>
+  <article class="item{% if reply.status == 'dismissed' %} item-quiet{% endif %}">
+    <header><strong class="anywhere">{{ reply.subject_line|default:"(no subject)" }}</strong>
+      <div class="muted">{{ reply.received_at|date:"j M Y" }} · <span class="anywhere">{{ reply.from_address }}</span> · {{ reply.get_kind_display }} · {{ reply.get_status_display }}{% if reply.suggested_outcome and reply.status == "to_confirm" %} · suggested: {{ reply.suggested_label }}{% endif %}</div>
     </header>
     {% if reply.status == "to_confirm" %}<p><a href="{% url 'cases:replies' %}#reply-{{ reply.pk }}">Review and confirm</a></p>{% endif %}
     {% if reply.raw_attachment %}<p><a href="{% url 'cases:attachment' reply.raw_attachment.pk %}">Download the .eml</a></p>{% endif %}
@@ -120,20 +123,52 @@
   {% empty %}
   <p class="muted">No replies taken in yet.</p>
   {% endfor %}
-  <form method="post" action="{% url 'cases:reply_upload' case.pk %}" enctype="multipart/form-data" class="cases-form">{% csrf_token %}
-    <div class="cases-field">
+  <form method="post" action="{% url 'cases:reply_upload' case.pk %}" enctype="multipart/form-data">{% csrf_token %}
+    <div class="field">
       {{ upload_form.eml.label_tag }} {{ upload_form.eml }}
-      <p class="helptext cases-warning">{{ upload_form.eml.help_text }}</p>
+      <p class="helptext warn">{{ upload_form.eml.help_text }}</p>
     </div>
     <button type="submit">Upload</button>
   </form>
+  <h3>Attachments</h3>
+  <ul class="plain-list">
+    {% for attachment in attachments %}
+    <li><a class="anywhere" href="{% url 'cases:attachment' attachment.pk %}">{{ attachment.original_name }}</a> <span class="muted">{{ attachment.size|filesizeformat }}, {{ attachment.uploaded_at|date:"j M Y" }}</span></li>
+    {% empty %}<li class="muted">None.</li>{% endfor %}
+  </ul>
 </section>
 
-<section class="card">
-  <h2>When the Organization asks for more</h2>
-  <p><a class="cases-button" href="{% url 'cases:authority_letter' case.pk %}">Generate a letter of authority</a> <span class="muted">For an Organization that asks for proof that the Operator may act. A new dated letter for {{ case.organization.name }} only.</span></p>
+<section class="card" aria-labelledby="h-timeline">
+  <h2 id="h-timeline">Timeline</h2>
+  <ol class="timeline">
+    {% for event in events %}
+    <li>
+      <span class="date">{{ event.occurred_on|date:"j M Y" }}</span>
+      <div>
+        <strong>{{ event.get_kind_display }}</strong>
+        {% if event.text %}<span>{{ event.text }}</span>{% endif %}
+        {% if event.exception_text %}<div class="muted">Exception cited: {{ event.exception_text }}</div>{% endif %}
+        {% if event.suppression_confirmed is not None %}<div class="muted">Suppression Record confirmed: {{ event.suppression_confirmed|yesno:"yes,no" }}</div>{% endif %}
+        {% if event.details.note %}<div class="muted">Note: {{ event.details.note }}</div>{% endif %}
+        {% if event.kind == "authority_letter" %}<div><a href="{% url 'cases:authority_letter_show' event.pk %}">Show the letter</a></div>{% endif %}
+        {% for attachment in event.attachments.all %}<div><a class="anywhere" href="{% url 'cases:attachment' attachment.pk %}">{{ attachment.original_name }}</a></div>{% endfor %}
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+  {% if deadline %}
+  <h3 id="deadline-steps">How the deadline was worked out</h3>
+  <ol class="deadline-steps">
+    {% for step in deadline.steps %}<li{% if step.moves_deadline %} class="moves"{% endif %}><span class="date">{{ step.on|date:"j M Y" }}</span> <span>{{ step.text }}</span></li>{% endfor %}
+  </ol>
+  {% endif %}
+</section>
+
+<section class="card" aria-labelledby="h-more">
+  <h2 id="h-more">When the Organization asks for more</h2>
+  <p><a class="button" href="{% url 'cases:authority_letter' case.pk %}">Generate a letter of authority</a> <span class="muted">For an Organization that asks for proof that the Operator may act. A new dated letter for {{ case.organization.name }} only.</span></p>
   {% if portal_form %}
-  <form method="post" action="{% url 'cases:portal' case.pk %}" class="cases-inline">{% csrf_token %}
+  <form method="post" action="{% url 'cases:portal' case.pk %}" class="inline">{% csrf_token %}
     {{ portal_form.url.label_tag }} {{ portal_form.url }}
     <button type="submit">Hand over to the Subject</button>
   </form>
@@ -141,50 +176,13 @@
   {% endif %}
 </section>
 
-<section class="card">
-  <h2>Timeline</h2>
-  <ol class="cases-timeline">
-    {% for event in events %}
-    <li>
-      <span class="cases-date">{{ event.occurred_on|date:"j M Y" }}</span>
-      <strong>{{ event.get_kind_display }}</strong>
-      {% if event.text %}<span>{{ event.text }}</span>{% endif %}
-      {% if event.exception_text %}<div class="muted">Exception cited: {{ event.exception_text }}</div>{% endif %}
-      {% if event.suppression_confirmed is not None %}<div class="muted">Suppression Record confirmed: {{ event.suppression_confirmed|yesno:"yes,no" }}</div>{% endif %}
-      {% if event.details.note %}<div class="muted">Note: {{ event.details.note }}</div>{% endif %}
-      {% if event.kind == "authority_letter" %}<div><a href="{% url 'cases:authority_letter_show' event.pk %}">Show the letter</a></div>{% endif %}
-      {% for attachment in event.attachments.all %}<div><a href="{% url 'cases:attachment' attachment.pk %}">{{ attachment.original_name }}</a></div>{% endfor %}
-    </li>
-    {% endfor %}
-  </ol>
-</section>
-
-{% if deadline %}
-<section class="card">
-  <h2>How the deadline was worked out</h2>
-  <ol class="cases-steps">
-    {% for step in deadline.steps %}<li{% if step.moves_deadline %} class="cases-moves"{% endif %}><span class="cases-date">{{ step.on|date:"j M Y" }}</span> {{ step.text }}</li>{% endfor %}
-  </ol>
-</section>
-{% endif %}
-
-<section class="card">
-  <h2>Attachments</h2>
-  <ul>
-    {% for attachment in attachments %}
-    <li><a href="{% url 'cases:attachment' attachment.pk %}">{{ attachment.original_name }}</a> <span class="muted">{{ attachment.size|filesizeformat }}, {{ attachment.uploaded_at|date:"j M Y" }}</span></li>
-    {% empty %}<li class="muted">None.</li>{% endfor %}
-  </ul>
-</section>
-
-<section class="card">
-  <h2>Re-checks</h2>
+<section class="card" aria-labelledby="h-rechecks">
+  <h2 id="h-rechecks">Re-checks</h2>
   <p class="muted">After “nothing held”: {% if recheck_intervals.0 %}re-check after {{ recheck_intervals.0 }} days{% else %}close{% endif %}. After “removed”: {% if recheck_intervals.1 %}re-check after {{ recheck_intervals.1 }} days{% else %}close{% endif %}.</p>
-  <form method="post" action="{% url 'cases:recheck' case.pk %}" class="cases-inline">{% csrf_token %}
+  <form method="post" action="{% url 'cases:recheck' case.pk %}" class="inline">{% csrf_token %}
     {{ recheck_form.recheck_override.label_tag }} {{ recheck_form.recheck_override }}
     <button type="submit">Save</button>
   </form>
   <p class="helptext">{{ recheck_form.recheck_override.help_text }}</p>
 </section>
-</main>
 {% endblock %}

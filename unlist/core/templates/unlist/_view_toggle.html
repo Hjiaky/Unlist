@@ -1,0 +1,6 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Table / Board: two views of the same data. The server remembers the last choice in a cookie. #}
+<ul class="toggle" aria-label="Show as">
+  <li><a href="?{{ toggle_query }}view=table"{% if view == "table" %} aria-current="true"{% endif %}>Table</a></li>
+  <li><a href="?{{ toggle_query }}view=board"{% if view == "board" %} aria-current="true"{% endif %}>Board</a></li>
+</ul>

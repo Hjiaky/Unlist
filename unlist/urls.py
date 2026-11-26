@@ -8,6 +8,8 @@ from unlist.core import views
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("approve/", views.approve_batch, name="approve"),
+    path("settings/", views.settings_page, name="settings"),
     path("setup/", views.setup, name="setup"),
     path("login/", views.ThrottledLoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),

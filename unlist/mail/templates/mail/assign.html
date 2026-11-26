@@ -1,11 +1,8 @@
 {% extends "unlist/base.html" %}
-{% load static %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% block title %}Assign a sender · Unlist{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'mail/mail.css' %}">{% endblock %}
-{% block body %}
-<main class="mail-wide">
-{% include "mail/_nav.html" %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a></p>
 <h1>Assign {% if sender.display_name %}{{ sender.display_name }} {% endif %}<code>{{ sender.domain }}</code></h1>
 {% if sender.ambiguous %}
 <p><code>{{ sender.domain }}</code> is a shared mail or platform domain, so it cannot belong to one Organization.
@@ -15,29 +12,31 @@ Assigning connects only this sender name, for {{ subject.name }}, to the Organiz
 imports, for every Subject, map it on their own.</p>
 {% endif %}
 
-<form method="get" class="mail-search">
+<form method="get" class="search">
   <label for="q">Search Organizations by name, slug or domain</label>
   <input type="text" id="q" name="q" value="{{ query }}">
   <button type="submit">Search</button>
 </form>
 
 {% if query %}
-<table class="mail-table">
+<div class="table-wrap">
+<table class="table">
   <tbody>
   {% for organization in results %}
     <tr>
       <td><a href="{% url 'organizations:detail' organization.slug %}">{{ organization.name }}</a>
-        {% if organization.broker %}<span class="mail-badge">Broker</span>{% endif %}</td>
+        {% include "unlist/_broker.html" with organization=organization %}</td>
       <td>{{ organization.domains|join:", " }}</td>
-      <td class="mail-buttons"><form method="post">{% csrf_token %}
+      <td><div class="actions tight"><form method="post">{% csrf_token %}
         <input type="hidden" name="organization" value="{{ organization.slug }}">
-        <button type="submit">Assign to this Organization</button></form></td>
+        <button type="submit">Assign to this Organization</button></form></div></td>
     </tr>
   {% empty %}
     <tr><td>No Organization found.</td></tr>
   {% endfor %}
   </tbody>
 </table>
+</div>
 {% endif %}
 {% if not sender.ambiguous %}
 <form method="post" class="card">{% csrf_token %}
@@ -48,5 +47,4 @@ imports, for every Subject, map it on their own.</p>
 </form>
 {% endif %}
 <p><a href="{% url 'mail:unassigned' subject.pk %}">Back</a></p>
-</main>
 {% endblock %}

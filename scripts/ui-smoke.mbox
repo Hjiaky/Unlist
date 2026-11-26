@@ -1,0 +1,58 @@
+From 1800000000000000001@xxx Mon Mar 03 09:15:00 +0000 2025
+X-Gmail-Labels: Inbox
+Authentication-Results: mx.example.org;
+       dkim=pass header.d=1und1.de header.s=s1;
+       spf=pass smtp.mailfrom=service@1und1.de;
+       dmarc=pass header.from=1und1.de
+From: 1&1 Kundenservice <service@1und1.de>
+To: robin@example.org
+Subject: Ihre Rechnung Nr. 4711 ist da
+Date: Mon, 03 Mar 2025 10:15:00 +0100
+Message-ID: <invoice-4711@1und1.de>
+Content-Type: text/plain; charset=utf-8
+
+Your invoice is attached.
+
+From 1800000000000000002@xxx Tue Apr 01 12:00:00 +0000 2025
+X-Gmail-Labels: Inbox
+Authentication-Results: mx.example.org;
+       dkim=pass header.d=abebooks.de header.s=k1;
+       dmarc=pass header.from=abebooks.de
+From: AbeBooks <orders@abebooks.de>
+To: robin@example.org
+Subject: Your order confirmation #8812
+Date: Tue, 01 Apr 2025 12:00:00 +0000
+Message-ID: <order-8812@abebooks.de>
+Content-Type: text/plain; charset=us-ascii
+
+Thank you for your order.
+
+From 1800000000000000003@xxx Thu May 15 08:00:00 +0000 2025
+X-Gmail-Labels: Inbox
+Authentication-Results: mx.example.org;
+       dkim=pass header.d=schufa.de header.s=s1;
+       dmarc=pass header.from=schufa.de
+From: SCHUFA <konto@schufa.de>
+To: robin@example.org
+Subject: Welcome: your account has been created
+Date: Thu, 15 May 2025 08:00:00 +0000
+Message-ID: <account-1@schufa.de>
+Content-Type: text/plain; charset=us-ascii
+
+Your account is ready.
+
+From 1800000000000000004@xxx Fri Jun 20 08:00:00 +0000 2025
+X-Gmail-Labels: Inbox
+Authentication-Results: mx.example.org;
+       dkim=pass header.d=7mind.de header.s=s1;
+       dmarc=pass header.from=7mind.de
+List-Unsubscribe: <mailto:unsubscribe@7mind.de>
+From: 7Mind <news@7mind.de>
+To: robin@example.org
+Subject: Neues aus der Meditation
+Date: Fri, 20 Jun 2025 08:00:00 +0000
+Message-ID: <news-1@7mind.de>
+Content-Type: text/plain; charset=us-ascii
+
+Our newsletter.
+

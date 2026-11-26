@@ -1,11 +1,8 @@
 {% extends "unlist/base.html" %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
-{% load static %}
 {% block title %}The Subject sends ID · {{ case.reference }} · Unlist{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'cases/cases.css' %}">{% endblock %}
-{% block body %}
-<main class="cases-wide">
-{% include "cases/_nav.html" %}
+{% block content %}
+{% include "cases/_crumbs.html" %}
 <h1>{{ case.subject.name }} sends a copy of their ID to {{ case.organization.name }}</h1>
 <p class="muted">Case <a href="{% url 'cases:detail' case.pk %}"><code>{{ case.reference }}</code></a>.</p>
 <section class="card">
@@ -19,10 +16,9 @@
   <p>The European Data Protection Board says the person may black out details on an ID copy that are not needed to confirm identity (Guidelines 01/2022, paragraphs 76 and 77), for example the photo, the document's access and serial numbers, nationality and the machine-readable zone. Some national rules require a full copy; the Organization should say so.</p>
   <p>The draft says these details were blacked out. If the Subject does not do that, edit the draft before approving it.</p>
 </section>
-<form method="post" class="card cases-form">{% csrf_token %}
-  <label class="cases-check">{{ form.decided }} {{ form.decided.label }}</label>
+<form method="post" class="card">{% csrf_token %}
+  <label class="check">{{ form.decided }} {{ form.decided.label }}</label>
   {{ form.decided.errors }}
   <button type="submit" class="primary">Draft the reply</button>
 </form>
-</main>
 {% endblock %}

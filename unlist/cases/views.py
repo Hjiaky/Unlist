@@ -58,23 +58,71 @@ def _int_or_none(value):
         return None
 
 
+# The ``result`` filter of the Case list: where the last answer stands, as the statistics count it.
+RESULT_CHOICES = [
+    ("removed", "Removed"),
+    ("removed_suppression", "Removed, with a Suppression Record confirmed"),
+    ("nothing_held", "Nothing held"),
+    ("refused", "Refused or partly done"),
+    ("kept", "Kept by choice"),
+]
+YES_NO = {"yes": True, "no": False}
+
+
+def _result_matches(standing, result) -> bool:
+    if result == "removed_suppression":
+        return standing.outcome == "removed" and standing.suppression_confirmed
+    return standing.outcome == result
+
+
 @login_required
 def case_list(request):
-    cases = Case.objects.select_related("subject", "organization")
+    """Every Case, filtered by Subject, state, result, Organization (slug or id) and Broker (yes/no)."""
+    from unlist.stats.figures import case_standing  # the statistics' own definition of an outcome
+
+    cases = Case.objects.select_related("subject", "organization").order_by("subject__name", "organization__name")
     subject_id = _int_or_none(request.GET.get("subject"))
     state = request.GET.get("state", "")
+    result = request.GET.get("result", "")
+    broker = request.GET.get("broker", "")
+    organization_key = (request.GET.get("organization") or "").strip()
+    organization = None
     if subject_id:
         cases = cases.filter(subject_id=subject_id)
     if state in {member.value for member in State}:
         cases = cases.filter(state=state)
     else:
         state = ""
+    if organization_key:
+        lookup = Q(slug=organization_key)
+        if organization_key.isdigit():
+            lookup |= Q(pk=int(organization_key))
+        organization = Organization.objects.filter(lookup).first()
+        cases = cases.filter(organization=organization) if organization else cases.none()
+    if broker in YES_NO:
+        cases = cases.filter(organization__broker=YES_NO[broker])
+    else:
+        broker = ""
+    if result in dict(RESULT_CHOICES):
+        cases = [
+            case
+            for case in cases.prefetch_related("events")
+            if _result_matches(case_standing(case.events.all()), result)
+        ]
+    else:
+        result = ""
     context = {
         "cases": cases,
         "subjects": Subject.objects.all(),
         "states": Case.STATE_CHOICES,
+        "results": RESULT_CHOICES,
         "selected_subject": subject_id,
         "selected_state": state,
+        "selected_result": result,
+        "selected_broker": broker,
+        "organization": organization,
+        "organization_key": organization_key,
+        "filtered": bool(subject_id or state or result or broker or organization_key),
     }
     return render(request, "cases/list.html", context)
 

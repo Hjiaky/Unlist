@@ -48,7 +48,7 @@ class ViewTests(DataDirMixin, TestCase):
         self.assertContains(response, "Google Takeout")
         self.assertContains(response, "import-only")
         self.assertContains(response, 'enctype="multipart/form-data"')
-        self.assertContains(response, "mail/mail.css")
+        self.assertContains(response, "unlist/unlist.css")  # the one stylesheet (#53)
         self.assertNotContains(response, "style=")
 
     def test_upload_imports_and_lists_discoveries_by_evidence(self):

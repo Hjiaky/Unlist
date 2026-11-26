@@ -91,6 +91,7 @@ def organization_detail(request, slug):
             "overrides": overrides,
             "form": form,
             "pending": PendingContactChange.objects.filter(organization=organization).first(),
+            "cases": organization.cases.count(),
         },
     )
 
