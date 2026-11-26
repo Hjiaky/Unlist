@@ -34,9 +34,11 @@ Every email leaving in a Subject's name is approved first. Reading, matching, de
 
 Ask the human only high-value decisions: hard to reverse, changing scope, touching the principles above, or carrying legal or privacy risk for Subjects. Decide everything else yourself with the best default, and record it on the ticket as "decided by agent" so it can be overturned. When unsure whether something is high-value, decide it and say so plainly.
 
-## Planning
+## Planning and building
 
-The road to v1.0.0-rc1 is charted as a wayfinder map: https://github.com/Hjiaky/Unlist/issues/1. Research findings live in `docs/research/`.
+- The spec is `docs/spec/v1.0.0-rc1.md`. Each section links the decision behind it on the (closed) wayfinder map, https://github.com/Hjiaky/Unlist/issues/1.
+- The build backlog is https://github.com/Hjiaky/Unlist/issues/37 and its sub-issues. Take a ticket whose `Blocked by:` issues are all closed.
+- Research findings live in `docs/research/`, prototypes in `docs/prototypes/`, and architecture decisions in `docs/adr/`.
 
 ## Subagent models
 
