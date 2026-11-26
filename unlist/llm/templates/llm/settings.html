@@ -1,15 +1,9 @@
 {% extends "unlist/base.html" %}
-{% load static %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% block title %}LLM · Unlist{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'llm/llm.css' %}">{% endblock %}
-{% block body %}
-<main class="llm-wide">
-<header class="bar">
-  <h1>Optional LLM</h1>
-  <a href="{% url 'home' %}">Back</a>
-</header>
-{% include "llm/_messages.html" %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'settings' %}">Settings</a></p>
+<h1>Optional LLM</h1>
 
 <section class="card">
   <p><strong>Unlist is complete without an LLM.</strong> It is off unless you switch it on here. When it is on, a
@@ -19,7 +13,7 @@
     <a href="https://ollama.com/" rel="noopener noreferrer">Ollama</a> or the server of
     <a href="https://github.com/ggml-org/llama.cpp" rel="noopener noreferrer">llama.cpp</a>. Then nothing leaves your
     network. For example, with Ollama:</p>
-  <pre class="llm-example">ollama pull llama3.1
+  <pre class="text">ollama pull llama3.1
 Endpoint address: http://localhost:11434/v1
 Model name:       llama3.1</pre>
   <p class="muted">When Unlist runs in a container, the host machine is usually <code>http://host.docker.internal:11434/v1</code>,
@@ -31,7 +25,7 @@ Model name:       llama3.1</pre>
 
 <section class="card">
   <h2>What each job sends</h2>
-  <dl class="llm-sends">
+  <dl class="fields">
     {% for job, sent in sends %}<dt>{{ job }}</dt><dd>{{ sent }}</dd>{% endfor %}
   </dl>
   <p class="muted">{{ common }} Without the LLM: the rules sort discovery mail, drafts use the English template, keyword
@@ -39,7 +33,7 @@ Model name:       llama3.1</pre>
 </section>
 
 {% if settings.pk and settings.base_url %}
-<section class="card {% if settings.remote %}llm-remote{% endif %}">
+<section class="card {% if settings.remote %}card-warn{% endif %}">
   <h2>Status</h2>
   <p>{% if settings.usable %}In use{% elif settings.enabled %}Switched on, but not in use yet{% else %}Switched off{% endif %}:
     <code>{{ settings.base_url }}</code>, model <code>{{ settings.model|default:"(none)" }}</code>,
@@ -47,7 +41,7 @@ Model name:       llama3.1</pre>
     {% if settings.is_remote is None %}<span class="muted">(detected from the address)</span>{% else %}<span class="muted">(as you set it)</span>{% endif %}.
     Suggestions are marked “{{ settings.source_label }}”.</p>
   {% if settings.needs_notice %}
-  <div class="llm-notice">
+  <div class="card card-warn">
     <p><strong>{{ settings.host }} is a remote service.</strong> Unlist will send it, from then on and without asking again:</p>
     <ul>{% for job, sent in sends %}<li><strong>{{ job }}:</strong> {{ sent }}</li>{% endfor %}</ul>
     <p>Its operator can read and keep what it receives, under its own terms. If you run this model yourself, choose
@@ -64,11 +58,10 @@ Model name:       llama3.1</pre>
 
 <section class="card">
   <h2>Settings</h2>
-  <form method="post" class="llm-form">{% csrf_token %}
+  <form method="post">{% csrf_token %}
     {{ form.as_p }}
     {% if settings.has_api_key %}<p class="muted">An API key is stored.</p>{% endif %}
     <button type="submit" class="primary">Save</button>
   </form>
 </section>
-</main>
 {% endblock %}

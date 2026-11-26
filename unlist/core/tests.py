@@ -30,7 +30,8 @@ class FirstRunTests(TestCase):
 
     def test_setup_creates_the_operator_and_logs_in(self):
         response = self.client.post("/setup/", {"username": "operator", "password1": PASSWORD, "password2": PASSWORD})
-        self.assertRedirects(response, "/", fetch_redirect_response=False)
+        # First run: straight on to adding the first Subject (#53).
+        self.assertRedirects(response, "/subjects/add/", fetch_redirect_response=False)
         self.assertEqual(get_user_model().objects.count(), 1)
         self.assertEqual(self.client.get("/").status_code, 200)
 

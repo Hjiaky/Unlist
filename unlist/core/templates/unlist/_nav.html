@@ -1,0 +1,25 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# The sidebar; at phone width the same list sits in the top bar's menu. #}
+<nav class="nav" aria-label="Main">
+  <ul>
+    <li><a href="{% url 'home' %}"{% if nav_section == "needs" %} aria-current="page"{% endif %}>Needs you
+      {% if sidebar.needs_you %}<span class="count">{{ sidebar.needs_you }}<span class="visually-hidden"> waiting for you</span></span>{% endif %}</a></li>
+  </ul>
+  <p class="nav-heading">Household</p>
+  <ul>
+    {% for subject in sidebar.subjects %}
+    <li><a href="{% url 'subjects:detail' subject.pk %}"{% if subject.pk == current_subject_id %} aria-current="page"{% endif %}>{{ subject.name }}
+      {% if subject.needs_you %}<span class="count">{{ subject.needs_you }}<span class="visually-hidden"> waiting for you</span></span>{% endif %}</a></li>
+    {% endfor %}
+    <li><a class="nav-add" href="{% url 'subjects:add' %}">+ Add a Subject</a></li>
+  </ul>
+  <ul class="nav-tools">
+    <li><a href="{% url 'stats:index' %}"{% if nav_section == "stats" %} aria-current="page"{% endif %}>Statistics</a></li>
+    <li><a href="{% url 'cases:list' %}"{% if nav_section == "cases" %} aria-current="page"{% endif %}>All Cases</a></li>
+    <li><a href="{% url 'organizations:index' %}"{% if nav_section == "organizations" %} aria-current="page"{% endif %}>Organizations</a></li>
+    <li><a href="{% url 'organizations:lists' %}"{% if nav_section == "lists" %} aria-current="page"{% endif %}>Organization Lists</a></li>
+    <li><a href="{% url 'breaches:index' %}"{% if nav_section == "breaches" %} aria-current="page"{% endif %}>Breach list</a></li>
+    <li><a href="{% url 'settings' %}"{% if nav_section == "settings" %} aria-current="page"{% endif %}>Settings</a></li>
+    <li><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit" class="nav-button">Log out</button></form></li>
+  </ul>
+</nav>

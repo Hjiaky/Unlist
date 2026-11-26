@@ -1,8 +1,139 @@
 {% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Needs you · Unlist{% endblock %}
 {% block content %}
-<header class="bar">
-  <h1>Unlist</h1>
-  <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">Log out</button></form>
-</header>
-<p>Unlist is running. Adding Subjects and importing mail come next.</p>
+<div class="page-head">
+  <h1>Needs you</h1>
+  {% include "unlist/_view_toggle.html" %}
+</div>
+
+{% if first_run %}
+<section class="card card-accent" aria-labelledby="first-steps">
+  <h2 id="first-steps">First steps</h2>
+  <p>Three steps, then Unlist shows which Organizations mailed the Subject.</p>
+  <ol class="steps">
+    <li{% if first_run.has_subject %} class="done"{% endif %}><span>{% if first_run.has_subject %}{{ first_run.subject.name }} is added.{% else %}<a href="{% url 'subjects:add' %}">Add your first Subject</a>: the person whose data should be removed (you, or someone in your household).{% endif %}</span></li>
+    <li{% if first_run.consent %} class="done"{% endif %}><span>{% if first_run.consent %}Consent is recorded.{% elif first_run.has_subject %}<a href="{% url 'subjects:consent' first_run.subject.pk %}">Record {{ first_run.subject.name }}'s consent</a>. Nothing is drafted without it.{% else %}Record their consent. Nothing is drafted without it.{% endif %}</span></li>
+    <li{% if first_run.mail %} class="done"{% endif %}><span>{% if first_run.has_subject %}<a href="{% url 'mail:upload' first_run.subject.pk %}">Import their mail</a> from an export file, or <a href="{% url 'mail:connections' first_run.subject.pk %}">connect the mailbox</a>.{% else %}Import their mail from an export file, or connect the mailbox.{% endif %}</span></li>
+  </ol>
+</section>
+{% endif %}
+
+<form id="batch" method="post" action="{% url 'approve' %}">{% csrf_token %}</form>
+
+{% if view == "board" %}
+{% include "unlist/_board.html" with show_subject=True has_drafts=drafts %}
+{% else %}
+
+{% if empty %}
+<p class="calm">Nothing needs you right now. Unlist keeps the deadlines; anything new shows up here.</p>
+{% endif %}
+
+{% if drafts %}
+<section aria-labelledby="h-drafts">
+  <div class="section-head">
+    <h2 id="h-drafts">Drafts to approve <span class="count">{{ drafts|length }}</span></h2>
+    <button form="batch" type="submit" class="primary">Review the ticked drafts</button>
+  </div>
+  <p class="muted">Nothing leaves in a Subject's name before you approve it. Tick several to approve them together after one summary.</p>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th class="select-cell"><span class="visually-hidden">Tick</span></th><th>Subject</th><th>Organization</th><th>Draft</th><th>To</th><th>How it leaves</th></tr></thead>
+      <tbody>
+      {% for item in drafts %}{% with draft=item.draft %}
+        <tr>
+          <td class="select-cell"><input type="checkbox" form="batch" name="draft" value="{{ draft.pk }}" id="draft-{{ draft.pk }}" aria-label="Tick the {{ draft.get_kind_display }} to {{ draft.case.organization.name }} for {{ draft.case.subject.name }}"></td>
+          <td>{{ draft.case.subject.name }}</td>
+          <td><a href="{% url 'cases:detail' draft.case.pk %}">{{ draft.case.organization.name }}</a>{% include "unlist/_broker.html" with organization=draft.case.organization %}</td>
+          <td>{{ draft.get_kind_display }}</td>
+          <td class="recipient">{{ draft.recipient }}</td>
+          <td><span class="pill{% if item.mode == 'hand' %} pill-quiet{% endif %}">{{ item.label }}</span> <span class="muted">{{ item.text }}</span></td>
+        </tr>
+      {% endwith %}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+{% if replies or unmatched %}
+<section aria-labelledby="h-replies">
+  <div class="section-head">
+    <h2 id="h-replies">Replies to confirm <span class="count">{{ reply_total }}</span></h2>
+    <a href="{% url 'cases:replies' %}">Open the replies</a>
+  </div>
+  <p class="muted">Unlist suggests what each reply means. Nothing changes until you confirm.</p>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Subject</th><th>From</th><th>Reply</th><th>Suggested</th></tr></thead>
+      <tbody>
+      {% for reply in replies %}
+        <tr>
+          <td>{{ reply.subject.name }}</td>
+          <td><a href="{% url 'cases:detail' reply.case.pk %}">{{ reply.case.organization.name }}</a>{% include "unlist/_broker.html" with organization=reply.case.organization %}</td>
+          <td class="anywhere"><a href="{% url 'cases:replies' %}#reply-{{ reply.pk }}">{{ reply.subject_line|default:"(no subject)" }}</a> <span class="muted">{{ reply.received_at|date:"j M" }}</span></td>
+          <td>{{ reply.suggested_label|default:"—" }}</td>
+        </tr>
+      {% endfor %}
+      {% for reply in unmatched %}
+        <tr>
+          <td>{{ reply.subject.name }}</td>
+          <td class="recipient">{{ reply.from_address }}</td>
+          <td class="anywhere"><a href="{% url 'cases:replies' %}#reply-{{ reply.pk }}">{{ reply.subject_line|default:"(no subject)" }}</a> <span class="muted">{{ reply.received_at|date:"j M" }}</span></td>
+          <td><span class="pill pill-quiet">Not matched</span> <span class="muted">assign it to a Case</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+{% if attention %}
+<section aria-labelledby="h-attention">
+  <div class="section-head"><h2 id="h-attention">Overdue or bounced <span class="count">{{ attention|length }}</span></h2></div>
+  <p class="muted">Gentle first: a reminder before any Complaint draft.</p>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Subject</th><th>Organization</th><th>State</th><th>Next step</th></tr></thead>
+      <tbody>
+      {% for case in attention %}
+        <tr>
+          <td>{{ case.subject.name }}</td>
+          <td><a href="{% url 'cases:detail' case.pk %}">{{ case.organization.name }}</a>{% include "unlist/_broker.html" with organization=case.organization %}</td>
+          <td><span class="pill pill-warn">{{ case.state_label }}</span>{% if case.overdue_from %} <span class="muted">since {{ case.overdue_from|date:"j M Y" }}</span>{% endif %}</td>
+          <td class="muted">{{ case.next_actor }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+{% if contact_changes %}
+<section aria-labelledby="h-contacts">
+  <div class="section-head">
+    <h2 id="h-contacts">Contact changes to review <span class="count">{{ contact_changes|length }}</span></h2>
+    <a href="{% url 'organizations:pending' %}">Review them</a>
+  </div>
+  <p class="muted">A list update changed the contact of an Organization with a Case. The old contact stays in use until you accept.</p>
+  <ul class="plain-list">
+    {% for change in contact_changes %}<li><a href="{% url 'organizations:detail' change.organization.slug %}">{{ change.organization.name }}</a>{% include "unlist/_broker.html" with organization=change.organization %}</li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if finds %}
+<section aria-labelledby="h-finds">
+  <div class="section-head"><h2 id="h-finds">Found in the mail</h2></div>
+  <ul class="plain-list">
+    {% for find in finds %}
+    <li>{{ find.subject.name }}: <a href="{% url 'mail:discoveries' find.subject.pk %}">{{ find.new }} Organization{{ find.new|pluralize }} to look at</a>
+      <span class="muted">from the {% if find.run.source == "imap" %}scan{% else %}import{% endif %} of {{ find.run.finished_at|date:"j M Y" }}. Pursue or ignore each; nothing is sent before you approve a draft.</span></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endif %}
 {% endblock %}

@@ -13,14 +13,19 @@ from unlist.stats import charts, figures, snapshots
 from unlist.subjects.models import Subject
 
 
-def cases_url(subject_id=None, state=None) -> str:
-    """The Case list, filtered by what the list supports (a Subject and a state)."""
+def cases_url(subject_id=None, state=None, **filters) -> str:
+    """The Case list with the exact filters behind a figure: Subject, state, result, Organization."""
     query = {}
     if subject_id:
         query["subject"] = subject_id
     if state:
         query["state"] = state
+    query.update({name: value for name, value in filters.items() if value})
     return reverse("cases:list") + (f"?{urlencode(query)}" if query else "")
+
+
+def _with_query(url, **params) -> str:
+    return f"{url}?{urlencode(params)}"
 
 
 def _fmt_days(value) -> str:
@@ -48,13 +53,19 @@ def index(request):
     evidence_rows = [
         {
             "label": figures.EVIDENCE_LABELS[kind],
-            "cells": [(column["figures"].evidence[kind], column["url"]) for column in evidence_columns],
+            "cells": [
+                (column["figures"].evidence[kind], _with_query(column["url"], evidence=kind))
+                for column in evidence_columns
+            ],
         }
         for kind in figures.EVIDENCE_ORDER
     ]
     discovery_rows = [
         {"label": "All Organizations found", "cells": [(c["figures"].discoveries, c["url"]) for c in evidence_columns]},
-        {"label": "Of them Brokers", "cells": [(c["figures"].brokers, c["url"]) for c in evidence_columns]},
+        {
+            "label": "Of them Brokers",
+            "cells": [(c["figures"].brokers, _with_query(c["url"], broker="yes")) for c in evidence_columns],
+        },
     ]
 
     state_rows = [
@@ -68,7 +79,11 @@ def index(request):
     ]
     all_cases_url = cases_url(subject_id)
     outcome_rows = [
-        {"label": figures.OUTCOME_LABELS[outcome], "count": found.outcomes[outcome], "url": all_cases_url}
+        {
+            "label": figures.OUTCOME_LABELS[outcome],
+            "count": found.outcomes[outcome],
+            "url": cases_url(subject_id, result=outcome),
+        }
         for outcome in figures.OUTCOME_LABELS
     ]
 
@@ -90,6 +105,7 @@ def index(request):
             {
                 "organization": row.organization,
                 "url": reverse("organizations:detail", args=[row.organization.slug]),
+                "cases_url": cases_url(organization=row.organization.slug),
                 "cases": row.cases,
                 "median": _fmt_days(row.median_days) if row.median_days is not None else None,
                 "answered": row.answered,
@@ -109,6 +125,8 @@ def index(request):
         "all_cases_url": all_cases_url,
         "outcome_rows": outcome_rows,
         "removed_confirmed": found.removed_confirmed,
+        "removed_confirmed_url": cases_url(subject_id, result="removed_suppression"),
+        "removed_url": cases_url(subject_id, result=figures.REMOVED),
         "chart": mark_safe(chart),  # noqa: S308  (built by charts.line_chart, which escapes every text)
         "organization_rows": organization_rows,
     }

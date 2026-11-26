@@ -1,11 +1,8 @@
 {% extends "unlist/base.html" %}
-{% load static %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% block title %}Import mail for {{ subject.name }} · Unlist{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'mail/mail.css' %}">{% endblock %}
-{% block body %}
-<main class="mail-wide">
-{% include "mail/_nav.html" %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a></p>
 <h1>Import mail for {{ subject.name }}</h1>
 <p>Upload an export of {{ subject.name }}'s mailbox as an <code>.mbox</code> file. Unlist reads who sent each
 message and, for order and booking markup, its HTML. It keeps, per Organization, the dates, the number of
@@ -46,5 +43,4 @@ and it deletes the uploaded file when the scan is done.</p>
   Posteo, mailbox.org and many others), you can instead <a href="{% url 'mail:connections' subject.pk %}">connect
   the mailbox</a>: Unlist then scans it over IMAP, read-only, and sends approved requests from it.</p>
 </section>
-</main>
 {% endblock %}

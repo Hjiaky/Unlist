@@ -1,52 +1,53 @@
 {% extends "unlist/base.html" %}
-{% load static llm %}
+{% load llm %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% block title %}Unassigned senders for {{ subject.name }} · Unlist{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'mail/mail.css' %}">{% endblock %}
-{% block body %}
-<main class="mail-wide">
-{% include "mail/_nav.html" %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a></p>
 <h1>Unassigned senders</h1>
 <p>Authenticated mail to {{ subject.name }} from a domain no Organization List knows, or from a shared mail or
 platform domain (an email service or a newsletter platform) that cannot tell which Organization is behind it.
 Assign a sender to an Organization, or ignore it.</p>
 
-<table class="mail-table">
+<div class="table-wrap">
+<table class="table">
   <thead><tr><th>Sender</th><th>Evidence</th><th>Emails</th><th>Last seen</th><th>Actions</th></tr></thead>
   <tbody>
   {% for sender in open %}
     <tr>
       <td>{% if sender.display_name %}{{ sender.display_name }} {% endif %}<code>{{ sender.domain }}</code>
-        {% if sender.ambiguous %}<span class="mail-badge mail-badge-quiet">shared domain</span>{% endif %}
-        {% if sender.strongest_subject %}<div class="muted mail-subject">“{{ sender.strongest_subject }}”</div>{% endif %}</td>
+        {% if sender.ambiguous %}<span class="tag tag-quiet">shared domain</span>{% endif %}
+        {% if sender.strongest_subject %}<div class="muted anywhere">“{{ sender.strongest_subject }}”</div>{% endif %}</td>
       <td>{{ sender.get_evidence_display }}</td>
       <td>{{ sender.email_count }}</td>
       <td>{{ sender.last_seen|date:"j M Y" }}</td>
-      <td class="mail-buttons">
+      <td><div class="actions tight">
         <a href="{% url 'mail:assign' subject.pk sender.pk %}">Assign to Organization</a>
         <form method="post" action="{% url 'mail:ignore_sender' subject.pk sender.pk %}">{% csrf_token %}<button type="submit">Ignore</button></form>
         {% llm_sort_button "sender" sender %}
-      </td>
+      </div></td>
     </tr>
   {% empty %}
     <tr><td colspan="5">Nothing to assign.</td></tr>
   {% endfor %}
   </tbody>
 </table>
+</div>
 
 {% if ignored %}
 <h2>Ignored</h2>
-<table class="mail-table">
+<div class="table-wrap">
+<table class="table">
   <tbody>
   {% for sender in ignored %}
     <tr>
       <td>{% if sender.display_name %}{{ sender.display_name }} {% endif %}<code>{{ sender.domain }}</code></td>
       <td>{{ sender.email_count }} email{{ sender.email_count|pluralize }}</td>
-      <td class="mail-buttons"><form method="post" action="{% url 'mail:unignore_sender' subject.pk sender.pk %}">{% csrf_token %}<button type="submit">Un-ignore</button></form></td>
+      <td><div class="actions tight"><form method="post" action="{% url 'mail:unignore_sender' subject.pk sender.pk %}">{% csrf_token %}<button type="submit">Un-ignore</button></form></div></td>
     </tr>
   {% endfor %}
   </tbody>
 </table>
+</div>
 {% endif %}
-</main>
 {% endblock %}

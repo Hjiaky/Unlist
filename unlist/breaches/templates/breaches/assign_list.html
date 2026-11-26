@@ -1,37 +1,35 @@
 {% extends "unlist/base.html" %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
-{% load static %}
 {% block title %}Breaches without a domain · Unlist{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'breaches/breaches.css' %}">{% endblock %}
-{% block body %}
-<main class="breach-wide">
-{% include "breaches/_nav.html" %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'breaches:index' %}">Breach list</a></p>
 <h1>Breaches without a domain</h1>
 <p>These breaches name no website, so they match no Organization by domain. Assign one by hand if you know whose it is.</p>
-<form method="get" class="breach-search">
+<form method="get" class="search">
   <label for="q">Search by title</label>
   <input type="search" id="q" name="q" value="{{ query }}">
   <button type="submit">Search</button>
 </form>
-<table class="breach-table">
+<div class="table-wrap">
+<table class="table">
   <thead><tr><th>Breach</th><th>Date</th><th>Assigned to</th></tr></thead>
   <tbody>
   {% for breach in page %}
     <tr>
       <td><a href="{% url 'breaches:assign' breach.name %}">{{ breach.title }}</a>{% if breach.attribution %}<div class="muted">{{ breach.attribution }}</div>{% endif %}</td>
       <td>{{ breach.breach_date|date:"Y-m-d"|default:"unknown" }}</td>
-      <td>{% if breach.assigned_to %}{{ breach.assigned_to.name }}{% else %}<span class="muted">nobody</span>{% endif %}</td>
+      <td>{% if breach.assigned_to %}{{ breach.assigned_to.name }}{% include "unlist/_broker.html" with organization=breach.assigned_to %}{% else %}<span class="muted">nobody</span>{% endif %}</td>
     </tr>
   {% empty %}
     <tr><td colspan="3" class="muted">No breaches.</td></tr>
   {% endfor %}
   </tbody>
 </table>
-<div class="breach-pages">
+</div>
+<div class="pages">
   {% if page.has_previous %}<a href="?q={{ query|urlencode }}&amp;page={{ page.previous_page_number }}">Previous</a>{% endif %}
   <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
   {% if page.has_next %}<a href="?q={{ query|urlencode }}&amp;page={{ page.next_page_number }}">Next</a>{% endif %}
 </div>
 {% include "breaches/_attribution.html" %}
-</main>
 {% endblock %}

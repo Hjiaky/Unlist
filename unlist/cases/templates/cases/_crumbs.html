@@ -1,0 +1,2 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+<p class="breadcrumb"><a href="{% url 'subjects:detail' case.subject.pk %}">{{ case.subject.name }}</a> › <a href="{% url 'cases:detail' case.pk %}">{{ case.organization.name }} <code>{{ case.reference }}</code></a>{% include "unlist/_broker.html" with organization=case.organization %}</p>

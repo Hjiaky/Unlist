@@ -1,0 +1,31 @@
+{% extends "unlist/base.html" %}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% block title %}Approve {{ items|length }} draft{{ items|length|pluralize }} · Unlist{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'home' %}">Needs you</a></p>
+<h1>Approve {{ items|length }} draft{{ items|length|pluralize }}?</h1>
+<p>Check every recipient. Approving sends each draft, or hands it over to the Subject to send, exactly as listed.</p>
+
+<form method="post" action="{% url 'approve' %}">{% csrf_token %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Subject</th><th>Organization</th><th>Draft</th><th>Recipient</th><th>How it leaves</th></tr></thead>
+      <tbody>
+      {% for item in items %}{% with draft=item.draft %}
+        <tr>
+          <td>{{ draft.case.subject.name }}<input type="hidden" name="draft" value="{{ draft.pk }}"></td>
+          <td><a href="{% url 'cases:detail' draft.case.pk %}">{{ draft.case.organization.name }}</a>{% include "unlist/_broker.html" with organization=draft.case.organization %}</td>
+          <td>{{ draft.get_kind_display }}<div class="muted anywhere">{{ draft.subject_line }}</div>{% if draft.status != "awaiting_approval" %}<div class="warn">{{ draft.get_status_display }}: it will be skipped.</div>{% endif %}</td>
+          <td class="recipient">{{ draft.recipient }}</td>
+          <td><span class="pill{% if item.mode == 'hand' %} pill-quiet{% endif %}">{{ item.label }}</span> <span class="muted">{{ item.text }}</span></td>
+        </tr>
+      {% endwith %}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="actions">
+    <button type="submit" name="confirm" value="yes" class="primary">Approve all {{ items|length }}</button>
+    <a href="{% url 'home' %}">Back, approve nothing</a>
+  </div>
+</form>
+{% endblock %}

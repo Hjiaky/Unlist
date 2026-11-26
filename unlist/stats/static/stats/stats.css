@@ -1,14 +1,7 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
-main.stats-wide { max-width: 1040px; margin: 0 auto; padding: 24px 16px; }
-.stats-nav { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; }
-.stats-wide a { color: var(--accent); }
-.stats-filter { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin: 12px 0; }
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0 24px; }
-.stats-wide h2 { font-size: 1.15rem; margin: 0 0 8px; }
-.stats-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
-.stats-table th, .stats-table td { text-align: left; vertical-align: top; padding: 6px 8px; border-bottom: 1px solid var(--line); }
-.stats-table td.num, .stats-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
-.stats-scroll { overflow-x: auto; }
+/* Copyright (C) 2026 The Unlist contributors */
+/* Only what the statistics page needs beyond unlist.css: its grid and the chart's colours. */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 0 24px; }
 .stats-definitions { margin: 8px 0; padding-left: 18px; }
 
 /* The chart: colours from the page's variables, so it follows light and dark mode. */

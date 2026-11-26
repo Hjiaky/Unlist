@@ -10,7 +10,7 @@
 @media print {
   .complaints-noprint, .site-footer { display: none; }
   body { background: #fff; color: #000; }
-  main.complaints-page { max-width: none; padding: 0; }
+  .complaints-page { max-width: none; padding: 0; }
   .complaints-page .card { border: 0; box-shadow: none; padding: 0; margin: 0 0 12pt; background: none; }
   .complaints-text { border: 0; background: none; padding: 0; font: 11pt/1.45 Georgia, "Times New Roman", serif; }
   .complaints-page a { color: #000; text-decoration: none; }

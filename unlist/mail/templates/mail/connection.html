@@ -1,15 +1,12 @@
 {% extends "unlist/base.html" %}
-{% load static %}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% block title %}Live connection of {{ mailbox.email }} · Unlist{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'mail/mail.css' %}">{% endblock %}
-{% block body %}
-<main class="mail-wide">
-{% include "mail/_nav.html" %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a></p>
 <h1>Live connection of {{ mailbox.email }}</h1>
 
 <section class="card">
-  <dl class="mail-facts">
+  <dl class="fields">
     <dt>Mode</dt><dd>{{ mailbox.get_mode_display }}</dd>
     <dt>IMAP</dt><dd>{{ connection.imap_host }}:{{ connection.imap_port }} (TLS), read-only</dd>
     <dt>SMTP</dt><dd>{{ connection.smtp_host }}:{{ connection.smtp_port }} ({{ connection.get_smtp_security_display }})</dd>
@@ -18,7 +15,7 @@
     <dt>Last scan</dt><dd>{% if connection.last_scan_at %}{{ connection.last_scan_at|date:"j F Y H:i" }}{% else %}<span class="muted">never</span>{% endif %}</dd>
   </dl>
   {% if connection.last_error %}
-  <p class="mail-warn">Last problem: {{ connection.last_error }}</p>
+  <p class="warn">Last problem: {{ connection.last_error }}</p>
   {% endif %}
   {% if running %}<p>A scan is running ({{ run.total }} messages so far). Reload to see it finish.</p>
   {% elif run and run.finished_at %}<p class="muted">The last scan read {{ run.total }} new message{{ run.total|pluralize }}:
@@ -30,7 +27,7 @@
   <h2>Scan</h2>
   <p>Reads the headers of new messages since the last scan (all of them the first time) and records which
   Organizations mailed {{ subject.name }}. Replies to Cases are read in full and added to their Case.</p>
-  <div class="mail-buttons">
+  <div class="actions tight">
     <form method="post" action="{% url 'mail:scan_now' subject.pk mailbox.pk %}">{% csrf_token %}
       <button type="submit" class="primary"{% if running %} disabled{% endif %}>Scan now</button></form>
     <form method="post" action="{% url 'mail:test_connection' subject.pk mailbox.pk %}">{% csrf_token %}
@@ -60,5 +57,4 @@
     approved requests are then handed over for {{ subject.name }} to send. Discoveries and Cases stay.</span>
   </form>
 </section>
-</main>
 {% endblock %}
