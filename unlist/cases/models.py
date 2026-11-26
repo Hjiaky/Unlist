@@ -177,6 +177,9 @@ class Attachment(models.Model):
 
     case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name="attachments")
     event = models.ForeignKey(CaseEvent, on_delete=models.SET_NULL, null=True, blank=True, related_name="attachments")
+    reply = models.ForeignKey(
+        "Reply", on_delete=models.SET_NULL, null=True, blank=True, related_name="attachments", help_text="Came with it."
+    )
     original_name = models.CharField(max_length=255)
     stored_path = models.CharField(max_length=500, help_text="Relative to the data directory.")
     sha256 = models.CharField(max_length=64)
@@ -189,3 +192,94 @@ class Attachment(models.Model):
 
     def __str__(self):
         return self.original_name
+
+
+class Reply(models.Model):
+    """A message from an Organization (or its mail server) taken in for a Subject (spec section 7).
+
+    Only mail matched to a Case, or plausibly related to one, is kept (``replies.py``). A reply
+    without a Case waits in the unmatched queue until the Operator assigns or dismisses it; its
+    ``.eml`` then lives at ``raw_path`` until it can become an Attachment of the Case.
+    """
+
+    class Kind(models.TextChoices):
+        REPLY = "reply", "Reply"
+        BOUNCE = "bounce", "Bounce (delivery status notification)"
+        AUTO_REPLY = "auto_reply", "Automatic reply"
+
+    class Status(models.TextChoices):
+        TO_CONFIRM = "to_confirm", "To confirm"
+        CONFIRMED = "confirmed", "Confirmed"
+        DISMISSED = "dismissed", "Dismissed"
+        AUTO_RECORDED = "auto_recorded", "Recorded automatically"
+
+    class Source(models.TextChoices):
+        IMAP = "imap", "Live mailbox (IMAP)"
+        MBOX = "mbox", "Mailbox import (mbox)"
+        UPLOAD = "upload", "Uploaded .eml"
+
+    class MatchedBy(models.TextChoices):
+        IN_REPLY_TO = "in_reply_to", "In-Reply-To / References"
+        REFERENCE = "reference", "Reference code in the subject line"
+        SENDER_DOMAIN = "sender_domain", "Authenticated sender domain"
+        OPERATOR = "operator", "Chosen by the Operator"
+
+    class SuggestionSource(models.TextChoices):
+        RULES = "rules", "Keyword rules"
+        LLM = "llm", "LLM"
+
+    OUTCOME_CHOICES = [(action.value, lifecycle.OUTCOME_LABELS[action]) for action in lifecycle.OUTCOMES]
+
+    subject = models.ForeignKey("subjects.Subject", on_delete=models.CASCADE, related_name="replies")
+    case = models.ForeignKey(Case, on_delete=models.CASCADE, null=True, blank=True, related_name="replies")
+    kind = models.CharField(max_length=20, choices=Kind.choices, default=Kind.REPLY)
+    source = models.CharField(max_length=10, choices=Source.choices)
+    message_id = models.CharField(max_length=500, blank=True)
+    dedup_key = models.CharField(max_length=64, help_text="Normalised Message-ID (or headers) digest.")
+    from_address = models.CharField(max_length=320, blank=True)
+    from_name = models.CharField(max_length=200, blank=True)
+    sender_domain = models.CharField(max_length=253, blank=True)
+    authenticated = models.BooleanField(default=False)
+    received_at = models.DateTimeField(help_text="The message's Date header, or when it was taken in.")
+    subject_line = models.CharField(max_length=500, blank=True)
+    body = models.TextField(blank=True, help_text="The text part, or the HTML part converted to text.")
+    matched_by = models.CharField(max_length=20, choices=MatchedBy.choices, blank=True)
+    raw_attachment = models.ForeignKey(
+        Attachment, on_delete=models.SET_NULL, null=True, blank=True, related_name="+", help_text="The .eml."
+    )
+    raw_path = models.CharField(max_length=500, blank=True, help_text="The .eml of an unmatched reply.")
+    raw_sha256 = models.CharField(max_length=64, blank=True)
+    suggested_outcome = models.CharField(max_length=30, choices=OUTCOME_CHOICES, blank=True)
+    suggestion_source = models.CharField(max_length=10, choices=SuggestionSource.choices, blank=True)
+    suggestion_note = models.CharField(max_length=500, blank=True, help_text="Why this outcome was suggested.")
+    suggested_exception = models.TextField(blank=True)
+    suggested_suppression = models.BooleanField(null=True, blank=True)
+    suggested_with_reasons = models.BooleanField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.TO_CONFIRM)
+    event = models.ForeignKey(
+        CaseEvent, on_delete=models.SET_NULL, null=True, blank=True, related_name="replies", help_text="As recorded."
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+    decided_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-received_at", "-id"]
+        constraints = [models.UniqueConstraint(fields=["subject", "dedup_key"], name="one_reply_per_message")]
+
+    def __str__(self):
+        return f"{self.received_at:%Y-%m-%d} {self.from_address}: {self.subject_line}"
+
+    @property
+    def received_on(self):
+        return timezone.localdate(self.received_at)
+
+    @property
+    def is_unmatched(self):
+        return self.case_id is None and self.status == self.Status.TO_CONFIRM
+
+    @property
+    def suggested_label(self):
+        try:
+            return lifecycle.OUTCOME_LABELS[lifecycle.Action(self.suggested_outcome)]
+        except (KeyError, ValueError):
+            return ""

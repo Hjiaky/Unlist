@@ -299,9 +299,11 @@ def store_upload(upload):
 def scan_mbox_file(run, path):
     """Scan the mbox at `path` into `run`, then delete the file, whatever happens."""
     try:
+        from unlist.cases.replies import ingest_each  # takes in replies to Cases on the way; never raises (#49)
+
         box = mailbox.mbox(path, create=False)
         try:
-            scan_messages(run.subject, _messages(box), run=run)
+            scan_messages(run.subject, ingest_each(run.subject, _messages(box)), run=run)
         finally:
             box.close()
     except Exception as error:

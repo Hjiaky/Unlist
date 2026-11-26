@@ -661,6 +661,11 @@ def set_recheck_override(case, value: str) -> Case:
     return case
 
 
+def add_note(case, text: str, *, on: date | None = None, details: dict | None = None) -> CaseEvent:
+    """Record a dated note on the Case. Changes nothing else (no state, no clock)."""
+    return _record(case, CaseEvent.Kind.NOTE, _today(on), text, details=details)
+
+
 def edit_draft(draft, *, subject_line: str, body: str, on: date | None = None) -> Draft:
     """Change the text of a draft awaiting approval. The reference code must stay in the subject line."""
     subject_line = " ".join((subject_line or "").split())

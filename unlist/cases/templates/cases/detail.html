@@ -86,6 +86,28 @@
   {% endfor %}
 </section>
 
+<section class="card" id="replies">
+  <h2>Replies</h2>
+  {% for reply in replies %}
+  <article class="cases-reply cases-reply-{{ reply.status }}">
+    <header><strong>{{ reply.subject_line|default:"(no subject)" }}</strong>
+      <span class="muted">· {{ reply.received_at|date:"j M Y" }} · {{ reply.from_address }} · {{ reply.get_kind_display }} · {{ reply.get_status_display }}{% if reply.suggested_outcome and reply.status == "to_confirm" %} · suggested: {{ reply.suggested_label }}{% endif %}</span>
+    </header>
+    {% if reply.status == "to_confirm" %}<p><a href="{% url 'cases:replies' %}#reply-{{ reply.pk }}">Review and confirm</a></p>{% endif %}
+    {% if reply.raw_attachment %}<p><a href="{% url 'cases:attachment' reply.raw_attachment.pk %}">Download the .eml</a></p>{% endif %}
+  </article>
+  {% empty %}
+  <p class="muted">No replies taken in yet.</p>
+  {% endfor %}
+  <form method="post" action="{% url 'cases:reply_upload' case.pk %}" enctype="multipart/form-data" class="cases-form">{% csrf_token %}
+    <div class="cases-field">
+      {{ upload_form.eml.label_tag }} {{ upload_form.eml }}
+      <p class="helptext cases-warning">{{ upload_form.eml.help_text }}</p>
+    </div>
+    <button type="submit">Upload</button>
+  </form>
+</section>
+
 <section class="card">
   <h2>Timeline</h2>
   <ol class="cases-timeline">
